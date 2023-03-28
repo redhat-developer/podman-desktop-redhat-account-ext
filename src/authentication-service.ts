@@ -19,7 +19,7 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import { window } from '@podman-desktop/api';
+import { AuthenticationSession, window, EventEmitter, AuthenticationProviderSessionChangeEvent } from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
 import { createServer, startServer } from './authentication-server';
@@ -60,18 +60,18 @@ interface IStoredSession {
   };
 }
 
-// export const onDidChangeSessions = new vscode.EventEmitter<vscode.AuthenticationProviderAuthenticationSessionsChangeEvent>();
+export const onDidChangeSessions = new EventEmitter<AuthenticationProviderSessionChangeEvent>();
 
 export const REFRESH_NETWORK_FAILURE = 'Network failure';
 
-export interface RedHatAuthenticationSession {
+export interface RedHatAuthenticationSession extends AuthenticationSession{
   idToken: string | undefined;
   readonly id: string;
   readonly accessToken: string;
   readonly scopes: ReadonlyArray<string>;
-  account?: {
+  account: {
     label: string;
-    id: string;
+    id?: string;
   };
 }
 
@@ -227,7 +227,7 @@ export class RedHatAuthenticationService {
     }
 
     if (added.length || removed.length) {
-      // onDidChangeSessions.fire({ added: added, removed: removed, changed: [] });
+      onDidChangeSessions.fire({ added: added, removed: removed, changed: [] });
     }
   }
 
@@ -240,7 +240,7 @@ export class RedHatAuthenticationService {
       id: token.sessionId,
       accessToken: token.accessToken!,
       idToken: token.idToken,
-      // account: token.account,
+      account: token.account,
       scopes: token.scope.split(' '),
     };
   }
@@ -409,7 +409,7 @@ export class RedHatAuthenticationService {
         setTimeout(async () => {
           try {
             const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
-            // onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(refreshedToken)] });
+            onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(refreshedToken)] });
           } catch (e: any) {
             if (e.message === REFRESH_NETWORK_FAILURE) {
               const didSucceedOnRetry = await this.handleRefreshNetworkError(
@@ -422,7 +422,7 @@ export class RedHatAuthenticationService {
               }
             } else {
               await this.removeSession(token.sessionId);
-              // onDidChangeSessions.fire({ added: [], removed: [this.convertToSessionSync(token)], changed: [] });
+              onDidChangeSessions.fire({ added: [], removed: [this.convertToSessionSync(token)], changed: [] });
             }
           }
         }, 1000 * (token.expiresIn - 30)),
@@ -515,7 +515,7 @@ export class RedHatAuthenticationService {
         const token = this._tokens.find(token => token.sessionId === sessionId);
         if (token) {
           token.accessToken = undefined;
-          // onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(token)] });
+          onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(token)] });
         }
       }
 
