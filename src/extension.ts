@@ -18,7 +18,7 @@
 
 import * as extensionApi from '@podman-desktop/api';
 import { getAuthConfig } from './configuration';
-import { RedHatAuthenticationService } from './authentication-service';
+import { onDidChangeSessions, RedHatAuthenticationService, RedHatAuthenticationSession } from './authentication-service';
 import { shell } from 'electron';
 const menuItemsRegistered: extensionApi.Disposable[] = [];
 
@@ -59,6 +59,7 @@ async function initMenu(extensionContext: extensionApi.ExtensionContext): Promis
 }
 
 let loginService:RedHatAuthenticationService;
+let currentSession: RedHatAuthenticationSession;
 
 async function getAutenticatonService() {
   if (!loginService) {
@@ -68,33 +69,46 @@ async function getAutenticatonService() {
   return loginService;
 }
 
-const _onDidChangeSessions = new extensionApi.EventEmitter<extensionApi.AuthenticationProviderSessionChangeEvent>();
+let authService: RedHatAuthenticationService;
+
+async function getAuthService() {
+  if (!authService) {
+    authService = await getAutenticatonService();
+  }
+  return authService;
+}
 
 export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting extension redhat-authentication');
   
   await initMenu(extensionContext);
   
-  extensionApi.authentication.registerAuthenticationProvider({
-    onDidChangeSessions: _onDidChangeSessions.event,
-    createSession: function (): Promise<extensionApi.AuthenticationSession> {
-      throw new Error('Function not implemented.');
-    },
-    getSessions: function (): Promise<extensionApi.AuthenticationSession[]> {
-      throw new Error('Function not implemented.');
-    },
-    removeSession: function (id: string): Promise<void> {
-      throw new Error('Function not implemented.');
-    },
-    id: 'redhat.autentication-provider',
-    displayName: 'Red Hat',
-  });
+  extensionApi.authentication.registerAuthenticationProvider(
+    'redhat.autentication-provider',
+    'Red Hat', {
+      onDidChangeSessions: onDidChangeSessions.event,
+      createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
+        const service = await getAuthService();
+        const session = await service.createSession(scopes.sort().join(' '));
+        onDidChangeSessions.fire({added: [session]});
+        return session;
+      },
+      getSessions: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession[]> {
+        const service = await getAuthService();
+        return service.getSessions(scopes)
+      },
+      removeSession: async function (sessionId: string): Promise<void> {
+        const service = await getAuthService();
+        const session = await service.removeSession(sessionId);
+        onDidChangeSessions.fire({removed: [session]});
+      }
+    });
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
-    const service = await getAutenticatonService();
-    const session = await service.createSession('openid');
-
-    AuthMenuItem.label = `Red Hat (${session.account.label})`;
+    loginService = await getAutenticatonService();
+    currentSession = await loginService.createSession('openid');
+    onDidChangeSessions.fire({added: [currentSession], removed:[], changed:[]});
+    AuthMenuItem.label = `Red Hat (${currentSession.account.label})`;
     AuthMenuItem.
       submenu = [SignInMenuItem(false), SignOutMenuItem(true), Separator, SignUpMenuItem()];
     const subscription = extensionApi.tray.registerMenuItem(AuthMenuItem);
@@ -102,7 +116,9 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
-    loginService = undefined;
+    loginService.removeSession(currentSession.id);
+    onDidChangeSessions.fire({added: [], removed:[currentSession], changed:[]});
+    currentSession = undefined;
     AuthMenuItem.label = `Red Hat`;
     AuthMenuItem.
       submenu = [SignInMenuItem(true), SignOutMenuItem(false), Separator, SignUpMenuItem()];
