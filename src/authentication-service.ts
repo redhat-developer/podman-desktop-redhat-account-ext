@@ -19,7 +19,7 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import { AuthenticationSession, window, EventEmitter, AuthenticationProviderSessionChangeEvent } from '@podman-desktop/api';
+import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent } from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
 import { createServer, startServer } from './authentication-server';
@@ -60,7 +60,7 @@ interface IStoredSession {
   };
 }
 
-export const onDidChangeSessions = new EventEmitter<AuthenticationProviderSessionChangeEvent>();
+export const onDidChangeSessions = new EventEmitter<AuthenticationProviderAuthenticationSessionsChangeEvent>();
 
 export const REFRESH_NETWORK_FAILURE = 'Network failure';
 
@@ -71,7 +71,7 @@ export interface RedHatAuthenticationSession extends AuthenticationSession{
   readonly scopes: ReadonlyArray<string>;
   account: {
     label: string;
-    id?: string;
+    id: string;
   };
 }
 
