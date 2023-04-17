@@ -19,14 +19,13 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent } from '@podman-desktop/api';
+import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent, env, Uri } from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
 import { createServer, startServer } from './authentication-server';
 import { AuthConfig } from './configuration';
 import { Keychain } from './keychain';
 import Logger from './logger';
-import { BrowserWindow, shell } from 'electron';
 
 interface IToken {
   accessToken?: string; // When unable to refresh due to network problems, the access token becomes undefined
@@ -304,7 +303,7 @@ export class RedHatAuthenticationService {
       try {
         const serverBase = this.config.serverConfig.externalUrl;
         const port = await startServer(this.config.serverConfig, server);
-        shell.openExternal(`${serverBase}:${port}/signin?nonce=${encodeURIComponent(nonce)}`);
+        env.openExternal(Uri.parse(`${serverBase}:${port}/signin?nonce=${encodeURIComponent(nonce)}`));
         const redirectReq = await redirectPromise;
         if ('err' in redirectReq) {
           const { err, res } = redirectReq;
