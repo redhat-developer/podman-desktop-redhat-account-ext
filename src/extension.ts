@@ -19,7 +19,7 @@
 import * as extensionApi from '@podman-desktop/api';
 import { getAuthConfig } from './configuration';
 import { onDidChangeSessions, RedHatAuthenticationService, RedHatAuthenticationSession } from './authentication-service';
-import { shell } from 'electron';
+
 const menuItemsRegistered: extensionApi.Disposable[] = [];
 
 const SignUpMenuItem = (enabled = true) => ({
@@ -127,7 +127,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   });
 
   const SignUpCommand = extensionApi.commands.registerCommand('redhat.authentication.signup', async () => {
-    shell.openExternal('https://developers.redhat.com/articles/faqs-no-cost-red-hat-enterprise-linux#general');
+    extensionApi.env.openExternal(extensionApi.Uri.parse('https://developers.redhat.com/articles/faqs-no-cost-red-hat-enterprise-linux#general'));
   });
 
   extensionContext.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand);
