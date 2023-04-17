@@ -57,5 +57,5 @@ jobs:
       - name: Build Image
         id: build-image
         run: |
-          podman build -t ghcr.io/jeffmaury/podman-desktop-redhat-account-ext:latest .
-          podman push ghcr.io/jeffmaury/podman-desktop-redhat-account-ext:latest
+          podman build -t ghcr.io/${{ github.repository_owner }}/podman-desktop-redhat-account-ext:latest .
+          podman push ghcr.io/${{ github.repository_owner }}/podman-desktop-redhat-account-ext:latest
