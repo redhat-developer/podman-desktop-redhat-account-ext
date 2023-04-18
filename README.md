@@ -28,3 +28,12 @@ or
 ```
 
 from the Podman Desktop source folder if using the develpment version from Podman Desktop
+
+# Nightly build installation
+
+use `ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest` on Settings/Extension page using 'Install a new extension from OCI Image' form (see screenshot below).
+
+
+
+![image](https://user-images.githubusercontent.com/620330/232674528-9d07e38d-618c-4d69-a01a-309033b7b3f0.png)
+
