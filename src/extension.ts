@@ -79,7 +79,7 @@ async function getAuthService() {
 }
 
 export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
-  console.log('starting extension redhat-authentication');
+  console.log('starting redhat-authentication extension');
   
   await initMenu(extensionContext);
   
@@ -134,5 +134,5 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
 }
 
 export function deactivate(): void {
-  console.log('stopping kube-context extension');
+  console.log('stopping redhat-authentication extension');
 }
