@@ -4,7 +4,7 @@
   "description": "Login to Red Hat Developers",
   "version": "0.0.1",
   "icon": "icon.png",
-  "publisher": "dgolvoin",
+  "publisher": "redhat",
   "license": "Apache-2.0",
   "engines": {
     "podman-desktop": "^0.0.1"
