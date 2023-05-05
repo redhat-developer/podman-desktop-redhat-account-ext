@@ -83,7 +83,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   
   await initMenu(extensionContext);
   
-  extensionApi.authentication.registerAuthenticationProvider(
+  const providerDisposable = extensionApi.authentication.registerAuthenticationProvider(
     'redhat.autentication-provider',
     'Red Hat', {
       onDidChangeSessions: onDidChangeSessions.event,
@@ -103,6 +103,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
         onDidChangeSessions.fire({removed: [session]});
       }
     });
+  extensionContext.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
     loginService = await getAutenticatonService();
