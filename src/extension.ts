@@ -85,7 +85,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   
   const providerDisposable = extensionApi.authentication.registerAuthenticationProvider(
     'redhat.autentication-provider',
-    'Red Hat', {
+    'Red Hat SSO', {
       onDidChangeSessions: onDidChangeSessions.event,
       createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
         const service = await getAuthService();
