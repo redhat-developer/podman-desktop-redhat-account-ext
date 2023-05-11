@@ -102,6 +102,10 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
         const session = await service.removeSession(sessionId);
         onDidChangeSessions.fire({removed: [session]});
       }
+    },{
+      images: {
+        icon: 'icon.png'
+      }
     });
   extensionContext.subscriptions.push(providerDisposable);
 
