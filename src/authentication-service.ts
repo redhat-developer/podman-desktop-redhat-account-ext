@@ -63,6 +63,20 @@ export const onDidChangeSessions = new EventEmitter<AuthenticationProviderAuthen
 
 export const REFRESH_NETWORK_FAILURE = 'Network failure';
 
+  /**
+   * Return a session object without checking for expiry and potentially refreshing.
+   * @param token The token information.
+   */
+export function convertToSession(token: IToken): RedHatAuthenticationSession {
+  return {
+    id: token.sessionId,
+    accessToken: token.accessToken!,
+    idToken: token.idToken,
+    account: token.account,
+    scopes: token.scope.split(' '),
+  };
+}
+
 export interface RedHatAuthenticationSession extends AuthenticationSession{
   idToken: string | undefined;
   readonly id: string;
@@ -179,7 +193,7 @@ export class RedHatAuthenticationService {
           if (!matchesExisting && session.refreshToken) {
             try {
               const token = await this.refreshToken(session.refreshToken, session.scope, session.id);
-              added.push(this.convertToSessionSync(token));
+              added.push(convertToSession(token));
             } catch (e: any) {
               if (e.message === REFRESH_NETWORK_FAILURE) {
                 // Ignore, will automatically retry on next poll.
@@ -197,7 +211,7 @@ export class RedHatAuthenticationService {
             );
             if (!matchesExisting) {
               await this.removeSession(token.sessionId);
-              removed.push(this.convertToSessionSync(token));
+              removed.push(convertToSession(token));
             }
           }),
         );
@@ -206,13 +220,13 @@ export class RedHatAuthenticationService {
       } catch (e: any) {
         Logger.error(e.message);
         // if data is improperly formatted, remove all of it and send change event
-        removed = this._tokens.map(this.convertToSessionSync);
+        removed = this._tokens.map(convertToSession);
         this.clearSessions();
       }
     } else {
       if (this._tokens.length) {
         // Log out all, remove all local data
-        removed = this._tokens.map(this.convertToSessionSync);
+        removed = this._tokens.map(convertToSession);
         Logger.info('No stored keychain data, clearing local data');
 
         this._tokens = [];
@@ -228,20 +242,6 @@ export class RedHatAuthenticationService {
     if (added.length || removed.length) {
       onDidChangeSessions.fire({ added: added, removed: removed, changed: [] });
     }
-  }
-
-  /**
-   * Return a session object without checking for expiry and potentially refreshing.
-   * @param token The token information.
-   */
-  private convertToSessionSync(token: IToken): RedHatAuthenticationSession {
-    return {
-      id: token.sessionId,
-      accessToken: token.accessToken!,
-      idToken: token.idToken,
-      account: token.account,
-      scopes: token.scope.split(' '),
-    };
   }
 
   private async convertToSession(token: IToken): Promise<RedHatAuthenticationSession> {
@@ -408,7 +408,7 @@ export class RedHatAuthenticationService {
         setTimeout(async () => {
           try {
             const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
-            onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(refreshedToken)] });
+            onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(refreshedToken)] });
           } catch (e: any) {
             if (e.message === REFRESH_NETWORK_FAILURE) {
               const didSucceedOnRetry = await this.handleRefreshNetworkError(
@@ -421,7 +421,7 @@ export class RedHatAuthenticationService {
               }
             } else {
               await this.removeSession(token.sessionId);
-              onDidChangeSessions.fire({ added: [], removed: [this.convertToSessionSync(token)], changed: [] });
+              onDidChangeSessions.fire({ added: [], removed: [convertToSession(token)], changed: [] });
             }
           }
         }, 1000 * (token.expiresIn - 30)),
@@ -514,7 +514,7 @@ export class RedHatAuthenticationService {
         const token = this._tokens.find(token => token.sessionId === sessionId);
         if (token) {
           token.accessToken = undefined;
-          onDidChangeSessions.fire({ added: [], removed: [], changed: [this.convertToSessionSync(token)] });
+          onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(token)] });
         }
       }
 
@@ -541,7 +541,7 @@ export class RedHatAuthenticationService {
     const token = this.removeInMemorySessionData(sessionId);
     let session: RedHatAuthenticationSession | undefined;
     if (token) {
-      session = this.convertToSessionSync(token);
+      session = convertToSession(token);
     }
     if (this._tokens.length === 0) {
       await this.keychain.deleteToken();
