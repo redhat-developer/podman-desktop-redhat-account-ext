@@ -17,10 +17,50 @@
  ***********************************************************************/
 
 import path from 'node:path';
-import { coverageConfig, testConfig } from '../../vitest-shared-extensions.config';
 
 const PACKAGE_ROOT = __dirname;
 const PACKAGE_NAME = 'extensions/kube-context';
+
+/**
+ * Default project code coverage configuration for vitest
+ * @param {*} packageRoot root of the project where coverage is being calculated
+ * @param {*} packageName package name to appear in test-resources/coverage in project root folder
+ * @returns object for code coverage configuration
+ */
+export function coverageConfig(packageRoot, packageName) {
+  const obj = { coverage: {
+      all: true,
+      clean: true,
+      src: [packageRoot],
+      exclude: [
+        '**/builtin/**',
+        '**/dist/**',
+        '**/node_modules/**',
+        '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        '**/*.{tsx,cjs,js,d.ts}',
+        '**/*-info.ts',
+        '**/.{cache,git,idea,output,temp,cdix}/**',
+        '**/*{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tailwind,postcss}.config.*',
+      ],
+      provider: 'v8',
+      reportsDirectory: path.join(packageRoot, `test-resources/coverage/${packageName}`),
+      reporter: ['lcov', 'text'],
+    },
+  };
+  return obj;
+}
+
+export function testConfig() {
+  return {
+    exclude: [
+      '**/builtin/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp,cdix}/**',
+      '**/{.electron-builder,babel,changelog,docusaurus,jest,postcss,prettier,rollup,svelte,tailwind,vite,vitest*,webpack}.config.*',
+    ],
+  };
+}
 
 /**
  * Config for global end-to-end tests
@@ -36,7 +76,7 @@ const config = {
   },
   resolve: {
     alias: {
-      '@podman-desktop/api': path.resolve(PACKAGE_ROOT, '../../', '__mocks__/@podman-desktop/api.js'),
+      '@podman-desktop/api': path.resolve(PACKAGE_ROOT, '__mocks__/@podman-desktop/api.js'),
     },
   },
 };
