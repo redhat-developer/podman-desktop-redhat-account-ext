@@ -21,12 +21,13 @@ import * as extensionApi from '@podman-desktop/api';
 const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 
 const PODMAN_COMMANDS = {
-  SM_VERSION: () => 'ssh subscription-manager --version'.split(' '),
-  DNF_INSTALL_SM: () => 'ssh sudo rpm-ostree install -y subscription-manager'.split(' `'),
+  SM_VERSION: () => 'machine ssh sudo subscription-manager'.split(' '),
+  RPM_INSTALL_SM: () => 'machine ssh sudo rpm-ostree install -y subscription-manager'.split(' '),
+  SM_ACTIVATION_STATUS: () => 'machine ssh sudo subscription-manager status'.split(' '),
   SM_ACTIVATE_SUBS: (activationKeyName: string, orgId: string) =>
-    `ssh sudo subscription-manager register --activationkeys ${activationKeyName} ---org ${orgId}`.split(' '),
-  MACHINE_STOP: () => 'podman machine stop'.split(' '),
-  MACHINE_START: () => 'podman machine start'.split(' '),
+    `machine ssh sudo subscription-manager register --activationkey ${activationKeyName} --org ${orgId}`.split(' '),
+  MACHINE_STOP: () => 'machine stop'.split(' '),
+  MACHINE_START: () => 'machine start'.split(' '),
 }
 
 export function getInstallationPath(): string | undefined {
@@ -67,14 +68,40 @@ export interface InstalledPodman {
   version: string;
 }
 
-export async function getSubscriptionManagerVersion(): Promise<InstalledPodman | undefined> {
+export async function runSubscriptionManager(): Promise<number | undefined> {
   try {
-    const { stdout: versionOut } = await extensionApi.process.exec(getPodmanCli(), []);
-    const versionArr = versionOut.split(' ');
-    const version = versionArr[versionArr.length - 1];
-    return { version };
+    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_VERSION());
+    return 0;
   } catch (err) {
-    // no podman binary
-    return undefined;
+    await extensionApi.window.showErrorMessage((err as extensionApi.RunError).stderr);
+    return (err as extensionApi.RunError).exitCode;
   }
+}
+
+export async function runRpmInstallSubscriptionManager() {
+  try {
+    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
+    return 0;
+  } catch (err) {
+    return (err as extensionApi.RunError).exitCode;
+  }
+}
+
+export async function runSubscriptionManagerActivationStatus() {
+  try {
+    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATION_STATUS());
+    return 0;
+  } catch (err) {
+    return (err as extensionApi.RunError).exitCode;
+  }
+}
+
+export async function runSubscriptionManagerRegister(activationKeyName: string, orgId: string): Promise<number> {
+    const result = await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId));
+    return 0;
+}
+
+export async function restartPodmanMachine() {
+  await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP());
+  await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START());
 }
