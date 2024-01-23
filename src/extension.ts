@@ -26,6 +26,8 @@ import { ServiceAccountV1 } from './registry/models/ServiceAccountV1';
 import { ContainerRegistryAuthorizerClient } from './registry/ContainerRegistryAuthorizerClient';
 import path from 'node:path';
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
+import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
+import { RhsmClient } from './rhsm';
 
 const menuItemsRegistered: extensionApi.Disposable[] = [];
 
@@ -177,26 +179,68 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
     createRegistry(selectedServiceAccount.credentials.username, selectedServiceAccount.credentials.password);
 }
 
+async function  createOrReuseActivationKey() {
+  const currentSession = await signIntoRedHatDeveloperAccount();
+  const accessTokenJson = parseJwt(currentSession.accessToken);
+  const client = new RhsmClient({
+    BASE: 'https://console.redhat.com/api/rhsm/v2',
+    TOKEN: currentSession.accessToken
+  });
+
+  let noAk = true;
+
+  try {
+    await client.activationKey.showActivationKey('podman-desktop');
+    noAk = false;
+    // podman-desktop activation key exists
+  } catch(err) {
+    // ignore and continue with activation key creation
+  }
+
+  if (noAk) {
+    await client.activationKey.createActivationKeys({
+      name: 'podman-desktop',
+      role: 'RHEL Server',
+      usage: 'Development/Test',
+      serviceLevel: 'Self-Support',
+    });
+  }
+
+  await runSubscriptionManagerRegister('podman-desktop', accessTokenJson.organization.id)
+}
+
 function isPodmanMachineRunning(): boolean {
   const conns = extensionApi.provider.getContainerConnections();
   const startedPodman = conns.filter(conn => conn.providerId === 'podman' && conn.connection.status() === 'started');
   return startedPodman.length === 1;
 }
 
-function isSubscriptionManagerInstalled(): boolean {
-  return false;
+async function isSubscriptionManagerInstalled(): Promise<boolean> {
+  const exitCode = await runSubscriptionManager();
+  if (exitCode === undefined) {
+    throw new Error('Error running podman ssh to detect subscription-manager, please make sure podman machine is running!');
+  } 
+  return exitCode === 0;
 }
 
-function installSubscriptionManger() {
-
+async function installSubscriptionManger() {
+  const exitCode = await runRpmInstallSubscriptionManager();
+  if (exitCode === undefined) {
+    throw new Error('Error running podman to install subscription-manager, please make sure podman machine is running!');
+  } 
+  return exitCode === 0;
 }
 
-function isPodmanVmActivated(): boolean {
-  return true;
+async function isPodmanVmSubscriptionActivated() {
+  const exitCode = await runSubscriptionManagerActivationStatus();
+  if (exitCode === undefined) {
+    throw new Error('Error running subscription-manager in podman machine to get subscription status, please make sure podman machine is running!');
+  } 
+  return exitCode === 0;
 }
 
-function activatePodmanVmRedHatSubscription() {
-
+async function restartPodmanVM() {
+  await restartPodmanMachine();
 }
 
 export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
@@ -238,12 +282,29 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
       await createOrReuseRegistryServiceAccount();
     }
 
+    await extensionApi.window.showInformationMessage('Check if Podman machine is running','Continue');
+    if (!isPodmanMachineRunning()) {
+      await extensionApi.window.showInformationMessage('Podman machine is not running','Exit');
+      return;
+    }
     if (isPodmanMachineRunning()) {
-      if (!isSubscriptionManagerInstalled()) {
-        installSubscriptionManger();
+      await extensionApi.window.showInformationMessage('Podman machine is running','Continue');
+      const smIntalled = await isSubscriptionManagerInstalled();
+      if (!smIntalled) {
+        await extensionApi.window.showInformationMessage('Podman machine subscription-manager is not installed. Install?', 'Continue');
+        await installSubscriptionManger();
+        await extensionApi.window.showInformationMessage('The subscription-manager has been installed Podman machine is restarting', 'Continue');
+        await restartPodmanVM();
+        await extensionApi.window.showInformationMessage('Podman machine has restarted', 'Continue');
+      } else {
+        await extensionApi.window.showInformationMessage('Podman machine subscription-manager is installed');
       }
-      if (!isPodmanVmActivated()) {
-        activatePodmanVmRedHatSubscription();
+      await extensionApi.window.showInformationMessage('Check if developer subscription is activated', 'Continue');
+      const smRegistered = await isPodmanVmSubscriptionActivated();
+      if (!smRegistered) {
+        await extensionApi.window.showInformationMessage('Podman machine developer subscription is not activated. Activate?', 'Continue');
+        await createOrReuseActivationKey();
+        await extensionApi.window.showInformationMessage('Podman machine developer subscription has been activated');
       }
     }
 

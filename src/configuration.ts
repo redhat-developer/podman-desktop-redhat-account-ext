@@ -36,7 +36,7 @@ const REDHAT_AUTH_URL = process.env.REDHAT_SSO_URL
   ? process.env.REDHAT_SSO_URL
   : 'https://sso.redhat.com/auth/realms/redhat-external/';
 const KAS_API_URL = process.env.KAS_API_URL ? process.env.KAS_API_URL : 'https://api.openshift.com';
-const CLIENT_ID = process.env.CLIENT_ID ? process.env.CLIENT_ID : 'vscode-redhat-account';
+const CLIENT_ID = process.env.CLIENT_ID ? process.env.CLIENT_ID : 'podman-desktop';
 
 console.log('REDHAT_AUTH_URL: ' + REDHAT_AUTH_URL);
 console.log('KAS_API_URL: ' + KAS_API_URL);
