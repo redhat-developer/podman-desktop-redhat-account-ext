@@ -24,7 +24,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@podman-desktop/api": "^0.14.1",
+    "@podman-desktop/api": "^1.6.4",
     "@types/node": "^18.15.11",
     "js-yaml": "^4.1.0",
     "openid-client": "5.4.0"
