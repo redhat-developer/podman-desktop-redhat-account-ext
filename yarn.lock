@@ -210,10 +210,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@podman-desktop/api@^0.14.1":
-  version "0.14.1"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.14.1.tgz#866681249f87d187112c534c45691c4840ad3ce8"
-  integrity sha512-TMmCICU08iRxySAuMrVYcO2SNEI+AlP6e4dcHWNUhUlQs8OGWulF1fLjS7P/MG2LjNbM1sZusxkv9fBpzSqA6w==
+"@podman-desktop/api@^1.6.4":
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.6.4.tgz#f6da8228523e787f408d366f1d99d12a7b9e6924"
+  integrity sha512-8sxPcFvepxVM0iANq9h+QbnxAPAEE03KhrDTUp8AEzMPHZhascBSi11xhaLaDUujXVaKHUysEt0hh+0ccL479w==
 
 "@rollup/plugin-commonjs@^24.0.1":
   version "24.1.0"
