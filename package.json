@@ -26,6 +26,7 @@
   "dependencies": {
     "@podman-desktop/api": "^1.6.4",
     "@types/node": "^18.15.11",
+    "axios": "^1.6.5",
     "js-yaml": "^4.1.0",
     "openid-client": "5.4.0"
   },
