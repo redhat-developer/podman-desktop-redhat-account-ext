@@ -73,7 +73,6 @@ export async function runSubscriptionManager(): Promise<number | undefined> {
     await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_VERSION());
     return 0;
   } catch (err) {
-    await extensionApi.window.showErrorMessage((err as extensionApi.RunError).stderr);
     return (err as extensionApi.RunError).exitCode;
   }
 }
