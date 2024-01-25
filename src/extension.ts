@@ -29,45 +29,8 @@ import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
 import { RhsmClient } from './rhsm';
 
-const menuItemsRegistered: extensionApi.Disposable[] = [];
-
-const SignUpMenuItem = (enabled = true) => ({
-  id: 'redhat.authentication.signup',
-  label: 'Sign Up',
-  enabled,
-});
-
-const SignInMenuItem = (enabled = true) => ({
-  id: 'redhat.authentication.signin',
-  label: 'Sign In',
-  enabled,
-});
-
-const SignOutMenuItem = (enabled = false) => ({
-  id: 'redhat.authentication.signout',
-  label: 'Sign Out',
-  enabled,
-});
-
-const Separator: extensionApi.MenuItem = {
-  type: 'separator',
-  id: 'redhat.authentication.separator',
-};
-
-const AuthMenuItem: extensionApi.MenuItem = {
-  id: 'redhat.authentication',
-  label: 'Red Hat',
-};
-
-async function initMenu(extensionContext: extensionApi.ExtensionContext): Promise<void> {
-  AuthMenuItem.submenu = [SignInMenuItem(), SignOutMenuItem(), Separator, SignUpMenuItem()];
-
-  const subscription = extensionApi.tray.registerMenuItem(AuthMenuItem);
-  extensionContext.subscriptions.push(subscription);
-}
-
 let loginService: RedHatAuthenticationService;
-let currentSession: extensionApi.AuthenticationSession;
+let currentSession: extensionApi.AuthenticationSession | undefined;
 
 async function getAuthenticationService() {
   if (!loginService) {
@@ -96,13 +59,13 @@ function parseJwt (token: string) {
   return JSON.parse(jsonPayload);
 }
 
-async function signIntoRedHatDeveloperAccount(): Promise<extensionApi.AuthenticationSession> {
+async function signIntoRedHatDeveloperAccount(createIfNone = true): Promise<extensionApi.AuthenticationSession | undefined> {
   return extensionApi.authentication.getSession(
     'redhat.authentication-provider',
     ['api.iam.registry_service_accounts', //scope that gives access to hydra service accounts API
     'api.console', // scope that gives access to console.redhat.com APIs
     'id.username'], // adds claim to accessToken that used to render account label
-    {createIfNone: true} // will request to login in browser if session does not exists
+    {createIfNone} // will request to login in browser if session does not exists
   );
 }
 
@@ -119,7 +82,7 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
   const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USER_PROFILE;
-  const pathToAuthJson = path.join(homeFolderPath, '.config', 'containers', 'auth.json');
+  const pathToAuthJson = path.join(homeFolderPath!, '.config', 'containers', 'auth.json');
   let configured = false;
   try {
     // TODO: handle all kind problems with file existence, accessibility and parsable content
@@ -132,7 +95,7 @@ function isRedHatRegistryConfigured(): boolean {
         }  
       }
     } = JSON.parse(authFileContent);
-    configured =  authFileJson?.auths?.hasOwnProperty('registry.redhat.io');
+    configured =  authFileJson?.auths?.hasOwnProperty('registry.redhat.io') || false;
   } catch(_notAccessibleError) {
     // if file is not there, ignore and return default value
   }
@@ -141,63 +104,41 @@ function isRedHatRegistryConfigured(): boolean {
 
 async function createOrReuseRegistryServiceAccount(): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
-  const accessTokenJson = parseJwt(currentSession.accessToken);
+  const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new ContainerRegistryAuthorizerClient({
     BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
-    TOKEN: currentSession.accessToken
+    TOKEN: currentSession!.accessToken
   });
   const saApiV1 = client.serviceAccountsApiV1;
-  const response = await saApiV1.listServicesForAccountUsingGet(accessTokenJson.organization.id);
-  const sas = response.services as ServiceAccountV1[];
-  let selectedServiceAccount: ServiceAccountV1;
-  
-  // Check if service account record exists
-  if(sas.length === 1) {
-    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1(
-      sas[0].name,
-      accessTokenJson.organization.id
-    );
-  } else if (sas.length === 0) {
+  let selectedServiceAccount: ServiceAccountV1 | undefined
+  try {
+    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1('podman-desktop', accessTokenJson.organization.id);
+  } catch (err) {
+    // ignore error when there is no podman-desktop service account yet
     selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
       name: 'podman-desktop',
       description: 'Service account to use from Podman Desktop',
       redHatAccountId: accessTokenJson.organization.id,
     });
-  } else {
-    // there are several service accounts already 
-    // ask user which one to use
-    const qps:extensionApi.QuickPickItem[] = sas.map(sa=> ({label: sa.name, description: sa.description}));
-    const selectedName = await extensionApi.window.showQuickPick(qps, { title: 'Select Service Account to configure registry.redhat.io authentication', placeHolder: 'Service Account Name'});
-    if  (!selectedName) {
-      throw new Error('Cancelled');
-    }
-    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1(
-      selectedName.label,
-      accessTokenJson.organization.id
-    );
   }
-    createRegistry(selectedServiceAccount.credentials.username, selectedServiceAccount.credentials.password);
+
+  createRegistry(selectedServiceAccount!.credentials!.username!, selectedServiceAccount!.credentials!.password!);
 }
 
 async function  createOrReuseActivationKey() {
   const currentSession = await signIntoRedHatDeveloperAccount();
-  const accessTokenJson = parseJwt(currentSession.accessToken);
+  const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new RhsmClient({
     BASE: 'https://console.redhat.com/api/rhsm/v2',
-    TOKEN: currentSession.accessToken
+    TOKEN: currentSession!.accessToken
   });
-
-  let noAk = true;
 
   try {
     await client.activationKey.showActivationKey('podman-desktop');
-    noAk = false;
     // podman-desktop activation key exists
   } catch(err) {
     // ignore and continue with activation key creation
-  }
-
-  if (noAk) {
+    // TODO: add check that used role and usage exists in organization
     await client.activationKey.createActivationKeys({
       name: 'podman-desktop',
       role: 'RHEL Server',
@@ -246,8 +187,6 @@ async function restartPodmanVM() {
 export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
 
-  await initMenu(extensionContext);
-
   const providerDisposable = extensionApi.authentication.registerAuthenticationProvider(
     'redhat.authentication-provider',
     'Red Hat SSO', {
@@ -265,7 +204,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
       removeSession: async function (sessionId: string): Promise<void> {
         const service = await getAuthService();
         const session = await service.removeSession(sessionId);
-        onDidChangeSessions.fire({ removed: [session] });
+        onDidChangeSessions.fire({ removed: [session!] });
       },
     },
     {
@@ -274,54 +213,63 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
       },
     },
   );
+
+  extensionApi.authentication.onDidChangeSessions(async (e) => {
+      if(e.provider.id === 'redhat.authentication-provider') {
+        const newSession = await signIntoRedHatDeveloperAccount(false);
+        if (!currentSession && newSession) {
+          currentSession = newSession;
+          return extensionApi.commands.executeCommand('redhat.authentication.signin');
+        }
+
+        currentSession = newSession;
+      }
+  });
+
+  await signIntoRedHatDeveloperAccount(false);
+
   extensionContext.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
-    currentSession = await signIntoRedHatDeveloperAccount();
-    if (!isRedHatRegistryConfigured()) {
-      await createOrReuseRegistryServiceAccount();
-    }
-
-    await extensionApi.window.showInformationMessage('Check if Podman machine is running','Continue');
-    if (!isPodmanMachineRunning()) {
-      await extensionApi.window.showInformationMessage('Podman machine is not running','Exit');
-      return;
-    }
-    if (isPodmanMachineRunning()) {
-      await extensionApi.window.showInformationMessage('Podman machine is running','Continue');
-      const smIntalled = await isSubscriptionManagerInstalled();
-      if (!smIntalled) {
-        await extensionApi.window.showInformationMessage('Podman machine subscription-manager is not installed. Install?', 'Continue');
-        await installSubscriptionManger();
-        await extensionApi.window.showInformationMessage('The subscription-manager has been installed Podman machine is restarting', 'Continue');
-        await restartPodmanVM();
-        await extensionApi.window.showInformationMessage('Podman machine has restarted', 'Continue');
-      } else {
-        await extensionApi.window.showInformationMessage('Podman machine subscription-manager is installed');
+    const registryAccess = extensionApi.window.withProgress({
+        location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Configuring Red Hat Registry'
+      }, 
+      async (progress) => {
+        // Checking if registry account for https://registry.redhat.io is already configured 
+        if (!isRedHatRegistryConfigured()) {
+          // Logging into Red Hat Developer account using Red Hat SSO
+          progress.report({ increment: 30 });
+          await new Promise(resolve => setTimeout(resolve,5000));
+          // Configuring registry account for https://registry.redhat.io
+          progress.report({ increment: 60 });
+          await createOrReuseRegistryServiceAccount();
+        }
       }
-      await extensionApi.window.showInformationMessage('Check if developer subscription is activated', 'Continue');
-      const smRegistered = await isPodmanVmSubscriptionActivated();
-      if (!smRegistered) {
-        await extensionApi.window.showInformationMessage('Podman machine developer subscription is not activated. Activate?', 'Continue');
-        await createOrReuseActivationKey();
-        await extensionApi.window.showInformationMessage('Podman machine developer subscription has been activated');
+    );
+    
+    const vmActivation = extensionApi.window.withProgress({
+      location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Activating Red Hat Subscription'
+      }, async (progress) => {
+        if (!isPodmanMachineRunning()) {
+          await extensionApi.window.showInformationMessage('Podman machine is not running. Please start it and try again.');
+          return;
+        } else {
+          if (!(await isSubscriptionManagerInstalled())) {
+            await installSubscriptionManger();
+            await restartPodmanVM();
+          }
+          if (!(await isPodmanVmSubscriptionActivated())) {
+            await createOrReuseActivationKey();
+          }
+        }
       }
-    }
-
-    AuthMenuItem.label = `Red Hat (${currentSession.account.label})`;
-    AuthMenuItem.submenu = [SignInMenuItem(false), SignOutMenuItem(true), Separator, SignUpMenuItem()];
-    const subscription = extensionApi.tray.registerMenuItem(AuthMenuItem);
-    extensionContext.subscriptions.push(subscription);
+    );
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
-    loginService.removeSession(currentSession.id);
-    onDidChangeSessions.fire({ added: [], removed: [currentSession], changed: [] });
+    loginService.removeSession(currentSession!.id);
+    onDidChangeSessions.fire({ added: [], removed: [currentSession!], changed: [] });
     currentSession = undefined;
-    AuthMenuItem.label = `Red Hat`;
-    AuthMenuItem.submenu = [SignInMenuItem(true), SignOutMenuItem(false), Separator, SignUpMenuItem()];
-    const subscription = extensionApi.tray.registerMenuItem(AuthMenuItem);
-    extensionContext.subscriptions.push(subscription);
   });
 
   const SignUpCommand = extensionApi.commands.registerCommand('redhat.authentication.signup', async () => {
