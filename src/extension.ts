@@ -22,12 +22,11 @@ import {
   onDidChangeSessions,
   RedHatAuthenticationService,
 } from './authentication-service';
-import { ServiceAccountV1 } from './registry/models/ServiceAccountV1';
-import { ContainerRegistryAuthorizerClient } from './registry/ContainerRegistryAuthorizerClient';
+import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/cra-client';
 import path from 'node:path';
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
-import { RhsmClient } from './rhsm';
+import { RhsmClient } from '@redhat-developer/rhsm-client';
 
 let loginService: RedHatAuthenticationService;
 let currentSession: extensionApi.AuthenticationSession | undefined;
