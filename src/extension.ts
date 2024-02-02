@@ -22,11 +22,11 @@ import {
   onDidChangeSessions,
   RedHatAuthenticationService,
 } from './authentication-service';
-import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/cra-client';
+import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
-import { RhsmClient } from '@redhat-developer/rhsm-client';
+import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 
 let loginService: RedHatAuthenticationService;
 let currentSession: extensionApi.AuthenticationSession | undefined;
@@ -127,7 +127,7 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
 async function  createOrReuseActivationKey() {
   const currentSession = await signIntoRedHatDeveloperAccount();
   const accessTokenJson = parseJwt(currentSession!.accessToken);
-  const client = new RhsmClient({
+  const client = new SubscriptionManagerClient({
     BASE: 'https://console.redhat.com/api/rhsm/v2',
     TOKEN: currentSession!.accessToken
   });
