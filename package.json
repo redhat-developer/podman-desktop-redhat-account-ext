@@ -13,8 +13,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "redhat.auth.login",
-        "title": "Red Hat Authentication: login"
+        "command": "redhat.authentication.signin",
+        "title": "Red Hat SSO Provider: Sign In"
       }
     ]
   },
