@@ -110,7 +110,7 @@ jobs:
       - name: Build Image
         id: build-image
         run: |
-          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext :${{ needs.tag.outputs.extVersion }} .
+          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ needs.tag.outputs.extVersion }} .
           podman push quay.io/redhat-developer/podman-desktop-sandbox-ext:${{ needs.tag.outputs.extVersion }}
 
   release:
