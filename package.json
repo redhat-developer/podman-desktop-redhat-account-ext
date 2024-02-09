@@ -2,7 +2,7 @@
   "name": "redhat-authentication",
   "displayName": "Red Hat Authentication",
   "description": "Login to Red Hat Developers",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
@@ -26,7 +26,7 @@
   "dependencies": {
     "@podman-desktop/api": "^1.6.4",
     "@redhat-developer/rhcra-client": "^0.0.1",
-    "@redhat-developer/rhsm-client": "^0.0.4",
+    "@redhat-developer/rhsm-client": "^0.0.4  ",
     "@types/node": "^18.15.11",
     "axios": "^1.6.5",
     "js-yaml": "^4.1.0",
