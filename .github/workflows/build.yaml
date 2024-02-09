@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: ${{ inputs.runs-on }}
+    name: build
     runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 60
     env:
