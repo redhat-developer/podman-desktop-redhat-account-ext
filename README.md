@@ -13,18 +13,18 @@ Starting with Podman 5.0, subscription-manager will be shipped by default.  For 
 # Usage
 
 Once installed, you can find the extension in the Settings menu which you can find in the bottom left corner of Podman Desktop:
-![image](screenshots/settings.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v0.0.2-alpha.1/screenshots/settings.png)
 
 To sign into your Red Hat account, open the Authentication menu and click on the drop-down button:
-![image](screenshots/authentication-menu.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v0.0.2-alpha.1/screenshots/authentication-menu.png)
 
-To sign into your Red Had account, Podman Desktop will open Red Hat SSO in your browser of choice.  The SSO form will make sure that each user has accepted the terms and conditions, and has a valid Red Hat [developers subscription](https://developers.redhat.com/about?source=sso). If needed, you may also create a new Red Hat account and further use social login via an existing Google, Microsoft or GitHub accout:
-![image](screenshots/sso.png)
+To sign into your Red Had account, Podman Desktop will open Red Hat SSO in your browser of choice.  The SSO form will make sure that each user has accepted the terms and conditions, and has a valid Red Hat [developers subscription](https://developers.redhat.com/about?source=sso). If needed, you may also create a new Red Hat account and further use social login via an existing Google, Microsoft or GitHub account:
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v0.0.2-alpha.1/screenshots/sso.png)
 
 Once signed in, there is nothing further to be done. Podman Desktop will automatically use the SSO token to log into the Red Hat container registry and to register the Linux virtual machine (i.e., podman machine) via subscription-manager. The two tasks are listed in the Tasks menu which you can open on the bottom right of Podman Desktop:
-![image](screenshots/tasks.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v0.0.2-alpha.1/screenshots/tasks.png)
 
-To verify that the sign-in process was successfull, you may build the following Dockerfile:
+To verify that the sign-in process was successful, you may build the following Dockerfile:
 ```Dockerfile
 FROM registry.redhat.io/rhel9/toolbox
 RUN  dnf install -y kernel
