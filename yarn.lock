@@ -239,7 +239,7 @@
     axios "^1.6.7"
     form-data "^4.0.0"
 
-"@redhat-developer/rhsm-client@^0.0.4":
+"@redhat-developer/rhsm-client@^0.0.4  ":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@redhat-developer/rhsm-client/-/rhsm-client-0.0.4.tgz#152181f68dca1acf36813cb610c9e5887f9f92ef"
   integrity sha512-93Onlfg6z7WRffxPM2IcRaFZ8FEv0QeF2LBYaD7WY5hk4IZRoVBeqzUaT4Zd7hQ3Jw16wtuxoQfYUds7MBVOiQ==
