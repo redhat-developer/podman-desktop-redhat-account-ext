@@ -11,10 +11,6 @@
     "types": [
         "node",
     ],
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
 },
 "include": [
