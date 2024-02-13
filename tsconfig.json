@@ -1,16 +1,23 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "lib": ["ES2017","webworker"],
+    "lib": [
+        "ES2017",
+        "webworker"
+    ],
     "sourceMap": true,
     "rootDir": "src",
     "outDir": "dist",
     "skipLibCheck": true,
-    "types": ["node"],
-    "allowSyntheticDefaultImports": true,
-  },
-  "include": ["src"]
+    "types": [
+        "node",
+    ],
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+},
+"include": [
+    "src"
+]
 }
