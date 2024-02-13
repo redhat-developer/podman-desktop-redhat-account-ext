@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.branch }}
+
       - name: Generate tag utilities
         id: TAG_UTIL
         run: |
@@ -64,6 +65,7 @@ jobs:
           echo "Tagging with ${{ steps.TAG_UTIL.outputs.githubTag }}"
           git tag ${{ steps.TAG_UTIL.outputs.githubTag }}
           git push origin ${{ steps.TAG_UTIL.outputs.githubTag }}
+
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -77,43 +79,11 @@ jobs:
 
   build:
     needs: [tag]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.branch }}
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(npx yarn cache dir)" >> ${GITHUB_OUTPUT}
-
-      - uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Execute yarn
-        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
-        run: npx yarn --frozen-lockfile --network-timeout 180000
-
-      - name: Run Build
-        run: npx yarn build
-
-      - name: Login to quay.io
-        run: podman login --username ${{ secrets.QUAY_ROBOT_NAME }} --password ${{ secrets.QUAY_ROBOT_TOKEN }} quay.io
-
-      - name: Build Image
-        id: build-image
-        run: |
-          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ needs.tag.outputs.extVersion }} .
-          podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ needs.tag.outputs.extVersion }}
+    uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
+    with:
+      runs-on: ubuntu-latest
+      registry: quay
+      ext-version: ${{ needs.tag.outputs.extVersion }}
 
   release:
     needs: [tag, build]
@@ -121,12 +91,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: id
-        run: echo the release id is ${{ needs.tag.outputs.releaseId}}
+        run: echo the release id is ${{ needs.tag.outputs.releaseId }}
 
       - name: Publish release
         uses: StuYarrow/publish-release@v1.1.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          id: ${{ needs.tag.outputs.releaseId}}
+          id: ${{ needs.tag.outputs.releaseId }}
 
