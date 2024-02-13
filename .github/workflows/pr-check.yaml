@@ -23,7 +23,7 @@ jobs:
   pr-check-job:
     strategy:
       matrix:
-        target: [windows-2022, macos-11, ubuntu-20.04]
+        target: [windows-2022, macos-14, ubuntu-20.04]
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with:
       runs-on: ${{ matrix.target }}
