@@ -72,9 +72,16 @@ jobs:
         if: ${{ inputs.registry == 'ghrc' }}
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
-      - name: Build and Push Image
-        if: ${{ inputs.registry == 'ghrc' ||  inputs.registry == 'quay'}}
+      - name: Build and Push Image (Quay)
+        if: ${{ inputs.registry == 'quay' }}
         id: build-image
         run: |
           podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} .
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
+
+      - name: Build and Push Image (ghcr)
+        if: ${{ inputs.registry == 'hgcr' }}
+        id: build-image
+        run: |
+          podman build -t ghrc.io/redhat-developer/podman-desktop-redhat-account-ext:latest .
+          podman push ghrc.io/redhat-developer/podman-desktop-redhat-account-ext:latest
