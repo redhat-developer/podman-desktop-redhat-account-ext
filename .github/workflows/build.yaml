@@ -80,7 +80,7 @@ jobs:
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
       - name: Build and Push Image (ghcr)
-        if: ${{ inputs.registry == 'hgcr' }}
+        if: ${{ inputs.registry == 'ghcr' }}
         id: build-image-hgrc
         run: |
           podman build -t ghrc.io/redhat-developer/podman-desktop-redhat-account-ext:latest .
