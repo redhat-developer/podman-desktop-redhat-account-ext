@@ -83,7 +83,10 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
   const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USER_PROFILE;
-  const pathToAuthJson = path.join(homeFolderPath!, '.config', 'containers', 'auth.json');
+  if (!homeFolderPath) {
+    throw new Error('Unable to find home directory for the current user');
+  }
+  const pathToAuthJson = path.join(homeFolderPath, '.config', 'containers', 'auth.json');
   let configured = false;
   try {
     // TODO: handle all kind problems with file existence, accessibility and parsable content
