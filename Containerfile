@@ -18,9 +18,9 @@
 FROM scratch
 
 LABEL org.opencontainers.image.title="Red Hat Account" \
-        org.opencontainers.image.description="Allows the ability in Podman Desktop to login to Red Hat SSO" \
-        org.opencontainers.image.vendor="Red Hat" \
-        io.podman-desktop.api.version=">= 0.14.1"
+  org.opencontainers.image.description="Allows the ability in Podman Desktop to login to Red Hat SSO" \
+  org.opencontainers.image.vendor="Red Hat" \
+  io.podman-desktop.api.version=">= 1.7.0"
 
 COPY package.json /extension/
 COPY LICENSE /extension/

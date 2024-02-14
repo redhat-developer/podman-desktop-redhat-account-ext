@@ -2,7 +2,7 @@
   "name": "redhat-authentication",
   "displayName": "Red Hat Authentication",
   "description": "Login to Red Hat Developers",
-  "version": "0.0.1",
+  "version": "0.0.2-next",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
@@ -13,8 +13,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "redhat.auth.login",
-        "title": "Red Hat Authentication: login"
+        "command": "redhat.authentication.signin",
+        "title": "Red Hat SSO Provider: Sign In"
       }
     ]
   },
@@ -25,7 +25,10 @@
   },
   "dependencies": {
     "@podman-desktop/api": "^1.6.4",
+    "@redhat-developer/rhcra-client": "^0.0.1",
+    "@redhat-developer/rhsm-client": "^0.0.4  ",
     "@types/node": "^18.15.11",
+    "axios": "^1.6.5",
     "js-yaml": "^4.1.0",
     "openid-client": "5.4.0"
   },
@@ -41,8 +44,8 @@
     "rollup": "^3.20.4",
     "tslib": "^2.5.0",
     "typescript": "^5.0.4",
-    "vite": "^5.0.11",
-    "vitest": "^1.1.1",
+    "vite": "^5.0.12",
+    "vitest": "^1.2.0",
     "zip-local": "^0.3.5"
   }
 }
