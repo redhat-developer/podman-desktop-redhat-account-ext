@@ -68,6 +68,8 @@ async function signIntoRedHatDeveloperAccount(createIfNone = true): Promise<exte
   );
 }
 
+const REGISTRY_REDHAT_IO = 'registry.redhat.io';
+
 async function createRegistry(username: string, secret: string, serverUrl: string = 'registry.redhat.io'): Promise<void> {
   extensionApi.registry.registerRegistry({
     serverUrl,
