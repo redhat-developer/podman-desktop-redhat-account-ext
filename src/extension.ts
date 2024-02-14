@@ -96,7 +96,7 @@ function isRedHatRegistryConfigured(): boolean {
         }  
       }
     } = JSON.parse(authFileContent);
-    configured =  authFileJson?.auths?.hasOwnProperty('registry.redhat.io') || false;
+    configured =  authFileJson?.auths?.hasOwnProperty(REGISTRY_REDHAT_IO) || false;
   } catch(_notAccessibleError) {
     // if file is not there, ignore and return default value
   }
