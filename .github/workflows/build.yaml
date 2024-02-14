@@ -74,14 +74,14 @@ jobs:
 
       - name: Build and Push Image (Quay)
         if: ${{ inputs.registry == 'quay' }}
-        id: build-image
+        id: build-image-quay
         run: |
           podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} .
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
       - name: Build and Push Image (ghcr)
         if: ${{ inputs.registry == 'hgcr' }}
-        id: build-image
+        id: build-image-hgrc
         run: |
           podman build -t ghrc.io/redhat-developer/podman-desktop-redhat-account-ext:latest .
           podman push ghrc.io/redhat-developer/podman-desktop-redhat-account-ext:latest
