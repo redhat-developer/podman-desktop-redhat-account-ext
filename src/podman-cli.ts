@@ -73,31 +73,43 @@ export async function runSubscriptionManager(): Promise<number | undefined> {
     await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_VERSION());
     return 0;
   } catch (err) {
-    return (err as extensionApi.RunError).exitCode;
+    const exitCode = (err as extensionApi.RunError).exitCode;
+    console.error(`Subscription manager execution returned exit code: ${exitCode}`);
+    return exitCode;
   }
 }
 
-export async function runRpmInstallSubscriptionManager() {
+export async function runRpmInstallSubscriptionManager(): Promise<number | undefined> {
   try {
     await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
     return 0;
   } catch (err) {
-    return (err as extensionApi.RunError).exitCode;
+    const exitCode = (err as extensionApi.RunError).exitCode;
+    console.error(`Subscription manager installation returned exit code: ${exitCode}`);
+    return exitCode;
   }
 }
 
-export async function runSubscriptionManagerActivationStatus() {
+export async function runSubscriptionManagerActivationStatus(): Promise<number | undefined> {
   try {
     await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATION_STATUS());
     return 0;
   } catch (err) {
-    return (err as extensionApi.RunError).exitCode;
+    const exitCode = (err as extensionApi.RunError).exitCode;
+    console.error(`Subscription manager subscription activation check returned exit code: ${exitCode}`);
+    return exitCode;
   }
 }
 
-export async function runSubscriptionManagerRegister(activationKeyName: string, orgId: string): Promise<number> {
+export async function runSubscriptionManagerRegister(activationKeyName: string, orgId: string): Promise<number | undefined> {
+  try {
     const result = await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId));
     return 0;
+  } catch (err) {
+    const exitCode = (err as extensionApi.RunError).exitCode;
+    console.error(`Subscription manager registration returned exit code: ${exitCode}`);
+    return exitCode;
+  }
 }
 
 export async function restartPodmanMachine() {
