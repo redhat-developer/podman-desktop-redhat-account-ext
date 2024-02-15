@@ -69,12 +69,19 @@ jobs:
         run: podman login --username ${{ secrets.QUAY_ROBOT_NAME }} --password ${{ secrets.QUAY_ROBOT_TOKEN }} quay.io
 
       - name: Login to ghcr.io
-        if: ${{ inputs.registry == 'ghrc' }}
+        if: ${{ inputs.registry == 'ghcr' }}
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
-      - name: Build and Push Image
-        if: ${{ inputs.registry == 'ghrc' ||  inputs.registry == 'quay'}}
-        id: build-image
+      - name: Build and Push Image (quay.io)
+        if: ${{ inputs.registry == 'quay' }}
+        id: build-image-quay
         run: |
           podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} .
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
+
+      - name: Build and Push Image (ghcr.io)
+        if: ${{ inputs.registry == 'ghcr' }}
+        id: build-image-ghcr
+        run: |
+          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest .
+          podman push ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest
