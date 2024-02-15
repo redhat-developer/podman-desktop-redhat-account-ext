@@ -27,4 +27,4 @@ jobs:
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with: 
       runs-on: ubuntu-latest
-      registry: 'ghrc'
+      registry: 'ghcr'
