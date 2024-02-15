@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2022 - 2023 Red Hat, Inc.
+ * Copyright (C) 2022 - 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import {
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
-import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
+import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister, runSubscriptionManagerUnregister } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 
 let loginService: RedHatAuthenticationService;
@@ -75,6 +75,15 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
     serverUrl,
     username,
     secret,
+    source: ''
+  });
+}
+
+async function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): Promise<void> {
+  extensionApi.registry.unregisterRegistry({
+    serverUrl,
+    username:'',
+    secret: '',
     source: ''
   });
 }
@@ -206,6 +215,8 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
         return service.getSessions(scopes);
       },
       removeSession: async function (sessionId: string): Promise<void> {
+        await runSubscriptionManagerUnregister()
+        removeRegistry();
         const service = await getAuthService();
         const session = await service.removeSession(sessionId);
         onDidChangeSessions.fire({ removed: [session!] });
