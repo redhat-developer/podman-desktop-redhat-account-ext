@@ -80,6 +80,7 @@ jobs:
   build:
     needs: [tag]
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
+    secrets: inherit
     with:
       runs-on: ubuntu-latest
       registry: quay
