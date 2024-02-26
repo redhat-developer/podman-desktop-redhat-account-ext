@@ -27,6 +27,7 @@ import path from 'node:path';
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
+import { isLinux } from './util';
 
 let loginService: RedHatAuthenticationService;
 let currentSession: extensionApi.AuthenticationSession | undefined;
@@ -156,7 +157,7 @@ async function  createOrReuseActivationKey() {
 
 function isPodmanMachineRunning(): boolean {
   const conns = extensionApi.provider.getContainerConnections();
-  const startedPodman = conns.filter(conn => conn.providerId === 'podman' && conn.connection.status() === 'started');
+  const startedPodman = conns.filter(conn => conn.providerId === 'podman' && conn.connection.status() === 'started' && !conn.connection.endpoint.socketPath.startsWith("/run/user/"));
   return startedPodman.length === 1;
 }
 
@@ -255,7 +256,11 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
       location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Activating Red Hat Subscription'
       }, async (progress) => {
         if (!isPodmanMachineRunning()) {
-          await extensionApi.window.showInformationMessage('Podman machine is not running. Please start it and try again.');
+          if (isLinux()) {
+            await extensionApi.window.showInformationMessage('Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host.  Please start a Podman machine and try again.');
+          } else {
+            await extensionApi.window.showInformationMessage('Signing into a Red Hat account requires a running Podman machine.  Please start one and try again.');
+          }
           return;
         } else {
           if (!(await isSubscriptionManagerInstalled())) {
