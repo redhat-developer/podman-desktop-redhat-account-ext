@@ -111,17 +111,17 @@ export async function startServer(config: ServerConfig, server: http.Server): Pr
 }
 
 function sendFile(res: http.ServerResponse, filepath: string, contentType: string) {
-  fs.readFile(filepath, (err, body) => {
+  fs.stat(filepath, (err, stats) => {
     if (err) {
       console.error(err);
       res.writeHead(404);
       res.end();
     } else {
       res.writeHead(200, {
-        'Content-Length': body.length,
+        'Content-Length': stats.size,
         'Content-Type': contentType,
       });
-      res.end(body);
-    }
+      fs.createReadStream(filepath).pipe(res);
+    } 
   });
 }
