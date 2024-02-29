@@ -84,6 +84,7 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
     username,
     secret,
     source: '',
+    name: 'Red Hat Container Registry',
     icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
   });
 }
