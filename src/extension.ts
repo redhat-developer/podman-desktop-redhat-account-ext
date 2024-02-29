@@ -63,8 +63,7 @@ async function signIntoRedHatDeveloperAccount(createIfNone = true): Promise<exte
   return extensionApi.authentication.getSession(
     'redhat.authentication-provider',
     ['api.iam.registry_service_accounts', //scope that gives access to hydra service accounts API
-    'api.console', // scope that gives access to console.redhat.com APIs
-    'id.username'], // adds claim to accessToken that used to render account label
+    'api.console'], // scope that gives access to console.redhat.com APIs
     {createIfNone} // will request to login in browser if session does not exists
   );
 }
