@@ -324,10 +324,12 @@ export class RedHatAuthenticationService {
         const code_verifier = generators.codeVerifier();
         const code_challenge = generators.codeChallenge(code_verifier);
 
+        // email and id.username scopes required to render user name on Authentication Settings page
+        const defaultScopes = 'openid id.username email';
         const scope = scopes;
 
         const authUrl = this.client.authorizationUrl({
-          scope: `openid ${scope}`,
+          scope: `${defaultScopes} ${scope}`,
           resource: this.config.apiUrl,
           code_challenge,
           code_challenge_method: 'S256',
