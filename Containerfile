@@ -24,5 +24,6 @@ LABEL org.opencontainers.image.title="Red Hat Account" \
 
 COPY package.json /extension/
 COPY LICENSE /extension/
+COPY icon.png /extension/
 COPY README.md /extension/
 COPY dist /extension/dist
