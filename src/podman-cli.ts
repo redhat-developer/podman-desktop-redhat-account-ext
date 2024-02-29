@@ -25,7 +25,7 @@ const PODMAN_COMMANDS = {
   RPM_INSTALL_SM: () => 'machine ssh sudo rpm-ostree install -y subscription-manager'.split(' '),
   SM_ACTIVATION_STATUS: () => 'machine ssh sudo subscription-manager status'.split(' '),
   SM_ACTIVATE_SUBS: (activationKeyName: string, orgId: string) =>
-    `machine ssh sudo subscription-manager register --activationkey ${activationKeyName} --org ${orgId}`.split(' '),
+    `machine ssh sudo subscription-manager register --force --activationkey ${activationKeyName} --org ${orgId}`.split(' '),
   SM_DEACTIVATE_SUBS: () =>
     `machine ssh sudo subscription-manager unregister`.split(' '),
   MACHINE_STOP: () => 'machine stop'.split(' '),
