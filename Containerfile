@@ -27,3 +27,4 @@ COPY LICENSE /extension/
 COPY icon.png /extension/
 COPY README.md /extension/
 COPY dist /extension/dist
+COPY www /extension/www
