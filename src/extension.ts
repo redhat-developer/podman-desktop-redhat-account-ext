@@ -49,6 +49,14 @@ async function getAuthService() {
   return authService;
 }
 
+// function to encode file data to base64 encoded string
+function fileToBase64(file: string) {
+  // read binary data
+  var bitmap = readFileSync(file);
+  // convert binary data to base64 encoded string
+  return new Buffer(bitmap).toString('base64');
+}
+
 function parseJwt (token: string) {
   var base64Url = token.split('.')[1];
   var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -75,7 +83,9 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
     serverUrl,
     username,
     secret,
-    source: ''
+    source: '',
+    name: 'Red Hat Container Registry',
+    icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
   });
 }
 
