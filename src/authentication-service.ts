@@ -445,7 +445,7 @@ export class RedHatAuthenticationService {
       scope: scope,
       account: {
         id: claims.sub,
-        label: claims.preferred_username || claims.email || 'user@example.com',
+        label: claims.preferred_username || claims.email || 'email not found',
       },
     };
   }
