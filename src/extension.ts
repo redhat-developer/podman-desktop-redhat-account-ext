@@ -262,11 +262,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
       async (progress) => {
         // Checking if registry account for https://registry.redhat.io is already configured 
         if (!isRedHatRegistryConfigured()) {
-          // Logging into Red Hat Developer account using Red Hat SSO
           progress.report({ increment: 30 });
-          await new Promise(resolve => setTimeout(resolve,5000));
-          // Configuring registry account for https://registry.redhat.io
-          progress.report({ increment: 60 });
           await createOrReuseRegistryServiceAccount();
         }
       }
