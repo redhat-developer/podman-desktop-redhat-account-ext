@@ -84,8 +84,6 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
     username,
     secret,
     source: '',
-    name: 'Red Hat Container Registry',
-    icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
   });
 }
 
@@ -209,6 +207,12 @@ async function restartPodmanVM() {
 
 export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
+
+  extensionContext.subscriptions.push(extensionApi.registry.suggestRegistry({
+    name: 'Red Hat Container Registry',
+    icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
+    url: 'registry.redhat.io',
+  }));
 
   const providerDisposable = extensionApi.authentication.registerAuthenticationProvider(
     'redhat.authentication-provider',
