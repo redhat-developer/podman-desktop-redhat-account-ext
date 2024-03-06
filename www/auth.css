@@ -9,19 +9,13 @@
 
 body {
 	box-sizing: border-box;
-	min-height: 100%;
+	height: max-content;
 	margin: 0;
 	padding: 15px 30px;
 	display: flex;
 	flex-direction: column;
-}
-
-.message-container {
-	flex-grow: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin: 0 30px;
+  justify-content: center;
+  align-items: center;
 }
 
 .message {
@@ -31,6 +25,7 @@ body {
 
 body.error .message {
 	display: none;
+	margin: 30px;
 }
 
 body.error .error-message {
