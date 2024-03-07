@@ -36,6 +36,12 @@ RUN  dnf install -y kernel
 
 Pulling the container image `registry.redhat.io/rhel9/toolbox` requires having logged into the Red Hat container registry.  Installing the `kernel` package requires access to protected content.
 
+## Usage on Linux
+
+The extension requires a running Podman Machine which grants root privileges required to run subscription-manager.  In order to create a Podman Machine you may run `podman machine init` in your terminal; Podman Desktop and the extension will then be able to use that Podman Machine.
+
+From a technical perspective, the extension is not required when running on Linux.  You can run `podman login registry.redhat.io` and `subscription-manager register` with the credentials of your Red Hat account.  `subscription-manager` is available on Fedora, CentOS, and Red Hat Enterprise Linux.
+
 # Local Development
 
 To rebuild Podman Desktop and the extension run:
