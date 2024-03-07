@@ -6,7 +6,7 @@ An extension for Podman Desktop to simplify logging into and creating a Red Hat 
 
 The extension is currently available in an Alpha version but ready to test.  Extension for Podman Desktop are shipped as OCI container images.  Please refer to the [Podman Desktop documentation](https://podman-desktop.io/docs/extensions/install) for installation instructions and to [Quay.io](https://quay.io/repository/redhat-developer/podman-desktop-redhat-account-ext?tab=tags) for available tags.
 
-The latest available Alpha image is `quay.io/redhat-developer/podman-desktop-redhat-account-ext:0.0.2-alpha.2`.
+The latest available image is `quay.io/redhat-developer/podman-desktop-redhat-account-ext:0.0.2`.
 
 Starting with Podman 5.0, subscription-manager will be shipped by default.  For prior versions, the extension will take care of installing subscription-manager which may take a short while and requires a reboot.
 
