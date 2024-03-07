@@ -1,4 +1,4 @@
-# Podman Desktop Red Hat SSO Extension
+# Podman Desktop Red Hat Account Extension
 
 An extension for Podman Desktop to simplify logging into and creating a Red Hat account.  The extension opens sso.redhat.com in the browser to retrieve an SSO token upon successful login.  The SSO token is then used to log into the [registry.redhat.io](https://catalog.redhat.com/) Container Registry and to register the Linux virtual machine powering Podman Desktop via subscription-manager to grant the containers access to protected Red Hat content such as RHEL repositories.
 
