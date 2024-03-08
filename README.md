@@ -37,7 +37,7 @@ RUN  dnf install -y kernel
 Pulling the container image `registry.redhat.io/rhel9/toolbox` requires having logged into the Red Hat container registry.  Installing the `kernel` package requires access to protected content.
 
 Once signed in, you can now see being logged into the Red Hat Container Registry `registry.redhat.io` in the Registries menu:
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/main/screenshots/registries.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/0.0.2/screenshots/registries.png)
 
 ## Usage on Linux
 
