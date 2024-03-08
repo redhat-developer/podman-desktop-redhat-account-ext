@@ -246,7 +246,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
     },
   );
 
-  extensionApi.authentication.onDidChangeSessions(async (e) => {
+  const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async (e) => {
     if(e.provider.id === 'redhat.authentication-provider') {
       const newSession = await signIntoRedHatDeveloperAccount(false);
       if (!currentSession && newSession) {
@@ -320,7 +320,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
     );
   });
 
-  extensionContext.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand);
+  extensionContext.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable);
 }
 
 export function deactivate(): void {
