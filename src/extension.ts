@@ -272,7 +272,6 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
           progress.report({ increment: 30 });
           await createOrReuseRegistryServiceAccount();
         }
-        await new Promise((_, reject)=>setTimeout(reject, 5000));
       }
     ).then(() => false
     ).catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
