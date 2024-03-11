@@ -3,4 +3,5 @@ builtin
 dist
 node_modules
 redhat-authentication.cdix
+**/tests/output
  
