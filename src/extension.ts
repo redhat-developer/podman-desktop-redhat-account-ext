@@ -54,7 +54,7 @@ function fileToBase64(file: string) {
   // read binary data
   var bitmap = readFileSync(file);
   // convert binary data to base64 encoded string
-  return new Buffer(bitmap).toString('base64');
+  return bitmap.toString('base64');
 }
 
 function parseJwt (token: string) {
