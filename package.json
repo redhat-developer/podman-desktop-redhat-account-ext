@@ -21,7 +21,8 @@
   "scripts": {
     "build": "rollup --bundleConfigAsCjs --config rollup.config.js --compact --environment BUILD:production  && node ./scripts/build.js",
     "watch": "rollup --bundleConfigAsCjs --config rollup.config.js -w",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "test:e2e": "PODMAN_DESKTOP_ARGS='/home/odockal/git/podman-desktop' vitest run tests/src/sso-extension.spec.ts --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
   },
   "dependencies": {
     "@podman-desktop/api": "^1.6.4",
@@ -40,12 +41,15 @@
     "@rollup/plugin-typescript": "^11.1.0",
     "@types/js-yaml": "^4.0.5",
     "@vitest/coverage-v8": "^1.2.1",
+    "@playwright/test": "^1.42.1",
     "mkdirp": "^2.1.3",
+    "podman-desktop-tester": "0.0.1",
     "rollup": "^3.20.4",
     "tslib": "^2.5.0",
     "typescript": "^5.0.4",
     "vite": "^5.0.12",
-    "vitest": "^1.2.0",
+    "vitest": "^1.3.1",
+    "vitest-tsconfig-paths": "3.4.1",
     "zip-local": "^0.3.5"
   }
 }
