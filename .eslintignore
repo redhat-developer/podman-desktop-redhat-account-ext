@@ -1,0 +1,7 @@
+test-resources
+scripts
+builtin/**
+www
+*.config.js
+types/**/*.ts
+__mocks__
