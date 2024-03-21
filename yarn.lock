@@ -312,10 +312,10 @@
   dependencies:
     esquery "^1.4.0"
 
-"@podman-desktop/api@^1.6.4":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.8.0.tgz#03205b1b1685c4208a0739d99ac23bb4c749da60"
-  integrity sha512-z+eTWLQOdhSNxz4KtgMmCaCjghCYPsXoxrMN2NZdDxwoljWmVNB7Q3X/+s1cl7r3hrjwnS6EfZzoYJWQgx9WCQ==
+"@podman-desktop/api@0.0.202403201348-23ebd88":
+  version "0.0.202403201348-23ebd88"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.0.202403201348-23ebd88.tgz#35967578523a7190122765c99d12397d7a69c871"
+  integrity sha512-UQn/rPyH4L1gS7kHaJJmIltAMenJWARk2kRfUMsGQ9V6e9VXC13dcY0UfOTIhu+uRwRziQ6CRfJc4q1lGKmxZw==
 
 "@redhat-developer/rhcra-client@^0.0.1":
   version "0.0.1"
