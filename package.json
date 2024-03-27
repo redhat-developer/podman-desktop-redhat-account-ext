@@ -16,7 +16,16 @@
         "command": "redhat.authentication.signin",
         "title": "Red Hat SSO Provider: Sign In"
       }
-    ]
+    ],
+    "icons": {
+      "redhat-icon": {
+        "description": "Red Hat icon",
+        "default": {
+          "fontPath": "redhat.woff2",
+          "fontCharacter": "\\e900"
+        }
+      }
+    }
   },
   "scripts": {
     "build": "rollup --bundleConfigAsCjs --config rollup.config.js --compact --environment BUILD:production  && node ./scripts/build.js",
