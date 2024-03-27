@@ -16,13 +16,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { afterEach, expect, beforeEach, test, vi, vitest } from 'vitest';
-import { convertToSession } from './authentication-service';
+import { beforeEach, expect, test, vi } from 'vitest';
+import { RedHatAuthenticationService, convertToSession } from './authentication-service';
+import { AuthenticationProvider, ExtensionContext, authentication } from '@podman-desktop/api';
+import { TokenSet, Issuer, BaseClient } from 'openid-client';
+import { getAuthConfig } from './configuration';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
-    EventEmitter: function() {}
+    EventEmitter: vi.fn().mockImplementation(() => {
+      return {
+        fire: vi.fn(),
+      };
+    }),
+    registry: {
+      suggestRegistry: vi.fn(),
+    },
+    authentication: {
+      registerAuthenticationProvider: vi.fn(),
+      onDidChangeSessions: vi.fn(),
+      getSession: vi.fn(),
+    },
+    commands: {
+      registerCommand: vi.fn(),
+    },
   };
+});
+
+beforeEach(() => {
+  vi.restoreAllMocks();
 });
 
 test('An authentication token is converted to a session', () => {
@@ -39,10 +61,69 @@ test('An authentication token is converted to a session', () => {
     expiresAt: Date.now() + 777777777,
     expiresIn: 777777,
   };
-  const session = convertToSession(token)
+  const session = convertToSession(token);
   expect(session.id).equals(token.sessionId);
   expect(session.accessToken).equals(token.accessToken);
   expect(session.idToken).equals(token.idToken);
-  expect(session.account).equals(token.account);;
+  expect(session.account).equals(token.account);
   expect(session.scopes).contain('openid');
+});
+
+test('Authentication service loads tokens form secret storage during initialization', async () => {
+  vi.spyOn(Issuer, 'discover').mockImplementation(async (url: string) => {
+    return {
+      Client: vi.fn().mockImplementation(() => {
+        return {
+          refresh: vi.fn().mockImplementation((refreshToken: string): TokenSet => {
+            return {
+              claims: vi.fn().mockImplementation(() => {
+                return {
+                  sub: 'subscriptionId',
+                  preferred_username: 'username',
+                };
+              }),
+              expired: vi.fn().mockImplementation(() => false),
+              expires_in: 15 * 60, // in seconds
+              id_token: 'id_token_string',
+              access_token: 'access_token_string',
+              refresh_token: 'refresh_token_string',
+              session_state: 'session_state_string',
+            };
+          }),
+          authorizationUrl: vi.fn().mockImplementation(() => {}),
+          callback: vi.fn(),
+          callbackParams: vi.fn(),
+        };
+      }),
+    } as unknown as Issuer<BaseClient>;
+  });
+
+  let provider: AuthenticationProvider;
+  vi.mocked(authentication.registerAuthenticationProvider).mockImplementation((_id, _label, ssoProvider) => {
+    provider = ssoProvider;
+    return {
+      dispose: vi.fn(),
+    };
+  });
+  const extensionContext: ExtensionContext = {
+    secrets: {
+      get: vi.fn().mockImplementation(() => {
+        return JSON.stringify([
+          {
+            refreshToken: 'refreshTokenString',
+            scope: 'openid scope1 scope3 scope4',
+            id: 'uniqueId1',
+          },
+        ]);
+      }),
+      store: vi.fn(),
+      delete: vi.fn(),
+      onDidChange: vi.fn(),
+    },
+    subscriptions: [],
+  } as unknown as ExtensionContext;
+  const service = await RedHatAuthenticationService.build(extensionContext, getAuthConfig());
+  await service.initialize();
+  expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
+  expect((await service.getSessions(['scope1', 'scope3', 'scope4'])).length).toBe(0);
 });
