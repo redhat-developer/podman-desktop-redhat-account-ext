@@ -41,24 +41,18 @@ const CLIENT_ID = process.env.CLIENT_ID ? process.env.CLIENT_ID : 'podman-deskto
 console.log('REDHAT_AUTH_URL: ' + REDHAT_AUTH_URL);
 console.log('KAS_API_URL: ' + KAS_API_URL);
 console.log('CLIENT_ID: ' + KAS_API_URL);
-export async function getAuthConfig(): Promise<AuthConfig> {
+
+export function getAuthConfig(): AuthConfig {
   return {
     serviceId: 'redhat-account-auth',
     authUrl: REDHAT_AUTH_URL,
     apiUrl: KAS_API_URL,
     clientId: CLIENT_ID,
-    serverConfig: await getServerConfig(SSO_REDHAT),
+    serverConfig: getServerConfig(SSO_REDHAT),
   };
 }
 
-export async function getServerConfig(type: AuthType): Promise<ServerConfig> {
-  // if (process.env['CHE_WORKSPACE_ID']) {
-  //     return getCheServerConfig(type);
-  // }
-  return getLocalServerConfig(type);
-}
-
-async function getLocalServerConfig(type: AuthType): Promise<ServerConfig> {
+export function getServerConfig(type: AuthType): ServerConfig {
   return {
     callbackPath: `${type}-callback`,
     externalUrl: 'http://localhost',

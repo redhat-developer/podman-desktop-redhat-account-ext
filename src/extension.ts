@@ -29,24 +29,11 @@ import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscription
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
 
-let loginService: RedHatAuthenticationService;
+let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
 
 async function getAuthenticationService() {
-  if (!loginService) {
-    const config = await getAuthConfig();
-    loginService = await RedHatAuthenticationService.build(config);
-  }
-  return loginService;
-}
-
-let authService: RedHatAuthenticationService;
-
-async function getAuthService() {
-  if (!authService) {
-    authService = await getAuthenticationService();
-  }
-  return authService;
+  return authenticationServicePromise;
 }
 
 // function to encode file data to base64 encoded string
@@ -209,15 +196,22 @@ async function removeSession(sessionId: string): Promise<void> {
   runSubscriptionManagerUnregister()
     .catch(console.error); // ignore error in case vm subscription activation failed on login
   removeRegistry(); // never fails, even if registry does not exist
-  const service = await getAuthService();
+  const service = await getAuthenticationService();
   const session = await service.removeSession(sessionId);
   onDidChangeSessions.fire({ removed: [session!] });
 }
 
-export async function activate(extensionContext: extensionApi.ExtensionContext): Promise<void> {
+export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
-
-  extensionContext.subscriptions.push(extensionApi.registry.suggestRegistry({
+  if (!authenticationServicePromise) {
+    authenticationServicePromise = RedHatAuthenticationService.build(context, getAuthConfig())
+      .then(service => {
+        context.subscriptions.push(service);
+        service.initialize();
+        return service;
+    });
+  }
+  context.subscriptions.push(extensionApi.registry.suggestRegistry({
     name: 'Red Hat Container Registry',
     icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
     url: 'registry.redhat.io',
@@ -228,13 +222,13 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
     'Red Hat SSO', {
       onDidChangeSessions: onDidChangeSessions.event,
       createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
-        const service = await getAuthService();
+        const service = await getAuthenticationService();
         const session = await service.createSession(scopes.sort().join(' '));
         onDidChangeSessions.fire({ added: [session] });
         return session;
       },
       getSessions: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession[]> {
-        const service = await getAuthService();
+        const service = await getAuthenticationService();
         return service.getSessions(scopes);
       },
       removeSession,
@@ -259,7 +253,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
 
   await signIntoRedHatDeveloperAccount(false);
 
-  extensionContext.subscriptions.push(providerDisposable);
+  context.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
 
@@ -309,7 +303,8 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
-    loginService.removeSession(currentSession!.id);
+    const service = await getAuthenticationService();
+    service.removeSession(currentSession!.id);
     onDidChangeSessions.fire({ added: [], removed: [currentSession!], changed: [] });
     currentSession = undefined;
   });
@@ -320,7 +315,7 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
     );
   });
 
-  extensionContext.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable);
+  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable);
 }
 
 export function deactivate(): void {

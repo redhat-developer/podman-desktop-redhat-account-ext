@@ -29,7 +29,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@podman-desktop/api": "^1.6.4",
+    "@podman-desktop/api": "0.0.202403201348-23ebd88",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4  ",
     "@types/node": "^18.15.11",

@@ -19,12 +19,11 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent, env, Uri } from '@podman-desktop/api';
+import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent, env, Uri, ExtensionContext, Disposable } from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
 import { createServer, startServer } from './authentication-server';
 import { AuthConfig } from './configuration';
-import { Keychain } from './keychain';
 import Logger from './logger';
 
 interface IToken {
@@ -92,11 +91,11 @@ export class RedHatAuthenticationService {
   private _tokens: IToken[] = [];
   private _refreshTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>();
   //private _uriHandler: UriEventHandler;
+  private _disposables: Disposable[] = [];
   private client: Client;
-  private keychain: Keychain;
   private config: AuthConfig;
 
-  constructor(issuer: Issuer<Client>, config: AuthConfig) {
+  constructor(issuer: Issuer<Client>, private context: ExtensionContext, config: AuthConfig) {
     //this._uriHandler = new UriEventHandler();
     //this._disposables.push(vscode.window.registerUriHandler(this._uriHandler));
     this.config = config;
@@ -105,19 +104,18 @@ export class RedHatAuthenticationService {
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
     });
-    this.keychain = new Keychain(config.serviceId);
   }
 
-  public static async build(config: AuthConfig): Promise<RedHatAuthenticationService> {
+  public static async build(context: ExtensionContext, config: AuthConfig): Promise<RedHatAuthenticationService> {
     Logger.info(`Configuring ${config.serviceId} {auth: ${config.authUrl}, api: ${config.apiUrl}}`);
     const issuer = await Issuer.discover(config.authUrl);
 
-    const provider = new RedHatAuthenticationService(issuer, config);
+    const provider = new RedHatAuthenticationService(issuer, context, config);
     return provider;
   }
 
   public async initialize(): Promise<void> {
-    const storedData = await this.keychain.getToken();
+    const storedData = await this.context.secrets.get(this.config.serviceId);
     if (storedData) {
       try {
         const sessions = this.parseStoredData(storedData);
@@ -159,6 +157,10 @@ export class RedHatAuthenticationService {
         Logger.info('Failed to initialize stored data');
         await this.clearSessions();
       }
+
+      this._disposables.push(this.context.secrets.onDidChange(() => {
+        this.checkForUpdates();
+      }));
     }
   }
 
@@ -167,7 +169,7 @@ export class RedHatAuthenticationService {
   }
 
   private async storeTokenData(): Promise<void> {
-    const serializedData: IStoredSession[] = this._tokens.map(token => {
+    const storedSessions: IStoredSession[] = this._tokens.map(token => {
       return {
         id: token.sessionId,
         refreshToken: token.refreshToken,
@@ -176,13 +178,13 @@ export class RedHatAuthenticationService {
       };
     });
 
-    await this.keychain.setToken(JSON.stringify(serializedData));
+    await this.context.secrets.store(this.config.serviceId, JSON.stringify(storedSessions));
   }
 
   private async checkForUpdates(): Promise<void> {
     const added: RedHatAuthenticationSession[] = [];
     let removed: RedHatAuthenticationSession[] = [];
-    const storedData = await this.keychain.getToken();
+    const storedData = await this.context.secrets.get(this.config.serviceId);
     if (storedData) {
       try {
         const sessions = this.parseStoredData(storedData);
@@ -394,6 +396,11 @@ export class RedHatAuthenticationService {
     response.end();
   }
 
+	public dispose(): void {
+		this._disposables.forEach(disposable => disposable.dispose());
+		this._disposables = [];
+	}
+
   private async setToken(token: IToken, scope: string): Promise<void> {
     const existingTokenIndex = this._tokens.findIndex(t => t.sessionId === token.sessionId);
     if (existingTokenIndex > -1) {
@@ -546,7 +553,7 @@ export class RedHatAuthenticationService {
       session = convertToSession(token);
     }
     if (this._tokens.length === 0) {
-      await this.keychain.deleteToken();
+      await this.context.secrets.delete(this.config.serviceId);
     } else {
       this.storeTokenData();
     }
@@ -556,7 +563,7 @@ export class RedHatAuthenticationService {
   public async clearSessions() {
     Logger.info('Logging out of all sessions');
     this._tokens = [];
-    await this.keychain.deleteToken();
+    await this.context.secrets.delete(this.config.serviceId);
 
     this._refreshTimeouts.forEach(timeout => {
       clearTimeout(timeout);
