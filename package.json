@@ -21,7 +21,7 @@
       "redhat-icon": {
         "description": "Red Hat icon",
         "default": {
-          "fontPath": "redhat.woff2",
+          "fontPath": "redhat-icon.woff2",
           "fontCharacter": "\\e900"
         }
       }
