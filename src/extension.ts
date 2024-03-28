@@ -24,10 +24,11 @@ import {
 } from './authentication-service';
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
-import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
+import { accessSync, constants, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister, runSubscriptionManagerUnregister } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
+import { SSOStatusBarItem } from './status-bar-item';
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
@@ -203,13 +204,22 @@ async function removeSession(sessionId: string): Promise<void> {
 
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
+  const statusBarItem = new SSOStatusBarItem();
+  statusBarItem.show()
+  context.subscriptions.push(statusBarItem);
   if (!authenticationServicePromise) {
     authenticationServicePromise = RedHatAuthenticationService.build(context, getAuthConfig())
       .then(service => {
         context.subscriptions.push(service);
-        service.initialize();
-        return service;
-    });
+        return service.initialize().then(() => service);
+      })
+      .then(service => {
+        return service.getSessions().then(sessions => {
+          if (sessions.length > 0) {
+            statusBarItem.logInAs(sessions[0].account.label);
+          }
+        }).then(() => service);
+      });
   }
   context.subscriptions.push(extensionApi.registry.suggestRegistry({
     name: 'Red Hat Container Registry',
@@ -240,14 +250,18 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     },
   );
 
-  const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async (e) => {
-    if(e.provider.id === 'redhat.authentication-provider') {
+  const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async e => {
+    if (e.provider.id === 'redhat.authentication-provider') {
       const newSession = await signIntoRedHatDeveloperAccount(false);
       if (!currentSession && newSession) {
         currentSession = newSession;
+        statusBarItem.logInAs(newSession.account.label);
         return extensionApi.commands.executeCommand('redhat.authentication.signin');
       }
       currentSession = newSession;
+      if (!newSession) {
+        statusBarItem.logOut();
+      }
     }
   });
 
