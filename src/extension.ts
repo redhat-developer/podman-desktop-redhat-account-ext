@@ -24,14 +24,14 @@ import {
 } from './authentication-service';
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
-import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
+import { accessSync, constants, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister, runSubscriptionManagerUnregister } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
+import { SSOStatusBarItem } from './status-bar-item';
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
-let statusBarItem: extensionApi.StatusBarItem = extensionApi.window.createStatusBarItem(extensionApi.StatusBarAlignLeft, 50);
 
 async function getAuthenticationService() {
   return authenticationServicePromise;
@@ -204,10 +204,8 @@ async function removeSession(sessionId: string): Promise<void> {
 
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
-  statusBarItem.iconClass = '${redhat-icon}'
-  statusBarItem.tooltip = 'Red Hat SSO: logged out';
-  statusBarItem.command = 'redhat.authentication.signin';
-  statusBarItem.show();
+  const statusBarItem = new SSOStatusBarItem();
+  statusBarItem.show()
   context.subscriptions.push(statusBarItem);
   if (!authenticationServicePromise) {
     authenticationServicePromise = RedHatAuthenticationService.build(context, getAuthConfig())
@@ -218,8 +216,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       .then(service => {
         return service.getSessions().then(sessions => {
           if (sessions.length > 0) {
-            statusBarItem.tooltip = `Red Hat SSO: logged in as ${sessions[0].account.label}`;
-            statusBarItem.command = '';
+            statusBarItem.logInAs(sessions[0].account.label);
           }
         }).then(() => service);
       });
@@ -258,14 +255,12 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       const newSession = await signIntoRedHatDeveloperAccount(false);
       if (!currentSession && newSession) {
         currentSession = newSession;
-        statusBarItem.tooltip = `Red Hat SSO: logged in as ${newSession.account.label}`
-        statusBarItem.command = undefined;
+        statusBarItem.logInAs(newSession.account.label);
         return extensionApi.commands.executeCommand('redhat.authentication.signin');
       }
       currentSession = newSession;
       if (!newSession) {
-        statusBarItem.tooltip = 'Red Hat SSO: logged out';
-        statusBarItem.command = 'redhat.authentication.signin';
+        statusBarItem.logOut();
       }
     }
   });
