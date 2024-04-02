@@ -202,25 +202,27 @@ async function removeSession(sessionId: string): Promise<void> {
   onDidChangeSessions.fire({ removed: [session!] });
 }
 
+async function buildAndInitializeAuthService(context: extensionApi.ExtensionContext, statusBarItem: SSOStatusBarItem) {
+  const service = await RedHatAuthenticationService.build(context, getAuthConfig())
+  context.subscriptions.push(service);
+  await service.initialize();
+  const storedSessions = await service.getSessions();
+  if (storedSessions.length > 0) {
+    statusBarItem.logInAs(storedSessions[0].account.label);
+  }
+  return service;
+}
+
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
+
+  // create status bar item for Red Hat SSO Provider
   const statusBarItem = new SSOStatusBarItem();
-  statusBarItem.show()
+  statusBarItem.show();
   context.subscriptions.push(statusBarItem);
-  if (!authenticationServicePromise) {
-    authenticationServicePromise = RedHatAuthenticationService.build(context, getAuthConfig())
-      .then(service => {
-        context.subscriptions.push(service);
-        return service.initialize().then(() => service);
-      })
-      .then(service => {
-        return service.getSessions().then(sessions => {
-          if (sessions.length > 0) {
-            statusBarItem.logInAs(sessions[0].account.label);
-          }
-        }).then(() => service);
-      });
-  }
+
+  // build and initialize auth service and update status bar state
+  authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
   context.subscriptions.push(extensionApi.registry.suggestRegistry({
     name: 'Red Hat Container Registry',
     icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
