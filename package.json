@@ -15,6 +15,10 @@
       {
         "command": "redhat.authentication.signin",
         "title": "Red Hat SSO Provider: Sign In"
+      },
+      {
+        "command": "redhat.authentication.navigate.settings",
+        "title": "Red Hat SSO Provider: Navigate to Authentication Settings"
       }
     ],
     "icons": {
@@ -38,7 +42,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
-    "@podman-desktop/api": "0.0.202403201348-23ebd88",
+    "@podman-desktop/api": "^1.9.0",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4  ",
     "@types/node": "^18.15.11",

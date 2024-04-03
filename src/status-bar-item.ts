@@ -32,7 +32,7 @@ export class SSOStatusBarItem implements Disposable {
 
   public logInAs(email: string) {
     this.#statusBarItem.tooltip = `Red Hat SSO: Logged in as ${email}`;
-    this.#statusBarItem.command = 'redhat.authentication.goto.authentication';
+    this.#statusBarItem.command = 'redhat.authentication.navigate.settings';
   }
 
   public logOut() {
