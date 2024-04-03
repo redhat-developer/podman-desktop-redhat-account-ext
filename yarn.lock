@@ -312,10 +312,10 @@
   dependencies:
     esquery "^1.4.0"
 
-"@podman-desktop/api@0.0.202403201348-23ebd88":
-  version "0.0.202403201348-23ebd88"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.0.202403201348-23ebd88.tgz#35967578523a7190122765c99d12397d7a69c871"
-  integrity sha512-UQn/rPyH4L1gS7kHaJJmIltAMenJWARk2kRfUMsGQ9V6e9VXC13dcY0UfOTIhu+uRwRziQ6CRfJc4q1lGKmxZw==
+"@podman-desktop/api@^1.9.0":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.9.0.tgz#5520b719da555f999c4d42184549a054d680c852"
+  integrity sha512-QFPnl+kYxWdAqoKDRplyqBDNoQj15FLtqCbYW1sq19U4OJP/BXZ9r4SNF8ndvQnBXXvATjUeCC/VAjUuwf5lqQ==
 
 "@redhat-developer/rhcra-client@^0.0.1":
   version "0.0.1"
@@ -325,7 +325,7 @@
     axios "^1.6.7"
     form-data "^4.0.0"
 
-"@redhat-developer/rhsm-client@^0.0.4  ":
+"@redhat-developer/rhsm-client@^0.0.4":
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/@redhat-developer/rhsm-client/-/rhsm-client-0.0.4.tgz#152181f68dca1acf36813cb610c9e5887f9f92ef"
   integrity sha512-93Onlfg6z7WRffxPM2IcRaFZ8FEv0QeF2LBYaD7WY5hk4IZRoVBeqzUaT4Zd7hQ3Jw16wtuxoQfYUds7MBVOiQ==
