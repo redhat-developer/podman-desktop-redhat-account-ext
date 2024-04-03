@@ -331,7 +331,14 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     );
   });
 
-  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable);
+  const GotoAuthCommand = extensionApi.commands.registerCommand(
+    'redhat.authentication.navigate.settings',
+    async () => {
+      extensionApi.navigation.navigateToAuthentication();
+    },
+  );
+
+  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable, GotoAuthCommand);
 }
 
 export function deactivate(): void {
