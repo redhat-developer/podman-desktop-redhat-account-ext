@@ -36,6 +36,8 @@ import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
 import { SSOStatusBarItem } from './status-bar-item';
 
+export const TelemetryLogger = extensionApi.env.createTelemetryLogger();
+
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
 
@@ -300,6 +302,10 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   context.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
+    const telemetryData = {
+      successful: true,
+    };
+
     await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
 
     const registryAccess = extensionApi.window
@@ -317,7 +323,9 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
         },
       )
       .then(() => false)
-      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+      .catch((error) => {
+        return true; // required to force Promise.all() call keep waiting for all not failed calls
+      });
 
     const vmActivation = extensionApi.window
       .withProgress(
@@ -354,13 +362,19 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
         },
       )
       .then(() => false)
-      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+      .catch((error) => {
+        return true; // required to force Promise.all() call keep waiting for all not failed calls
+      });
 
     const failed = await Promise.all([registryAccess, vmActivation]); // wait for all fail or pass
 
     if (failed.some(fail => fail) && currentSession?.id) {
       removeSession(currentSession.id); // if at least one fail, remove session
+      telemetryData.successful = false;
     }
+
+    TelemetryLogger.logUsage('signin', telemetryData);
+
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
@@ -368,6 +382,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     service.removeSession(currentSession!.id);
     onDidChangeSessions.fire({ added: [], removed: [currentSession!], changed: [] });
     currentSession = undefined;
+    TelemetryLogger.logUsage('signout');
   });
 
   const SignUpCommand = extensionApi.commands.registerCommand('redhat.authentication.signup', async () => {
