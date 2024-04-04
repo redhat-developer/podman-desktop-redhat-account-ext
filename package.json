@@ -7,7 +7,7 @@
   "publisher": "redhat",
   "license": "Apache-2.0",
   "engines": {
-    "podman-desktop": "^0.0.1"
+    "podman-desktop": "^1.9.0"
   },
   "main": "./dist/extension.js",
   "contributes": {
@@ -44,7 +44,7 @@
   "dependencies": {
     "@podman-desktop/api": "^1.9.0",
     "@redhat-developer/rhcra-client": "^0.0.1",
-    "@redhat-developer/rhsm-client": "^0.0.4  ",
+    "@redhat-developer/rhsm-client": "^0.0.4",
     "@types/node": "^18.15.11",
     "axios": "^1.6.5",
     "js-yaml": "^4.1.0",
