@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "types": [ "node" ],
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "esModuleInterop": true
 },
 "include": [ "src/**/*.ts" ]
 }
