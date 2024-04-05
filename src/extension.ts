@@ -273,6 +273,8 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
 
+    await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
+
     const registryAccess = extensionApi.window.withProgress({
         location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Configuring Red Hat Registry'
       }, 
