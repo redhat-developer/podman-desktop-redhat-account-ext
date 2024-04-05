@@ -24,10 +24,11 @@ import {
 } from './authentication-service';
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
-import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
+import { accessSync, constants, readFileSync } from 'node:fs';
 import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister, runSubscriptionManagerUnregister } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
+import { SSOStatusBarItem } from './status-bar-item';
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
@@ -201,16 +202,27 @@ async function removeSession(sessionId: string): Promise<void> {
   onDidChangeSessions.fire({ removed: [session!] });
 }
 
+async function buildAndInitializeAuthService(context: extensionApi.ExtensionContext, statusBarItem: SSOStatusBarItem) {
+  const service = await RedHatAuthenticationService.build(context, getAuthConfig())
+  context.subscriptions.push(service);
+  await service.initialize();
+  const storedSessions = await service.getSessions();
+  if (storedSessions.length > 0) {
+    statusBarItem.logInAs(storedSessions[0].account.label);
+  }
+  return service;
+}
+
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
-  if (!authenticationServicePromise) {
-    authenticationServicePromise = RedHatAuthenticationService.build(context, getAuthConfig())
-      .then(service => {
-        context.subscriptions.push(service);
-        service.initialize();
-        return service;
-    });
-  }
+
+  // create status bar item for Red Hat SSO Provider
+  const statusBarItem = new SSOStatusBarItem();
+  statusBarItem.show();
+  context.subscriptions.push(statusBarItem);
+
+  // build and initialize auth service and update status bar state
+  authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
   context.subscriptions.push(extensionApi.registry.suggestRegistry({
     name: 'Red Hat Container Registry',
     icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
@@ -240,14 +252,18 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     },
   );
 
-  const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async (e) => {
-    if(e.provider.id === 'redhat.authentication-provider') {
+  const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async e => {
+    if (e.provider.id === 'redhat.authentication-provider') {
       const newSession = await signIntoRedHatDeveloperAccount(false);
       if (!currentSession && newSession) {
         currentSession = newSession;
+        statusBarItem.logInAs(newSession.account.label);
         return extensionApi.commands.executeCommand('redhat.authentication.signin');
       }
       currentSession = newSession;
+      if (!newSession) {
+        statusBarItem.logOut();
+      }
     }
   });
 
@@ -256,6 +272,8 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   context.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
+
+    await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
 
     const registryAccess = extensionApi.window.withProgress({
         location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Configuring Red Hat Registry'
@@ -315,7 +333,14 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     );
   });
 
-  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable);
+  const GotoAuthCommand = extensionApi.commands.registerCommand(
+    'redhat.authentication.navigate.settings',
+    async () => {
+      extensionApi.navigation.navigateToAuthentication();
+    },
+  );
+
+  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable, GotoAuthCommand);
 }
 
 export function deactivate(): void {
