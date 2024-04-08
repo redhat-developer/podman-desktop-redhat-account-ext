@@ -122,6 +122,6 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
         'Content-Type': contentType,
       });
       fs.createReadStream(filepath).pipe(res);
-    } 
+    }
   });
 }

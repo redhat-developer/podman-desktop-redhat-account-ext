@@ -19,7 +19,16 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import { AuthenticationSession, window, EventEmitter, AuthenticationProviderAuthenticationSessionsChangeEvent, env, Uri, ExtensionContext, Disposable } from '@podman-desktop/api';
+import {
+  AuthenticationSession,
+  window,
+  EventEmitter,
+  AuthenticationProviderAuthenticationSessionsChangeEvent,
+  env,
+  Uri,
+  ExtensionContext,
+  Disposable,
+} from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
 import { createServer, startServer } from './authentication-server';
@@ -62,10 +71,10 @@ export const onDidChangeSessions = new EventEmitter<AuthenticationProviderAuthen
 
 export const REFRESH_NETWORK_FAILURE = 'Network failure';
 
-  /**
-   * Return a session object without checking for expiry and potentially refreshing.
-   * @param token The token information.
-   */
+/**
+ * Return a session object without checking for expiry and potentially refreshing.
+ * @param token The token information.
+ */
 export function convertToSession(token: IToken): RedHatAuthenticationSession {
   return {
     id: token.sessionId,
@@ -76,7 +85,7 @@ export function convertToSession(token: IToken): RedHatAuthenticationSession {
   };
 }
 
-export interface RedHatAuthenticationSession extends AuthenticationSession{
+export interface RedHatAuthenticationSession extends AuthenticationSession {
   idToken: string | undefined;
   readonly id: string;
   readonly accessToken: string;
@@ -95,7 +104,11 @@ export class RedHatAuthenticationService {
   private client: Client;
   private config: AuthConfig;
 
-  constructor(issuer: Issuer<Client>, private context: ExtensionContext, config: AuthConfig) {
+  constructor(
+    issuer: Issuer<Client>,
+    private context: ExtensionContext,
+    config: AuthConfig,
+  ) {
     //this._uriHandler = new UriEventHandler();
     //this._disposables.push(vscode.window.registerUriHandler(this._uriHandler));
     this.config = config;
@@ -158,9 +171,11 @@ export class RedHatAuthenticationService {
         await this.clearSessions();
       }
 
-      this._disposables.push(this.context.secrets.onDidChange(() => {
-        this.checkForUpdates();
-      }));
+      this._disposables.push(
+        this.context.secrets.onDidChange(() => {
+          this.checkForUpdates();
+        }),
+      );
     }
   }
 
@@ -396,10 +411,10 @@ export class RedHatAuthenticationService {
     response.end();
   }
 
-	public dispose(): void {
-		this._disposables.forEach(disposable => disposable.dispose());
-		this._disposables = [];
-	}
+  public dispose(): void {
+    this._disposables.forEach(disposable => disposable.dispose());
+    this._disposables = [];
+  }
 
   private async setToken(token: IToken, scope: string): Promise<void> {
     const existingTokenIndex = this._tokens.findIndex(t => t.sessionId === token.sessionId);
@@ -414,26 +429,29 @@ export class RedHatAuthenticationService {
     if (token.expiresIn) {
       this._refreshTimeouts.set(
         token.sessionId,
-        setTimeout(async () => {
-          try {
-            const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
-            onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(refreshedToken)] });
-          } catch (e: any) {
-            if (e.message === REFRESH_NETWORK_FAILURE) {
-              const didSucceedOnRetry = await this.handleRefreshNetworkError(
-                token.sessionId,
-                token.refreshToken,
-                scope,
-              );
-              if (!didSucceedOnRetry) {
-                this.pollForReconnect(token.sessionId,  token.refreshToken, token.scope);
+        setTimeout(
+          async () => {
+            try {
+              const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
+              onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(refreshedToken)] });
+            } catch (e: any) {
+              if (e.message === REFRESH_NETWORK_FAILURE) {
+                const didSucceedOnRetry = await this.handleRefreshNetworkError(
+                  token.sessionId,
+                  token.refreshToken,
+                  scope,
+                );
+                if (!didSucceedOnRetry) {
+                  this.pollForReconnect(token.sessionId, token.refreshToken, token.scope);
+                }
+              } else {
+                await this.removeSession(token.sessionId);
+                onDidChangeSessions.fire({ added: [], removed: [convertToSession(token)], changed: [] });
               }
-            } else {
-              await this.removeSession(token.sessionId);
-              onDidChangeSessions.fire({ added: [], removed: [convertToSession(token)], changed: [] });
             }
-          }
-        }, 1000 * (token.expiresIn - 30)),
+          },
+          1000 * (token.expiresIn - 30),
+        ),
       );
     }
 
@@ -497,13 +515,16 @@ export class RedHatAuthenticationService {
 
     this._refreshTimeouts.set(
       sessionId,
-      setTimeout(async () => {
-        try {
-          await this.refreshToken(refreshToken, scope, sessionId);
-        } catch (e) {
-          this.pollForReconnect(sessionId, refreshToken, scope);
-        }
-      }, 1000 * 60 * 30),
+      setTimeout(
+        async () => {
+          try {
+            await this.refreshToken(refreshToken, scope, sessionId);
+          } catch (e) {
+            this.pollForReconnect(sessionId, refreshToken, scope);
+          }
+        },
+        1000 * 60 * 30,
+      ),
     );
   }
 

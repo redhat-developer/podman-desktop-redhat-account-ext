@@ -25,12 +25,13 @@ const PODMAN_COMMANDS = {
   RPM_INSTALL_SM: () => 'machine ssh sudo rpm-ostree install -y subscription-manager'.split(' '),
   SM_ACTIVATION_STATUS: () => 'machine ssh sudo subscription-manager status'.split(' '),
   SM_ACTIVATE_SUBS: (activationKeyName: string, orgId: string) =>
-    `machine ssh sudo subscription-manager register --force --activationkey ${activationKeyName} --org ${orgId}`.split(' '),
-  SM_DEACTIVATE_SUBS: () =>
-    `machine ssh sudo subscription-manager unregister`.split(' '),
+    `machine ssh sudo subscription-manager register --force --activationkey ${activationKeyName} --org ${orgId}`.split(
+      ' ',
+    ),
+  SM_DEACTIVATE_SUBS: () => `machine ssh sudo subscription-manager unregister`.split(' '),
   MACHINE_STOP: () => 'machine stop'.split(' '),
   MACHINE_START: () => 'machine start'.split(' '),
-}
+};
 
 export function getInstallationPath(): string | undefined {
   const env = process.env;
@@ -103,9 +104,15 @@ export async function runSubscriptionManagerActivationStatus(): Promise<number |
   }
 }
 
-export async function runSubscriptionManagerRegister(activationKeyName: string, orgId: string): Promise<number | undefined> {
+export async function runSubscriptionManagerRegister(
+  activationKeyName: string,
+  orgId: string,
+): Promise<number | undefined> {
   try {
-    const result = await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId));
+    const result = await extensionApi.process.exec(
+      getPodmanCli(),
+      PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId),
+    );
     return 0;
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
