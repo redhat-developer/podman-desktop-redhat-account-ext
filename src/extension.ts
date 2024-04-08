@@ -18,14 +18,18 @@
 
 import * as extensionApi from '@podman-desktop/api';
 import { getAuthConfig } from './configuration';
-import {
-  onDidChangeSessions,
-  RedHatAuthenticationService,
-} from './authentication-service';
+import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
 import { accessSync, constants, readFileSync } from 'node:fs';
-import { restartPodmanMachine, runRpmInstallSubscriptionManager, runSubscriptionManager, runSubscriptionManagerActivationStatus, runSubscriptionManagerRegister, runSubscriptionManagerUnregister } from './podman-cli';
+import {
+  restartPodmanMachine,
+  runRpmInstallSubscriptionManager,
+  runSubscriptionManager,
+  runSubscriptionManagerActivationStatus,
+  runSubscriptionManagerRegister,
+  runSubscriptionManagerUnregister,
+} from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
 import { SSOStatusBarItem } from './status-bar-item';
@@ -45,22 +49,32 @@ function fileToBase64(file: string) {
   return bitmap.toString('base64');
 }
 
-function parseJwt (token: string) {
+function parseJwt(token: string) {
   var base64Url = token.split('.')[1];
   var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  var jsonPayload = decodeURIComponent(Buffer.from(base64, 'base64').toString().split('').map((c) => {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
+  var jsonPayload = decodeURIComponent(
+    Buffer.from(base64, 'base64')
+      .toString()
+      .split('')
+      .map(c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join(''),
+  );
 
   return JSON.parse(jsonPayload);
 }
 
-async function signIntoRedHatDeveloperAccount(createIfNone = true): Promise<extensionApi.AuthenticationSession | undefined> {
+async function signIntoRedHatDeveloperAccount(
+  createIfNone = true,
+): Promise<extensionApi.AuthenticationSession | undefined> {
   return extensionApi.authentication.getSession(
     'redhat.authentication-provider',
-    ['api.iam.registry_service_accounts', //scope that gives access to hydra service accounts API
-    'api.console'], // scope that gives access to console.redhat.com APIs
-    {createIfNone} // will request to login in browser if session does not exists
+    [
+      'api.iam.registry_service_accounts', //scope that gives access to hydra service accounts API
+      'api.console',
+    ], // scope that gives access to console.redhat.com APIs
+    { createIfNone }, // will request to login in browser if session does not exists
   );
 }
 
@@ -78,13 +92,13 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
 function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
   extensionApi.registry.unregisterRegistry({
     serverUrl,
-    username:'',
+    username: '',
     secret: '',
-    source: ''
+    source: '',
   });
 }
 
-// TODO: add listRegistries to registry API to allow search by 
+// TODO: add listRegistries to registry API to allow search by
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
   const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USER_PROFILE;
@@ -95,17 +109,17 @@ function isRedHatRegistryConfigured(): boolean {
   let configured = false;
   try {
     // TODO: handle all kind problems with file existence, accessibility and parsable content
-    accessSync(pathToAuthJson, constants.R_OK)
-    const authFileContent = readFileSync(pathToAuthJson, {'encoding': 'utf8'});
+    accessSync(pathToAuthJson, constants.R_OK);
+    const authFileContent = readFileSync(pathToAuthJson, { encoding: 'utf8' });
     const authFileJson: {
-      auths? : {
-        [registryUrl:string]: {
-          auth: string,
-        }  
-      }
+      auths?: {
+        [registryUrl: string]: {
+          auth: string;
+        };
+      };
     } = JSON.parse(authFileContent);
-    configured =  authFileJson?.auths?.hasOwnProperty(REGISTRY_REDHAT_IO) || false;
-  } catch(_notAccessibleError) {
+    configured = authFileJson?.auths?.hasOwnProperty(REGISTRY_REDHAT_IO) || false;
+  } catch (_notAccessibleError) {
     // if file is not there, ignore and return default value
   }
   return configured;
@@ -116,12 +130,15 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
   const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new ContainerRegistryAuthorizerClient({
     BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
-    TOKEN: currentSession!.accessToken
+    TOKEN: currentSession!.accessToken,
   });
   const saApiV1 = client.serviceAccountsApiV1;
-  let selectedServiceAccount: ServiceAccountV1 | undefined
+  let selectedServiceAccount: ServiceAccountV1 | undefined;
   try {
-    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1('podman-desktop', accessTokenJson.organization.id);
+    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1(
+      'podman-desktop',
+      accessTokenJson.organization.id,
+    );
   } catch (err) {
     // ignore error when there is no podman-desktop service account yet
     selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
@@ -134,18 +151,18 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
   createRegistry(selectedServiceAccount!.credentials!.username!, selectedServiceAccount!.credentials!.password!);
 }
 
-async function  createOrReuseActivationKey() {
+async function createOrReuseActivationKey() {
   const currentSession = await signIntoRedHatDeveloperAccount();
   const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new SubscriptionManagerClient({
     BASE: 'https://console.redhat.com/api/rhsm/v2',
-    TOKEN: currentSession!.accessToken
+    TOKEN: currentSession!.accessToken,
   });
 
   try {
     await client.activationKey.showActivationKey('podman-desktop');
     // podman-desktop activation key exists
-  } catch(err) {
+  } catch (err) {
     // ignore and continue with activation key creation
     // TODO: add check that used role and usage exists in organization
     await client.activationKey.createActivationKeys({
@@ -156,36 +173,47 @@ async function  createOrReuseActivationKey() {
     });
   }
 
-  await runSubscriptionManagerRegister('podman-desktop', accessTokenJson.organization.id)
+  await runSubscriptionManagerRegister('podman-desktop', accessTokenJson.organization.id);
 }
 
 function isPodmanMachineRunning(): boolean {
   const conns = extensionApi.provider.getContainerConnections();
-  const startedPodman = conns.filter(conn => conn.providerId === 'podman' && conn.connection.status() === 'started' && !conn.connection.endpoint.socketPath.startsWith("/run/user/"));
+  const startedPodman = conns.filter(
+    conn =>
+      conn.providerId === 'podman' &&
+      conn.connection.status() === 'started' &&
+      !conn.connection.endpoint.socketPath.startsWith('/run/user/'),
+  );
   return startedPodman.length === 1;
 }
 
 async function isSubscriptionManagerInstalled(): Promise<boolean> {
   const exitCode = await runSubscriptionManager();
   if (exitCode === undefined) {
-    throw new Error('Error running podman ssh to detect subscription-manager, please make sure podman machine is running!');
-  } 
+    throw new Error(
+      'Error running podman ssh to detect subscription-manager, please make sure podman machine is running!',
+    );
+  }
   return exitCode === 0;
 }
 
 async function installSubscriptionManger() {
   const exitCode = await runRpmInstallSubscriptionManager();
   if (exitCode === undefined) {
-    throw new Error('Error running podman to install subscription-manager, please make sure podman machine is running!');
-  } 
+    throw new Error(
+      'Error running podman to install subscription-manager, please make sure podman machine is running!',
+    );
+  }
   return exitCode === 0;
 }
 
 async function isPodmanVmSubscriptionActivated() {
   const exitCode = await runSubscriptionManagerActivationStatus();
   if (exitCode === undefined) {
-    throw new Error('Error running subscription-manager in podman machine to get subscription status, please make sure podman machine is running!');
-  } 
+    throw new Error(
+      'Error running subscription-manager in podman machine to get subscription status, please make sure podman machine is running!',
+    );
+  }
   return exitCode === 0;
 }
 
@@ -194,8 +222,7 @@ async function restartPodmanVM() {
 }
 
 async function removeSession(sessionId: string): Promise<void> {
-  runSubscriptionManagerUnregister()
-    .catch(console.error); // ignore error in case vm subscription activation failed on login
+  runSubscriptionManagerUnregister().catch(console.error); // ignore error in case vm subscription activation failed on login
   removeRegistry(); // never fails, even if registry does not exist
   const service = await getAuthenticationService();
   const session = await service.removeSession(sessionId);
@@ -203,7 +230,7 @@ async function removeSession(sessionId: string): Promise<void> {
 }
 
 async function buildAndInitializeAuthService(context: extensionApi.ExtensionContext, statusBarItem: SSOStatusBarItem) {
-  const service = await RedHatAuthenticationService.build(context, getAuthConfig())
+  const service = await RedHatAuthenticationService.build(context, getAuthConfig());
   context.subscriptions.push(service);
   await service.initialize();
   const storedSessions = await service.getSessions();
@@ -223,15 +250,18 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
 
   // build and initialize auth service and update status bar state
   authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
-  context.subscriptions.push(extensionApi.registry.suggestRegistry({
-    name: 'Red Hat Container Registry',
-    icon: fileToBase64(path.resolve(__dirname,'..', 'icon.png')),
-    url: 'registry.redhat.io',
-  }));
+  context.subscriptions.push(
+    extensionApi.registry.suggestRegistry({
+      name: 'Red Hat Container Registry',
+      icon: fileToBase64(path.resolve(__dirname, '..', 'icon.png')),
+      url: 'registry.redhat.io',
+    }),
+  );
 
   const providerDisposable = extensionApi.authentication.registerAuthenticationProvider(
     'redhat.authentication-provider',
-    'Red Hat SSO', {
+    'Red Hat SSO',
+    {
       onDidChangeSessions: onDidChangeSessions.event,
       createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
         const service = await getAuthenticationService();
@@ -272,52 +302,63 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   context.subscriptions.push(providerDisposable);
 
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
-
     await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
 
-    const registryAccess = extensionApi.window.withProgress({
-        location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Configuring Red Hat Registry'
-      }, 
-      async (progress) => {
-        // Checking if registry account for https://registry.redhat.io is already configured 
-        if (!isRedHatRegistryConfigured()) {
-          progress.report({ increment: 30 });
-          await createOrReuseRegistryServiceAccount();
-        }
-      }
-    ).then(() => false
-    ).catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
-    
-    const vmActivation = extensionApi.window.withProgress({
-      location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Activating Red Hat Subscription'
-      }, async (progress) => {
-        if (!isPodmanMachineRunning()) {
-          if (isLinux()) {
-            await extensionApi.window.showInformationMessage('Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host.  Please start a Podman machine and try again.');
+    const registryAccess = extensionApi.window
+      .withProgress(
+        {
+          location: extensionApi.ProgressLocation.TASK_WIDGET,
+          title: 'Configuring Red Hat Registry',
+        },
+        async progress => {
+          // Checking if registry account for https://registry.redhat.io is already configured
+          if (!isRedHatRegistryConfigured()) {
+            progress.report({ increment: 30 });
+            await createOrReuseRegistryServiceAccount();
+          }
+        },
+      )
+      .then(() => false)
+      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+
+    const vmActivation = extensionApi.window
+      .withProgress(
+        {
+          location: extensionApi.ProgressLocation.TASK_WIDGET,
+          title: 'Activating Red Hat Subscription',
+        },
+        async progress => {
+          if (!isPodmanMachineRunning()) {
+            if (isLinux()) {
+              await extensionApi.window.showInformationMessage(
+                'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host.  Please start a Podman machine and try again.',
+              );
+            } else {
+              await extensionApi.window.showInformationMessage(
+                'Signing into a Red Hat account requires a running Podman machine.  Please start one and try again.',
+              );
+              throw new Error('No running podman');
+            }
+            return;
           } else {
-            await extensionApi.window.showInformationMessage('Signing into a Red Hat account requires a running Podman machine.  Please start one and try again.');
-            throw new Error('No running podman');
+            if (!(await isSubscriptionManagerInstalled())) {
+              await installSubscriptionManger();
+              await restartPodmanVM();
+            }
+            if (!(await isPodmanVmSubscriptionActivated())) {
+              await createOrReuseActivationKey();
+            }
           }
-          return;
-        } else {
-          if (!(await isSubscriptionManagerInstalled())) {
-            await installSubscriptionManger();
-            await restartPodmanVM();
-          }
-          if (!(await isPodmanVmSubscriptionActivated())) {
-            await createOrReuseActivationKey();
-          }
-        }
-      }
-    ).then(() => false
-    ).catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
-  
-    const failed = await Promise.all([registryAccess,vmActivation]); // wait for all fail or pass
-    
+        },
+      )
+      .then(() => false)
+      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+
+    const failed = await Promise.all([registryAccess, vmActivation]); // wait for all fail or pass
+
     if (failed.some(fail => fail)) {
       removeSession(currentSession.id); // if at least one fail, remove session
     }
-
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
@@ -333,14 +374,17 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     );
   });
 
-  const GotoAuthCommand = extensionApi.commands.registerCommand(
-    'redhat.authentication.navigate.settings',
-    async () => {
-      extensionApi.navigation.navigateToAuthentication();
-    },
-  );
+  const GotoAuthCommand = extensionApi.commands.registerCommand('redhat.authentication.navigate.settings', async () => {
+    extensionApi.navigation.navigateToAuthentication();
+  });
 
-  context.subscriptions.push(SignInCommand, SignOutCommand, SignUpCommand, onDidChangeSessionDisposable, GotoAuthCommand);
+  context.subscriptions.push(
+    SignInCommand,
+    SignOutCommand,
+    SignUpCommand,
+    onDidChangeSessionDisposable,
+    GotoAuthCommand,
+  );
 }
 
 export function deactivate(): void {
