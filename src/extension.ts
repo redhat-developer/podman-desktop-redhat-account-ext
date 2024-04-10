@@ -356,8 +356,8 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
 
     const failed = await Promise.all([registryAccess, vmActivation]); // wait for all fail or pass
 
-    if (failed.some(fail => fail)) {
-      removeSession(currentSession!.id); // if at least one fail, remove session
+    if (failed.some(fail => fail) && currentSession?.id) {
+      removeSession(currentSession.id); // if at least one fail, remove session
     }
   });
 
