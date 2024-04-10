@@ -27,10 +27,11 @@ interface Deferred<T> {
   reject: (reason: any) => void;
 }
 
+export type RedirectResult =
+  | { req: http.IncomingMessage; res: http.ServerResponse }
+  | { err: any; res: http.ServerResponse };
+
 export function createServer(config: AuthConfig, nonce: string) {
-  type RedirectResult =
-    | { req: http.IncomingMessage; res: http.ServerResponse }
-    | { err: any; res: http.ServerResponse };
   let deferredRedirect: Deferred<RedirectResult>;
   const redirectPromise = new Promise<RedirectResult>((resolve, reject) => (deferredRedirect = { resolve, reject }));
 

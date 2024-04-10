@@ -31,7 +31,7 @@ import {
 } from '@podman-desktop/api';
 import { ServerResponse } from 'node:http';
 import { Client, generators, Issuer, TokenSet } from 'openid-client';
-import { createServer, startServer } from './authentication-server';
+import { RedirectResult, createServer, startServer } from './authentication-server';
 import { AuthConfig } from './configuration';
 import Logger from './logger';
 
@@ -357,7 +357,16 @@ export class RedHatAuthenticationService {
         redirectReq.res.writeHead(302, { Location: authUrl });
         redirectReq.res.end();
 
-        const callbackResult = await callbackPromise;
+        // wait 10 minutes for call back and then close the server to free local port
+        const callbackReturn = await Promise.race([
+          callbackPromise,
+          new Promise((_resolve, reject) => {
+            setTimeout(() => {
+              reject(new Error('Timeout period for login is expired'));
+            }, 600000);
+          }),
+        ]);
+        const callbackResult = callbackReturn as RedirectResult;
 
         if ('err' in callbackResult) {
           this.error(callbackResult.res, callbackResult.err);
