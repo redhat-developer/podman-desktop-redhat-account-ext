@@ -340,9 +340,9 @@
   integrity sha512-QFPnl+kYxWdAqoKDRplyqBDNoQj15FLtqCbYW1sq19U4OJP/BXZ9r4SNF8ndvQnBXXvATjUeCC/VAjUuwf5lqQ==
 
 "@podman-desktop/tests-playwright@next":
-  version "0.0.202404101759-dfbf936"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-0.0.202404101759-dfbf936.tgz#d2fb4b5d31178074f74942ccf649a55c9ff731ee"
-  integrity sha512-hRhGS4V5nRLAo/PUsl4CQVYgTmLbkd0mVNvKMiMQo+RqGKaKDoVWj+YNgSN42l2buHTH+na9S2emfcDlBpY6ng==
+  version "0.0.202404111023-107ea41"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-0.0.202404111023-107ea41.tgz#6d237feea855ef3fc6fadb348368982822f5af50"
+  integrity sha512-1OjP0dk9UUY6Qa98OIxVqSrVH/wPA3h3JP/FSFBzf3dn0jhRfrXKEJi8rSXOM+/O5Wb/1yv15whq5xhvXbZi6Q==
 
 "@redhat-developer/rhcra-client@^0.0.1":
   version "0.0.1"
@@ -547,7 +547,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^20", "@types/node@^20.9.0":
+"@types/node@*", "@types/node@^20.9.0":
   version "20.12.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.7.tgz#04080362fa3dd6c5822061aa3124f5c152cff384"
   integrity sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==
@@ -1376,9 +1376,9 @@ electron-to-chromium@^1.4.668:
   integrity sha512-OGkMXLY7XH6ykHE5ZOVVIMHaGAvvxqw98cswTKB683dntBJre7ufm9wouJ0ExDm0VXhHenU8mREvxIbV5nNoVQ==
 
 electron@^29.1.4:
-  version "29.2.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-29.2.0.tgz#98e9d45dcebda124fb0bd1ff20fc509ec692101c"
-  integrity sha512-ALKrCN52RG4g9prx4DriXSPnY5WoiyRUCNp7zEVQuoiNOpHTNqMMpRidQAHzntV4hajF1LMWHVoBkwqIs1jHhg==
+  version "29.3.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-29.3.0.tgz#8e65cb08e9c0952c66d3196e1b5c811c43b8c5b0"
+  integrity sha512-ZxFKm0/v48GSoBuO3DdnMlCYXefEUKUHLMsKxyXY4nZGgzbBKpF/X8haZa2paNj23CLfsCKBOtfc2vsEQiOOsA==
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^20.9.0"
@@ -3670,11 +3670,6 @@ typescript@^5.0.4:
   version "5.4.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.3.tgz#5c6fedd4c87bee01cd7a528a30145521f8e0feff"
   integrity sha512-KrPd3PKaCLr78MalgiwJnA25Nm8HAmdwN3mYUYZgG/wizIo9EainNVQI9/yDavtVFRN2h3k8uf3GLHuhDMgEHg==
-
-typescript@^5.4.2:
-  version "5.4.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.4.tgz#eb2471e7b0a5f1377523700a21669dce30c2d952"
-  integrity sha512-dGE2Vv8cpVvw28v8HCPqyb08EzbBURxDpuhJvTrusShUfGnhHBafDsLdS1EhhxyL6BJQE+2cT3dDPAv+MQ6oLw==
 
 ufo@^1.3.2:
   version "1.5.3"
