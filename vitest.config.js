@@ -54,7 +54,7 @@ export function testConfig() {
   return {
     globals: true,
     globalSetup: './node_modules/@podman-desktop/tests-playwright/src/globalSetup/global-setup.ts',
-    setupFiles: './src/setupFiles/extended-hooks.ts',
+    setupFiles: './tests/src/setupFiles/extended-hooks.ts',
     /**
      * By default, vitest search test files in all packages.
      * For e2e tests have sense search only is project root tests folder

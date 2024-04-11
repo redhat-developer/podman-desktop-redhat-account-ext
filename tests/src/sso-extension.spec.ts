@@ -50,7 +50,6 @@ describe('Red Hat Authentication extension verification', async () => {
 
   test('Go to settings and check if extension is already installed', async () => {
     const settingsBar = await navBar.openSettings();
-    await new Promise((resolve) => { setTimeout(resolve, 240000)});
     const extensions = await settingsBar.getCurrentExtensions();
     if (await extensionExists(extensions, extensionName)) {
       extensionInstalled = true;
@@ -79,8 +78,7 @@ describe('Red Hat Authentication extension verification', async () => {
     await playExpect(extension).toBeVisible();
     await extension.scrollIntoViewIfNeeded();
     const extensionDetails = extension.getByRole('cell', { name: 'Extension Details' });
-    const details = extensionDetails.getByLabel('Connection Status Label');
-    await playExpect(details).toHaveText('RUNNING');
+    await playExpect(extensionDetails.getByLabel('Connection Status Label')).toHaveText('RUNNING');
   });
 
   test('Extension appears under Settings bar extensions', async () => {
@@ -130,8 +128,7 @@ describe('Red Hat Authentication extension verification', async () => {
       await navBar.openSettings();
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(authPage.heading).toHaveText('Authentication');
-      const provider = authPage.getProvider(authProviderName);
-      await playExpect(provider).toHaveCount(1);
+      await playExpect(authPage.getProvider(authProviderName)).toHaveCount(1);
     }); 
   });
 

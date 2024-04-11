@@ -42,7 +42,7 @@
     "lint:check": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache . --ext js,ts",
     "test": "vitest run --coverage",
     "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
-    "test:e2e": "npm run test:e2e:setup vitest run e2e-tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
+    "test:e2e": "npm run test:e2e:setup vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
   
   },
   "dependencies": {
