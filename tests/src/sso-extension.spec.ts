@@ -50,6 +50,7 @@ describe('Red Hat Authentication extension verification', async () => {
 
   test('Go to settings and check if extension is already installed', async () => {
     const settingsBar = await navBar.openSettings();
+    await new Promise((resolve) => { setTimeout(resolve, 240000)});
     const extensions = await settingsBar.getCurrentExtensions();
     if (await extensionExists(extensions, extensionName)) {
       extensionInstalled = true;

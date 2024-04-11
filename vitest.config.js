@@ -53,26 +53,26 @@ export function coverageConfig(packageRoot, packageName) {
 export function testConfig() {
   return {
     globals: true,
-    globalSetup: './tests/globalSetup/global-setup.ts',
-    setupFiles: './tests/setupFiles/extended-hooks.ts',
+    globalSetup: './node_modules/@podman-desktop/tests-playwright/src/globalSetup/global-setup.ts',
+    setupFiles: './src/setupFiles/extended-hooks.ts',
     /**
      * By default, vitest search test files in all packages.
      * For e2e tests have sense search only is project root tests folder
      */
-    include: ['**/tests/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include: ['**/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: [
       '**/builtin/**',
       '**/node_modules/**',
       '**/dist/**',
       '**/.{idea,git,cache,output,temp,cdix}/**',
-      '**/{rollup,vite,vitest*}.config.*',
+      '**/{.electron-builder,babel,changelog,docusaurus,jest,postcss,prettier,rollup,svelte,tailwind,vite,vitest*,webpack}.config.*',
     ],
 
     /**
      * A default timeout of 5000ms is sometimes not enough for playwright.
      */
-    testTimeout: 60_000,
-    hookTimeout: 120_000,
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
     // test reporters - default for all and junit for CI
     reporters: process.env.CI ? ['default', 'junit'] : ['verbose'],
     outputFile: process.env.CI ? { junit: 'tests/output/junit-results.xml' } : {},

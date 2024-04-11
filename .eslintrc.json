@@ -20,8 +20,7 @@
     "sourceType": "module",
     "warnOnUnsupportedTypeScriptVersion": false,
     "project": [
-      "tsconfig.json",
-      "tests/playwright/tsconfig.json"
+      "tsconfig.json"
     ]
   },
   "overrides": [
