@@ -101,7 +101,7 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 // TODO: add listRegistries to registry API to allow search by
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
-  const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USER_PROFILE;
+  const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USERPROFILE;
   if (!homeFolderPath) {
     throw new Error('Unable to find home directory for the current user');
   }
