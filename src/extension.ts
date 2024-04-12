@@ -21,6 +21,7 @@ import { getAuthConfig } from './configuration';
 import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
 import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import path from 'node:path';
+import { homedir } from 'node:os';
 import { accessSync, constants, readFileSync } from 'node:fs';
 import {
   restartPodmanMachine,
@@ -101,7 +102,7 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 // TODO: add listRegistries to registry API to allow search by
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
-  const homeFolderPath = process.env.HOME ? process.env.HOME : process.env.USERPROFILE;
+  const homeFolderPath = homedir();
   if (!homeFolderPath) {
     throw new Error('Unable to find home directory for the current user');
   }
