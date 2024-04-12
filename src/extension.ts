@@ -29,6 +29,7 @@ import {
   runSubscriptionManagerActivationStatus,
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
+  runWriteFactsFile,
 } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
@@ -347,6 +348,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
             }
             if (!(await isPodmanVmSubscriptionActivated())) {
               await createOrReuseActivationKey();
+              await runWriteFactsFile();
             }
           }
         },
