@@ -102,11 +102,7 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 // TODO: add listRegistries to registry API to allow search by
 // registry URL
 function isRedHatRegistryConfigured(): boolean {
-  const homeFolderPath = homedir();
-  if (!homeFolderPath) {
-    throw new Error('Unable to find home directory for the current user');
-  }
-  const pathToAuthJson = path.join(homeFolderPath, '.config', 'containers', 'auth.json');
+  const pathToAuthJson = path.join(homedir(), '.config', 'containers', 'auth.json');
   let configured = false;
   try {
     // TODO: handle all kind problems with file existence, accessibility and parsable content
