@@ -31,10 +31,10 @@ const PODMAN_COMMANDS = {
   SM_DEACTIVATE_SUBS: () => `machine ssh sudo subscription-manager unregister`.split(' '),
   MACHINE_STOP: () => 'machine stop'.split(' '),
   MACHINE_START: () => 'machine start'.split(' '),
-  WRITE_FACTS_FILE: () => [
+  CREATE_FACTS_FILE: (oneLineJson: string) => [
     'machine',
     'ssh',
-    'mkdir -p /etc/rhsm/facts/ && echo {\\"supported_architectures\\":\\"aarch64,x86_64\\"} | sudo tee /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts',
+    `sudo mkdir -p /etc/rhsm/facts/ && printf '${oneLineJson}\\n' | sudo tee /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts`,
   ],
 };
 
@@ -137,9 +137,9 @@ export async function runSubscriptionManagerUnregister(): Promise<number | undef
   }
 }
 
-export async function runWriteFactsFile(): Promise<number> {
+export async function runCreateFactsFile(jsonText: string): Promise<number> {
   try {
-    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.WRITE_FACTS_FILE());
+    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.CREATE_FACTS_FILE(jsonText.replace('\n', '\\n')));
     return 0;
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
