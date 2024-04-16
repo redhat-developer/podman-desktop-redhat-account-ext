@@ -27,6 +27,11 @@ const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:la
 const extensionName = 'Red Hat Authentication';
 const extensionLabelName = 'redhat-authentication';
 const authProviderName = 'Red Hat SSO';
+const extensionStatusLabel = 'Extension Status Label';
+const extensionDetailsLabel = 'Extension Details';
+const activeExtensionStatus = 'ACTIVE';
+const disabledExtensionStatus = 'DISABLED';
+
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -77,8 +82,9 @@ describe('Red Hat Authentication extension verification', async () => {
     const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
     await playExpect(extension).toBeVisible();
     await extension.scrollIntoViewIfNeeded();
-    const extensionDetails = extension.getByRole('cell', { name: 'Extension Details' });
-    await playExpect(extensionDetails.getByLabel('Connection Status Label')).toHaveText('RUNNING');
+    const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
+    console.log(`details text: ${await extensionDetails.allInnerTexts()}`);
+    await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(activeExtensionStatus);
   });
 
   test('Extension appears under Settings bar extensions', async () => {
@@ -106,8 +112,8 @@ describe('Red Hat Authentication extension verification', async () => {
       const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
       await extension.scrollIntoViewIfNeeded();
       await settingsExtensionPage.getExtensionStopButton(extension).click();
-      const extensionDetails = extension.getByRole('cell', { name: 'Extension Details' });
-      await playExpect(extensionDetails.getByLabel('Connection Status Label')).toHaveText('OFF');
+      const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
+      await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(disabledExtensionStatus);
 
       await navBar.openSettings();
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
@@ -122,8 +128,8 @@ describe('Red Hat Authentication extension verification', async () => {
       const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
       await extension.scrollIntoViewIfNeeded();
       await settingsExtensionPage.getExtensionStartButton(extension).click();
-      const extensionDetails = extension.getByRole('cell', { name: 'Extension Details' });
-      await playExpect(extensionDetails.getByLabel('Connection Status Label')).toHaveText('RUNNING');
+      const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
+      await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(activeExtensionStatus);
 
       await navBar.openSettings();
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
@@ -154,5 +160,5 @@ async function removeExtension(extensionName: string): Promise<void> {
   await playExpect(settingsExtensionPage.heading).toBeVisible();
 
   extensions = await settingsBar.getCurrentExtensions();
-  await playExpect.poll(async () => await extensionExists(extensions, extensionName), { timeout: 30000 }).toBeFalsy();
+  await playExpect.poll(async () => await extensionExists(extensions, extensionName), { timeout: 15000 }).toBeFalsy();
 }
