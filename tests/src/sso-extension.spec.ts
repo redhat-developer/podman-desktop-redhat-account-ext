@@ -83,7 +83,6 @@ describe('Red Hat Authentication extension verification', async () => {
     await playExpect(extension).toBeVisible();
     await extension.scrollIntoViewIfNeeded();
     const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
-    console.log(`details text: ${await extensionDetails.allInnerTexts()}`);
     await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(activeExtensionStatus);
   });
 
@@ -93,9 +92,7 @@ describe('Red Hat Authentication extension verification', async () => {
     await playExpect.poll(async () => await extensionExists(extensions, extensionName), { timeout: 30000 }).toBeTruthy();
   });
 
-  test('SSO provider is available in Authentication Page', async (context) => {
-    console.log(`Running Test: ${context.task.name}`);
-    console.log(`Opening settings`);
+  test('SSO provider is available in Authentication Page', async () => {
     const settingsBar = await navBar.openSettings();
     const authPage = await settingsBar.openTabPage(AuthenticationPage);
     await playExpect(authPage.heading).toHaveText('Authentication');
