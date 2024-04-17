@@ -18,7 +18,7 @@
 
 import { beforeAll, beforeEach, expect, suite, test, vi } from 'vitest';
 import { TelemetryLogger as ExtensionTelemetryLogger, activate } from './extension';
-import { TelemetryLogger, ExtensionContext, AuthenticationSession, ProgressLocation } from '@podman-desktop/api';
+import { AuthenticationGetSessionOptions, TelemetryLogger, ExtensionContext, AuthenticationSession, ProgressLocation } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
 
@@ -55,14 +55,16 @@ vi.mock('@podman-desktop/api', async () => {
           report: (message: string) => {},
         });
       },
+      showInformationMessage: vi.fn(),
     },
     env: {
       createTelemetryLogger: vi.fn().mockImplementation(
-        () =>
-          ({
+        () => (
+          {
             logUsage: vi.fn(),
             logError: vi.fn(),
-          }) as undefined as TelemetryLogger,
+          } as unknown as TelemetryLogger
+        )
       ),
     },
     StatusBarAlignLeft: 'LEFT',
@@ -117,12 +119,12 @@ suite('signin command telemetry reports', () => {
       async (
         _p1: string,
         _p2: string[],
-        options: { createIfNone: boolean },
+        options: AuthenticationGetSessionOptions | undefined,
       ): Promise<AuthenticationSession | undefined> => {
         if (session) {
           return Promise.resolve(session);
         }
-        if (options.createIfNone) {
+        if (options?.createIfNone) {
           session = {
             id: '1',
             accessToken: 'token',
@@ -138,6 +140,7 @@ suite('signin command telemetry reports', () => {
             },
           });
         }
+        return;
       },
     );
     let commandFunctionCopy: () => Promise<void>;
@@ -153,8 +156,12 @@ suite('signin command telemetry reports', () => {
     );
     vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(false);
     await activate(createExtContext());
-    await commandFunctionCopy();
+    expect(commandFunctionCopy!).toBeDefined()
+    await commandFunctionCopy!();
     expect(authentication.onDidChangeSessions).toBeCalled();
-    expect(logSpy).toBeCalledWith('signin', { successful: false });
+    expect(logSpy).toBeCalledWith('signin', { 
+      successful: false,
+      activateSubscriptionErrorMessage: 'Error: No running podman',
+    });
   });
 });

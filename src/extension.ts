@@ -230,6 +230,12 @@ async function buildAndInitializeAuthService(context: extensionApi.ExtensionCont
   return service;
 }
 
+interface StepTelemetryData {
+  configureRegistryAccessErrorMessage?: string;
+  activateSubscriptionErrorMessage?: string;
+  successful: boolean;
+}
+
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
   console.log('starting redhat-authentication extension');
 
@@ -290,10 +296,10 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   await signIntoRedHatDeveloperAccount(false);
 
   context.subscriptions.push(providerDisposable);
-
+  
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
-    const telemetryData = {
-      successful: true,
+    const telemetryData: StepTelemetryData = {
+      successful: true, 
     };
 
     await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
@@ -314,6 +320,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       )
       .then(() => false)
       .catch(error => {
+        telemetryData.configureRegistryAccessErrorMessage = String(error);
         return true; // required to force Promise.all() call keep waiting for all not failed calls
       });
 
@@ -327,7 +334,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
           if (!isPodmanMachineRunning()) {
             if (isLinux()) {
               await extensionApi.window.showInformationMessage(
-                'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host.  Please start a Podman machine and try again.',
+                'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host. Please start a Podman machine and try again.',
               );
             } else {
               await extensionApi.window.showInformationMessage(
@@ -351,8 +358,11 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
           }
         },
       )
-      .then(() => false)
+      .then(() => {
+        return false;
+      })
       .catch(error => {
+        telemetryData.activateSubscriptionErrorMessage = String(error);
         return true; // required to force Promise.all() call keep waiting for all not failed calls
       });
 
