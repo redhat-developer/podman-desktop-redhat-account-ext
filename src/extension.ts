@@ -31,10 +31,13 @@ import {
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
   runCreateFactsFile,
+  isPodmanMachineRunning,
 } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
 import { SSOStatusBarItem } from './status-bar-item';
+
+export const TelemetryLogger = extensionApi.env.createTelemetryLogger();
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
@@ -174,17 +177,6 @@ async function createOrReuseActivationKey() {
   await runSubscriptionManagerRegister('podman-desktop', accessTokenJson.organization.id);
 }
 
-function isPodmanMachineRunning(): boolean {
-  const conns = extensionApi.provider.getContainerConnections();
-  const startedPodman = conns.filter(
-    conn =>
-      conn.providerId === 'podman' &&
-      conn.connection.status() === 'started' &&
-      !conn.connection.endpoint.socketPath.startsWith('/run/user/'),
-  );
-  return startedPodman.length === 1;
-}
-
 async function isSubscriptionManagerInstalled(): Promise<boolean> {
   const exitCode = await runSubscriptionManager();
   if (exitCode === undefined) {
@@ -236,6 +228,12 @@ async function buildAndInitializeAuthService(context: extensionApi.ExtensionCont
     statusBarItem.logInAs(storedSessions[0].account.label);
   }
   return service;
+}
+
+interface StepTelemetryData {
+  configureRegistryAccessErrorMessage?: string;
+  activateSubscriptionErrorMessage?: string;
+  successful: boolean;
 }
 
 export async function activate(context: extensionApi.ExtensionContext): Promise<void> {
@@ -298,8 +296,12 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   await signIntoRedHatDeveloperAccount(false);
 
   context.subscriptions.push(providerDisposable);
-
+  
   const SignInCommand = extensionApi.commands.registerCommand('redhat.authentication.signin', async () => {
+    const telemetryData: StepTelemetryData = {
+      successful: true, 
+    };
+
     await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
 
     const registryAccess = extensionApi.window
@@ -317,7 +319,10 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
         },
       )
       .then(() => false)
-      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+      .catch(error => {
+        telemetryData.configureRegistryAccessErrorMessage = String(error);
+        return true; // required to force Promise.all() call keep waiting for all not failed calls
+      });
 
     const vmActivation = extensionApi.window
       .withProgress(
@@ -329,7 +334,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
           if (!isPodmanMachineRunning()) {
             if (isLinux()) {
               await extensionApi.window.showInformationMessage(
-                'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host.  Please start a Podman machine and try again.',
+                'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host. Please start a Podman machine and try again.',
               );
             } else {
               await extensionApi.window.showInformationMessage(
@@ -353,14 +358,22 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
           }
         },
       )
-      .then(() => false)
-      .catch(() => true); // required to force Promise.all() call keep waiting for all not failed calls
+      .then(() => {
+        return false;
+      })
+      .catch(error => {
+        telemetryData.activateSubscriptionErrorMessage = String(error);
+        return true; // required to force Promise.all() call keep waiting for all not failed calls
+      });
 
     const failed = await Promise.all([registryAccess, vmActivation]); // wait for all fail or pass
 
     if (failed.some(fail => fail) && currentSession?.id) {
       removeSession(currentSession.id); // if at least one fail, remove session
+      telemetryData.successful = false;
     }
+
+    TelemetryLogger.logUsage('signin', telemetryData);
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
@@ -368,6 +381,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     service.removeSession(currentSession!.id);
     onDidChangeSessions.fire({ added: [], removed: [currentSession!], changed: [] });
     currentSession = undefined;
+    TelemetryLogger.logUsage('signout');
   });
 
   const SignUpCommand = extensionApi.commands.registerCommand('redhat.authentication.signup', async () => {

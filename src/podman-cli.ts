@@ -17,6 +17,7 @@
  ***********************************************************************/
 import { isMac, isWindows } from './util';
 import * as extensionApi from '@podman-desktop/api';
+import { TelemetryLogger } from './extension';
 
 const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 
@@ -83,6 +84,8 @@ export async function runSubscriptionManager(): Promise<number | undefined> {
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager execution returned exit code: ${exitCode}`);
+    // do not send telemetry because it is a check for it to be installed and
+    // it might fail pretty often
     return exitCode;
   }
 }
@@ -94,6 +97,7 @@ export async function runRpmInstallSubscriptionManager(): Promise<number | undef
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager installation returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
     return exitCode;
   }
 }
@@ -105,6 +109,8 @@ export async function runSubscriptionManagerActivationStatus(): Promise<number |
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager subscription activation check returned exit code: ${exitCode}`);
+    // do not send telemetry because it is a check for subscription status and
+    // it might fail pretty often
     return exitCode;
   }
 }
@@ -122,6 +128,7 @@ export async function runSubscriptionManagerRegister(
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager registration returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerRegisterError', { error: String(err) });
     return exitCode;
   }
 }
@@ -133,6 +140,7 @@ export async function runSubscriptionManagerUnregister(): Promise<number | undef
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager registration returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerUnregisterError', { error: String(err) });
     return exitCode;
   }
 }
@@ -144,6 +152,7 @@ export async function runCreateFactsFile(jsonText: string): Promise<number> {
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerCreateFactsFileError', { error: String(err) });
     return exitCode;
   }
 }
@@ -151,4 +160,15 @@ export async function runCreateFactsFile(jsonText: string): Promise<number> {
 export async function restartPodmanMachine() {
   await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP());
   await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START());
+}
+
+export function isPodmanMachineRunning(): boolean {
+  const conns = extensionApi.provider.getContainerConnections();
+  const startedPodman = conns.filter(
+    conn =>
+      conn.providerId === 'podman' &&
+      conn.connection.status() === 'started' &&
+      !conn.connection.endpoint.socketPath.startsWith('/run/user/'),
+  );
+  return startedPodman.length === 1;
 }
