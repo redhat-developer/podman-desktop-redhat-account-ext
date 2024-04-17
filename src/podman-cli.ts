@@ -152,6 +152,7 @@ export async function runCreateFactsFile(jsonText: string): Promise<number> {
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerCreateFactsFileError', { error: String(err) });
     return exitCode;
   }
 }
