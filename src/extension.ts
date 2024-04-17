@@ -31,6 +31,7 @@ import {
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
   runCreateFactsFile,
+  isPodmanMachineRunning,
 } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
@@ -176,17 +177,6 @@ async function createOrReuseActivationKey() {
   await runSubscriptionManagerRegister('podman-desktop', accessTokenJson.organization.id);
 }
 
-function isPodmanMachineRunning(): boolean {
-  const conns = extensionApi.provider.getContainerConnections();
-  const startedPodman = conns.filter(
-    conn =>
-      conn.providerId === 'podman' &&
-      conn.connection.status() === 'started' &&
-      !conn.connection.endpoint.socketPath.startsWith('/run/user/'),
-  );
-  return startedPodman.length === 1;
-}
-
 async function isSubscriptionManagerInstalled(): Promise<boolean> {
   const exitCode = await runSubscriptionManager();
   if (exitCode === undefined) {
@@ -323,7 +313,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
         },
       )
       .then(() => false)
-      .catch((error) => {
+      .catch(error => {
         return true; // required to force Promise.all() call keep waiting for all not failed calls
       });
 
@@ -362,7 +352,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
         },
       )
       .then(() => false)
-      .catch((error) => {
+      .catch(error => {
         return true; // required to force Promise.all() call keep waiting for all not failed calls
       });
 
@@ -374,7 +364,6 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     }
 
     TelemetryLogger.logUsage('signin', telemetryData);
-
   });
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
