@@ -18,7 +18,13 @@
 
 import { beforeAll, beforeEach, expect, suite, test, vi } from 'vitest';
 import { TelemetryLogger as ExtensionTelemetryLogger, activate } from './extension';
-import { AuthenticationGetSessionOptions, TelemetryLogger, ExtensionContext, AuthenticationSession, ProgressLocation } from '@podman-desktop/api';
+import {
+  AuthenticationGetSessionOptions,
+  TelemetryLogger,
+  ExtensionContext,
+  AuthenticationSession,
+  ProgressLocation,
+} from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
 
@@ -59,12 +65,11 @@ vi.mock('@podman-desktop/api', async () => {
     },
     env: {
       createTelemetryLogger: vi.fn().mockImplementation(
-        () => (
-          {
+        () =>
+          ({
             logUsage: vi.fn(),
             logError: vi.fn(),
-          } as unknown as TelemetryLogger
-        )
+          }) as unknown as TelemetryLogger,
       ),
     },
     StatusBarAlignLeft: 'LEFT',
@@ -156,12 +161,13 @@ suite('signin command telemetry reports', () => {
     );
     vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(false);
     await activate(createExtContext());
-    expect(commandFunctionCopy!).toBeDefined()
+    expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();
     expect(authentication.onDidChangeSessions).toBeCalled();
-    expect(logSpy).toBeCalledWith('signin', { 
+    expect(logSpy).toBeCalledWith('signin', {
       successful: false,
-      activateSubscriptionErrorMessage: 'Error: No running podman',
+      error: 'Error: No running podman',
+      errorIn: 'subscription-activation',
     });
   });
 });
