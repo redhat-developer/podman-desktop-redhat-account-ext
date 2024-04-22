@@ -18,7 +18,6 @@
 import { isMac, isWindows } from './util';
 import * as extensionApi from '@podman-desktop/api';
 import { TelemetryLogger } from './extension';
-import { error } from 'console';
 
 const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 

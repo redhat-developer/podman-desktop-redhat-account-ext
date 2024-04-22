@@ -86,7 +86,7 @@ vi.mock('@podman-desktop/api', async () => {
         return {
           get: vi.fn(),
         };
-      }
+      },
     },
   };
 });
