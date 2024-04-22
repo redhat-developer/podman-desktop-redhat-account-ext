@@ -90,16 +90,8 @@ export async function runSubscriptionManager(): Promise<number | undefined> {
   }
 }
 
-export async function runRpmInstallSubscriptionManager(): Promise<number | undefined> {
-  try {
-    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
-    return 0;
-  } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
-    console.error(`Subscription manager installation returned exit code: ${exitCode}`);
-    TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
-    return exitCode;
-  }
+export async function runRpmInstallSubscriptionManager(): Promise<extensionApi.RunResult> {
+  return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
 }
 
 export async function runSubscriptionManagerActivationStatus(): Promise<number | undefined> {
@@ -118,18 +110,14 @@ export async function runSubscriptionManagerActivationStatus(): Promise<number |
 export async function runSubscriptionManagerRegister(
   activationKeyName: string,
   orgId: string,
-): Promise<number | undefined> {
+): Promise<extensionApi.RunResult> {
   try {
-    const result = await extensionApi.process.exec(
-      getPodmanCli(),
-      PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId),
-    );
-    return 0;
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId));
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager registration returned exit code: ${exitCode}`);
     TelemetryLogger.logError('subscriptionManagerRegisterError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
@@ -153,7 +141,7 @@ export async function runCreateFactsFile(jsonText: string): Promise<number> {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts returned exit code: ${exitCode}`);
     TelemetryLogger.logError('subscriptionManagerCreateFactsFileError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 

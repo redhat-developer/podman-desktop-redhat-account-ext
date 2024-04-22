@@ -188,13 +188,14 @@ async function isSubscriptionManagerInstalled(): Promise<boolean> {
 }
 
 async function installSubscriptionManger() {
-  const exitCode = await runRpmInstallSubscriptionManager();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running podman to install subscription-manager, please make sure podman machine is running!',
-    );
+  try {
+    const exitCode = await runRpmInstallSubscriptionManager();
+  } catch (err) {
+    const exitCode = (err as extensionApi.RunError).exitCode;
+    console.error(`Subscription manager installation returned exit code: ${exitCode}`);
+    TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
+    throw err;
   }
-  return exitCode === 0;
 }
 
 async function isPodmanVmSubscriptionActivated() {
