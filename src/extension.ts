@@ -24,7 +24,6 @@ import path from 'node:path';
 import { homedir } from 'node:os';
 import { accessSync, constants, readFileSync } from 'node:fs';
 import {
-  restartPodmanMachine,
   runRpmInstallSubscriptionManager,
   runSubscriptionManager,
   runSubscriptionManagerActivationStatus,
@@ -32,6 +31,8 @@ import {
   runSubscriptionManagerUnregister,
   runCreateFactsFile,
   isPodmanMachineRunning,
+  runStartPodmanMachine,
+  runStopPodmanMachine,
 } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
@@ -197,10 +198,6 @@ async function isPodmanVmSubscriptionActivated() {
   return exitCode === 0;
 }
 
-async function restartPodmanVM() {
-  await restartPodmanMachine();
-}
-
 async function removeSession(sessionId: string): Promise<void> {
   runSubscriptionManagerUnregister().catch(console.error); // ignore error in case vm subscription activation failed on login
   removeRegistry(); // never fails, even if registry does not exist
@@ -275,7 +272,8 @@ async function configureRegistryAndActivateSubscription() {
           } else {
             if (!(await isSubscriptionManagerInstalled())) {
               await installSubscriptionManger();
-              await restartPodmanVM();
+              await runStopPodmanMachine();
+              await runStartPodmanMachine();
             }
             if (!(await isPodmanVmSubscriptionActivated())) {
               const facts = {
