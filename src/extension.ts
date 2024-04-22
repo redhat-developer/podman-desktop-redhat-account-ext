@@ -179,11 +179,6 @@ async function createOrReuseActivationKey() {
 
 async function isSubscriptionManagerInstalled(): Promise<boolean> {
   const exitCode = await runSubscriptionManager();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running podman ssh to detect subscription-manager, please make sure podman machine is running!',
-    );
-  }
   return exitCode === 0;
 }
 
@@ -200,11 +195,6 @@ async function installSubscriptionManger() {
 
 async function isPodmanVmSubscriptionActivated() {
   const exitCode = await runSubscriptionManagerActivationStatus();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running subscription-manager in podman machine to get subscription status, please make sure podman machine is running!',
-    );
-  }
   return exitCode === 0;
 }
 
