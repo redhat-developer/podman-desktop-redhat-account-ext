@@ -184,9 +184,8 @@ async function isSubscriptionManagerInstalled(): Promise<boolean> {
 
 async function installSubscriptionManger() {
   try {
-    const exitCode = await runRpmInstallSubscriptionManager();
+    return await runRpmInstallSubscriptionManager();
   } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager installation failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
     throw err;

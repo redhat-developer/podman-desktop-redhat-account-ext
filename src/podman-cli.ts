@@ -121,22 +121,23 @@ export async function runSubscriptionManagerRegister(
   }
 }
 
-export async function runSubscriptionManagerUnregister(): Promise<number | undefined> {
+export async function runSubscriptionManagerUnregister(): Promise<extensionApi.RunResult> {
   try {
-    const result = await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_DEACTIVATE_SUBS());
-    return 0;
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_DEACTIVATE_SUBS());
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Subscription manager unregister failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerUnregisterError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
-export async function runCreateFactsFile(jsonText: string): Promise<number> {
+export async function runCreateFactsFile(jsonText: string): Promise<extensionApi.RunResult> {
   try {
-    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.CREATE_FACTS_FILE(jsonText.replace('\n', '\\n')));
-    return 0;
+    return await extensionApi.process.exec(
+      getPodmanCli(),
+      PODMAN_COMMANDS.CREATE_FACTS_FILE(jsonText.replace('\n', '\\n')),
+    );
   } catch (err) {
     const exitCode = (err as extensionApi.RunError).exitCode;
     console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts failed. ${String(err)}`);
