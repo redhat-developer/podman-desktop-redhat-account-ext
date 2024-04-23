@@ -37,8 +37,7 @@ import {
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
 import { SSOStatusBarItem } from './status-bar-item';
-
-export const TelemetryLogger = extensionApi.env.createTelemetryLogger();
+import { ExtensionTelemetryLogger as TelemetryLogger } from './telemetry';
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;

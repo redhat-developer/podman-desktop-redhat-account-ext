@@ -16,19 +16,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeAll, beforeEach, expect, suite, test, vi } from 'vitest';
-import { TelemetryLogger as ExtensionTelemetryLogger, activate } from './extension';
+import { beforeEach, expect, suite, test, vi } from 'vitest';
+import { activate } from './extension';
 import {
   AuthenticationGetSessionOptions,
   TelemetryLogger,
   ExtensionContext,
   AuthenticationSession,
   ProgressLocation,
-  configuration,
 } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
-import { exec } from 'child_process';
+import { ExtensionTelemetryLogger } from './telemetry';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
