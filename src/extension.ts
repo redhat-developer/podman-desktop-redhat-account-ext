@@ -90,7 +90,7 @@ async function createRegistry(username: string, secret: string, serverUrl: strin
     serverUrl,
     username,
     secret,
-    source: '',
+    source: 'podman',
   });
 }
 
@@ -99,7 +99,7 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
     serverUrl,
     username: '',
     secret: '',
-    source: '',
+    source: 'podman',
   });
 }
 
