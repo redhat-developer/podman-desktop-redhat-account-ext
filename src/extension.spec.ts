@@ -24,9 +24,11 @@ import {
   ExtensionContext,
   AuthenticationSession,
   ProgressLocation,
+  configuration,
 } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
+import { exec } from 'child_process';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -75,6 +77,16 @@ vi.mock('@podman-desktop/api', async () => {
     StatusBarAlignLeft: 'LEFT',
     ProgressLocation: {
       TASK_WIDGET: 2,
+    },
+    process: {
+      exec: vi.fn(),
+    },
+    configuration: {
+      getConfiguration: () => {
+        return {
+          get: vi.fn(),
+        };
+      },
     },
   };
 });

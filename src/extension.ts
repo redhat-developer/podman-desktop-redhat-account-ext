@@ -24,7 +24,6 @@ import path from 'node:path';
 import { homedir } from 'node:os';
 import { accessSync, constants, readFileSync } from 'node:fs';
 import {
-  restartPodmanMachine,
   runRpmInstallSubscriptionManager,
   runSubscriptionManager,
   runSubscriptionManagerActivationStatus,
@@ -32,6 +31,8 @@ import {
   runSubscriptionManagerUnregister,
   runCreateFactsFile,
   isPodmanMachineRunning,
+  runStartPodmanMachine,
+  runStopPodmanMachine,
 } from './podman-cli';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { isLinux } from './util';
@@ -179,36 +180,22 @@ async function createOrReuseActivationKey() {
 
 async function isSubscriptionManagerInstalled(): Promise<boolean> {
   const exitCode = await runSubscriptionManager();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running podman ssh to detect subscription-manager, please make sure podman machine is running!',
-    );
-  }
   return exitCode === 0;
 }
 
 async function installSubscriptionManger() {
-  const exitCode = await runRpmInstallSubscriptionManager();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running podman to install subscription-manager, please make sure podman machine is running!',
-    );
+  try {
+    return await runRpmInstallSubscriptionManager();
+  } catch (err) {
+    console.error(`Subscription manager installation failed. ${String(err)}`);
+    TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
+    throw err;
   }
-  return exitCode === 0;
 }
 
 async function isPodmanVmSubscriptionActivated() {
   const exitCode = await runSubscriptionManagerActivationStatus();
-  if (exitCode === undefined) {
-    throw new Error(
-      'Error running subscription-manager in podman machine to get subscription status, please make sure podman machine is running!',
-    );
-  }
   return exitCode === 0;
-}
-
-async function restartPodmanVM() {
-  await restartPodmanMachine();
 }
 
 async function removeSession(sessionId: string): Promise<void> {
@@ -285,7 +272,8 @@ async function configureRegistryAndActivateSubscription() {
           } else {
             if (!(await isSubscriptionManagerInstalled())) {
               await installSubscriptionManger();
-              await restartPodmanVM();
+              await runStopPodmanMachine();
+              await runStartPodmanMachine();
             }
             if (!(await isPodmanVmSubscriptionActivated())) {
               const facts = {

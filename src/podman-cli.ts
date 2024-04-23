@@ -90,15 +90,13 @@ export async function runSubscriptionManager(): Promise<number | undefined> {
   }
 }
 
-export async function runRpmInstallSubscriptionManager(): Promise<number | undefined> {
+export async function runRpmInstallSubscriptionManager(): Promise<extensionApi.RunResult> {
   try {
-    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
-    return 0;
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
   } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
-    console.error(`Subscription manager installation returned exit code: ${exitCode}`);
+    console.error(`Subscription manager installation failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
@@ -118,48 +116,57 @@ export async function runSubscriptionManagerActivationStatus(): Promise<number |
 export async function runSubscriptionManagerRegister(
   activationKeyName: string,
   orgId: string,
-): Promise<number | undefined> {
+): Promise<extensionApi.RunResult> {
   try {
-    const result = await extensionApi.process.exec(
-      getPodmanCli(),
-      PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId),
-    );
-    return 0;
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_ACTIVATE_SUBS(activationKeyName, orgId));
   } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
-    console.error(`Subscription manager registration returned exit code: ${exitCode}`);
+    console.error(`Subscription manager registration failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerRegisterError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
-export async function runSubscriptionManagerUnregister(): Promise<number | undefined> {
+export async function runSubscriptionManagerUnregister(): Promise<extensionApi.RunResult> {
   try {
-    const result = await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_DEACTIVATE_SUBS());
-    return 0;
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.SM_DEACTIVATE_SUBS());
   } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
-    console.error(`Subscription manager registration returned exit code: ${exitCode}`);
+    console.error(`Subscription manager unregister failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerUnregisterError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
-export async function runCreateFactsFile(jsonText: string): Promise<number> {
+export async function runCreateFactsFile(jsonText: string): Promise<extensionApi.RunResult> {
   try {
-    await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.CREATE_FACTS_FILE(jsonText.replace('\n', '\\n')));
-    return 0;
+    return await extensionApi.process.exec(
+      getPodmanCli(),
+      PODMAN_COMMANDS.CREATE_FACTS_FILE(jsonText.replace('\n', '\\n')),
+    );
   } catch (err) {
-    const exitCode = (err as extensionApi.RunError).exitCode;
-    console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts returned exit code: ${exitCode}`);
+    console.error(`Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerCreateFactsFileError', { error: String(err) });
-    return exitCode;
+    throw err;
   }
 }
 
-export async function restartPodmanMachine() {
-  await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP());
-  await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START());
+export async function runStopPodmanMachine(): Promise<extensionApi.RunResult> {
+  try {
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP());
+  } catch (err) {
+    console.error(`Podman machine stop failed. ${String(err)}`);
+    TelemetryLogger.logError('stopPodmanMachineError', { error: String(err) });
+    throw err;
+  }
+}
+
+export async function runStartPodmanMachine(): Promise<extensionApi.RunResult> {
+  try {
+    return await extensionApi.process.exec(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START());
+  } catch (err) {
+    console.error(`Podman machine start failed. ${String(err)}`);
+    TelemetryLogger.logError('startPodmanMachineError', { error: String(err) });
+    throw err;
+  }
 }
 
 export function isPodmanMachineRunning(): boolean {
