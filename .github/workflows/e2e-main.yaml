@@ -44,6 +44,7 @@ jobs:
     name: Red Hat Account Extension E2E tests
     runs-on: ubuntu-22.04
     steps:
+
       - uses: actions/checkout@v4
         if: github.event_name == 'workflow_dispatch'
         with:
@@ -55,6 +56,16 @@ jobs:
         if: github.event_name == 'push'
         with: 
           path: podman-desktop-redhat-account-ext
+
+      - name: Setup default repository name
+        env: 
+          EVENT: ${{ github.event_name }}
+        run: |
+          repository=podman-desktop-redhat-account-ext
+          if [[ "$EVENT" == 'workflow_dispatch' ]]; then
+            repository=${{ github.event.inputs.repositoryName }}
+          fi
+          echo "REPOSITORY=$repository" >> $GITHUB_ENV
 
       # Checkout podman desktop
       - uses: actions/checkout@v4
@@ -90,7 +101,7 @@ jobs:
           yarn test:e2e:build
 
       - name: Get yarn cache directory path
-        working-directory: ./podman-desktop-redhat-account-ext
+        working-directory: ${{ env.REPOSITORY }}
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
 
@@ -103,13 +114,13 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Execute yarn in Red Hat Account Extension
-        working-directory: ./podman-desktop-redhat-account-ext
+        working-directory: ${{ env.REPOSITORY }}
         run: |
           yarn add -D @podman-desktop/tests-playwright@next
           yarn --frozen-lockfile
 
       - name: Run All E2E tests in Red Hat Account Extension
-        working-directory: ./podman-desktop-redhat-account-ext
+        working-directory: ${{ env.REPOSITORY }}
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
         run: yarn test:e2e
