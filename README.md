@@ -2,14 +2,6 @@
 
 An extension for Podman Desktop to simplify logging into and creating a Red Hat account.  The extension opens sso.redhat.com in the browser to retrieve an SSO token upon successful login.  The SSO token is then used to log into the Red Hat Container Registry ([registry.redhat.io](https://catalog.redhat.com/)) and to register the Linux virtual machine powering Podman Desktop via subscription-manager to grant the containers access to protected Red Hat content such as RHEL repositories.  The SSO form guarantees that each user, new and existing, has a valid [Red Hat Developers Subscription](https://developers.redhat.com/) which will be used to register the virtual machine at no cost.
 
-# Installation
-
-You can install the Red Account Extension directly inside of Podman Desktop.  It is also part of the Red Hat Extension Pack:
-
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/extension-pack.png)
-
-Extensions for Podman Desktop are shipped as OCI container images, which can be manually installed in the Extensions menu of Podman Desktop.  Please refer to the [Podman Desktop documentation](https://podman-desktop.io/docs/extensions/install) for installation instructions and to [Quay.io](https://quay.io/repository/redhat-developer/podman-desktop-redhat-account-ext?tab=tags) for available tags of the Red Hat Account Extension.
-
 # Usage
 
 Once installed, you can find the extension in the Settings menu which you can find in the bottom left corner of Podman Desktop.  To sign into your Red Hat account, open the Authentication menu and click on the "Sign in" button:
@@ -40,6 +32,14 @@ Once signed in, you can now see being logged into the Red Hat Container Registry
 The extension requires a running Podman Machine which grants root privileges required to run subscription-manager.  In order to create a Podman Machine you may run `podman machine init` in your terminal; Podman Desktop and the extension will then be able to use that Podman Machine.
 
 From a technical perspective, the extension is not required when running on Linux.  You can run `podman login registry.redhat.io` and `subscription-manager register` with the credentials of your Red Hat account.  `subscription-manager` is available on Fedora, CentOS, and Red Hat Enterprise Linux.
+
+# Installation
+
+You can install the Red Hat Account Extension directly inside of Podman Desktop.  It is also part of the Red Hat Extension Pack:
+
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/extension-pack.png)
+
+Extensions for Podman Desktop are shipped as OCI container images, which can be manually installed in the Extensions menu of Podman Desktop.  Please refer to the [Podman Desktop documentation](https://podman-desktop.io/docs/extensions/install) for installation instructions and to [Quay.io](https://quay.io/repository/redhat-developer/podman-desktop-redhat-account-ext?tab=tags) for available tags of the Red Hat Account Extension.
 
 # Local Development
 
