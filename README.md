@@ -1,6 +1,6 @@
 # Podman Desktop Red Hat Account Extension
 
-The Podman Desktop Red Hat Account Extension puts the [Red Hat Developers Subscription](https://developers.redhat.com/) and the Red Hat ecosystem at your fingertips. In just a few clicks, you can sign into your Red Hat account or create a new one with a custom email address or social login via your Google, Microsoft, or GitHub account. The Developer Subscription enables you to consume Red Hat content such as RHEL container images and RPM packages at no cost. The Podman Desktop Red Hat Account Extensions makes sure to only consume the no-cost Developer Subscriptions even if you already have paid subscriptions linked to your account.
+The Podman Desktop Red Hat Account Extension puts the [Red Hat Developers Subscription](https://developers.redhat.com/) and the Red Hat ecosystem at your fingertips. In just a few clicks, you can sign into your Red Hat account or create a new one with a custom email address or social login via your Google, Microsoft, or GitHub account. The Developer Subscription enables you to consume Red Hat content such as RHEL container images and RPM packages at no cost. The Podman Desktop Red Hat Account Extensions makes sure to only consume the no-cost Developer Subscriptions even if you already have paid subscriptions linked to your account. It is supported on Windows, MacOS and Linux.
 
 # Usage
 
