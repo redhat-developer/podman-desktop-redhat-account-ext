@@ -85,12 +85,13 @@ async function signIntoRedHatDeveloperAccount(
 
 const REGISTRY_REDHAT_IO = 'registry.redhat.io';
 
-async function createRegistry(username: string, secret: string, serverUrl: string = REGISTRY_REDHAT_IO): Promise<void> {
+async function createRegistry(username: string, secret: string, alias: string, serverUrl: string = REGISTRY_REDHAT_IO): Promise<void> {
   extensionApi.registry.registerRegistry({
     serverUrl,
     username,
     secret,
     source: 'podman',
+    alias,
   });
 }
 
@@ -149,7 +150,7 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
     });
   }
 
-  createRegistry(selectedServiceAccount!.credentials!.username!, selectedServiceAccount!.credentials!.password!);
+  createRegistry(selectedServiceAccount!.credentials!.username!, selectedServiceAccount!.credentials!.password!, currentSession.account.label);
 }
 
 async function createOrReuseActivationKey() {
