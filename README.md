@@ -40,23 +40,3 @@ You can install the Red Hat Account Extension directly inside of Podman Desktop.
 ![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/extension-pack.png)
 
 Extensions for Podman Desktop are shipped as OCI container images, which can be manually installed in the Extensions menu of Podman Desktop.  Please refer to the [Podman Desktop documentation](https://podman-desktop.io/docs/extensions/install) for installation instructions and to [Quay.io](https://quay.io/repository/redhat-developer/podman-desktop-redhat-account-ext?tab=tags) for available tags of the Red Hat Account Extension.
-
-# Local Development
-
-To rebuild Podman Desktop and the extension run:
-
-```shell
-  yarn build
-```
-
-To execute the extension in Podman Desktop, use one of the following to options.
-
-With a pre-installed version of Podman Desktop:
-```shell
-podman-desktop --extension-folder this_folder
-```
-
-In a local git tree of Podman Desktop:
-```shell
-yarn watch --extension-folder this_folder
-```
