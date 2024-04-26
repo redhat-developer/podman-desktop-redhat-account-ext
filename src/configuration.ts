@@ -40,7 +40,7 @@ const CLIENT_ID = process.env.CLIENT_ID ? process.env.CLIENT_ID : 'podman-deskto
 
 console.log('REDHAT_AUTH_URL: ' + REDHAT_AUTH_URL);
 console.log('KAS_API_URL: ' + KAS_API_URL);
-console.log('CLIENT_ID: ' + KAS_API_URL);
+console.log('CLIENT_ID: ' + CLIENT_ID);
 
 export function getAuthConfig(): AuthConfig {
   return {
