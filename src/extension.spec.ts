@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { beforeEach, expect, suite, test, vi } from 'vitest';
-import { activate } from './extension';
+import { beforeEach, afterEach, expect, suite, test, vi } from 'vitest';
+import * as extension from './extension';
 import {
   AuthenticationGetSessionOptions,
   TelemetryLogger,
@@ -28,6 +28,7 @@ import {
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
 import { ExtensionTelemetryLogger } from './telemetry';
+import { OrganizationService } from '@redhat-developer/rhsm-client';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -104,11 +105,15 @@ function createExtContext(): ExtensionContext {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  activate(createExtContext());
+});
+
+afterEach(() => {
+  extension.deactivate();
 });
 
 suite('extension activation', () => {
   test('register commands declared in package.json', async () => {
+    await extension.activate(createExtContext());
     expect(commands.registerCommand).toBeCalledTimes(4);
     expect(commands.registerCommand).toBeCalledWith('redhat.authentication.signin', expect.anything());
     expect(commands.registerCommand).toBeCalledWith('redhat.authentication.navigate.settings', expect.anything());
@@ -171,13 +176,77 @@ suite('signin command telemetry reports', () => {
       },
     );
     vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(false);
-    await activate(createExtContext());
+    await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();
     expect(authentication.onDidChangeSessions).toBeCalled();
     expect(logSpy).toBeCalledWith('signin', {
       successful: false,
       error: 'Error: No running podman',
+      errorIn: 'subscription-activation',
+    });
+  });
+
+  test('unsuccessful login when simple content access is not enabled for account', async () => {
+    const logSpy = vi.spyOn(ExtensionTelemetryLogger, 'logUsage').mockImplementation(() => {
+      return;
+    });
+    let notificationCallback: (event: any) => Promise<any>;
+    let session: AuthenticationSession;
+    vi.mocked(authentication.onDidChangeSessions).mockImplementation((callback: (event: any) => Promise<any>) => {
+      notificationCallback = callback;
+      return {
+        dispose: vi.fn(),
+      };
+    });
+    vi.mocked(authentication.getSession).mockImplementation(
+      async (
+        _p1: string,
+        _p2: string[],
+        options: AuthenticationGetSessionOptions | undefined,
+      ): Promise<AuthenticationSession | undefined> => {
+        if (session) {
+          return Promise.resolve(session);
+        }
+        if (options?.createIfNone) {
+          session = {
+            id: '1',
+            accessToken: 'token',
+            scopes: ['scope1', 'scope2'],
+            account: {
+              id: 'accountId',
+              label: 'label',
+            },
+          };
+          await notificationCallback({
+            provider: {
+              id: 'redhat.authentication-provider',
+            },
+          });
+        }
+        return;
+      },
+    );
+    let commandFunctionCopy: () => Promise<void>;
+    vi.mocked(commands.registerCommand).mockImplementation(
+      (commandId: string, commandFunction: () => Promise<void>) => {
+        if (commandId === 'redhat.authentication.signin') {
+          commandFunctionCopy = commandFunction;
+        }
+        return {
+          dispose: vi.fn(),
+        };
+      },
+    );
+    vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(true);
+    vi.spyOn(OrganizationService.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
+    await extension.activate(createExtContext());
+    expect(commandFunctionCopy!).toBeDefined();
+    await commandFunctionCopy!();
+    expect(authentication.onDidChangeSessions).toBeCalled();
+    expect(logSpy).toBeCalledWith('signin', {
+      successful: false,
+      error: 'Error: SCA is not enabled and message closed',
       errorIn: 'subscription-activation',
     });
   });
