@@ -2,12 +2,12 @@
   "name": "redhat-authentication",
   "displayName": "Red Hat Authentication",
   "description": "Login to Red Hat Developers",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
   "engines": {
-    "podman-desktop": "^1.9.0"
+    "podman-desktop": "^1.10.0"
   },
   "main": "./dist/extension.js",
   "contributes": {
@@ -46,7 +46,7 @@
   
   },
   "dependencies": {
-    "@podman-desktop/api": "^1.9.0",
+    "@podman-desktop/api": "^1.10.0",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4",
     "axios": "^1.6.5",
