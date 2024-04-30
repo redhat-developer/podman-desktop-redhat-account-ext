@@ -15,20 +15,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { Page, Locator, expect as playExpect } from '@playwright/test';
-import { AuthenticationPage, NavigationBar, PodmanDesktopRunner, RunnerTestContext, SSOExtensionPage, SettingsExtensionsPage, WelcomePage } from '@podman-desktop/tests-playwright';
+import { Page, expect as playExpect } from '@playwright/test';
 import { afterAll, beforeAll, describe, test, beforeEach } from 'vitest';
+import { AuthenticationPage, ExtensionCardPage, NavigationBar, PodmanDesktopRunner, RunnerTestContext, WelcomePage } from '@podman-desktop/tests-playwright';
+import { SSOExtensionPage } from './model/pages/sso-extension-page';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
+let extensionCard: ExtensionCardPage;
 const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest';
-const extensionName = 'Red Hat Authentication';
+const extensionLabel = 'redhat.redhat-authentication';
 const extensionLabelName = 'redhat-authentication';
 const authProviderName = 'Red Hat SSO';
-const extensionStatusLabel = 'Extension Status Label';
-const extensionDetailsLabel = 'Extension Details';
 const activeExtensionStatus = 'ACTIVE';
 const disabledExtensionStatus = 'DISABLED';
 
@@ -45,6 +45,7 @@ beforeAll(async () => {
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
   navBar = new NavigationBar(page);
+  extensionCard = new ExtensionCardPage(page, extensionLabelName, extensionLabel);
 });
 
 afterAll(async () => {
@@ -53,10 +54,9 @@ afterAll(async () => {
 
 describe('Red Hat Authentication extension verification', async () => {
 
-  test('Go to settings and check if extension is already installed', async () => {
-    const settingsBar = await navBar.openSettings();
-    const extensions = await settingsBar.getCurrentExtensions();
-    if (await extensionExists(extensions, extensionName)) {
+  test('Go to extensions and check if extension is already installed', async () => {
+    const extensions = await navBar.openExtensions();
+    if (await extensions.extensionIsInstalled(extensionLabel)) {
       extensionInstalled = true;
     }
   });
@@ -64,32 +64,31 @@ describe('Red Hat Authentication extension verification', async () => {
   test.runIf(extensionInstalled)(
     'Uninstalled previous version of sso extension',
     async () => {
-      await removeExtension(extensionName);
+      await removeExtension();
     },
     60000,
   );
 
   test('Extension can be installed using OCI image', async () => {
-    const settingsBar = await navBar.openSettings();
-    const settingsExtensionPage = await settingsBar.openTabPage(SettingsExtensionsPage);
-    await playExpect(settingsExtensionPage.heading).toBeVisible();
-    await settingsExtensionPage.installExtensionFromOCIImage(imageName);
+    const extensions = await navBar.openExtensions();
+    await extensions.installExtensionFromOCIImage(imageName);
+    await playExpect(extensionCard.card).toBeVisible();
   }, 200000);
 
-  test('Extension record is added under installed extensions', async () => {
-    const settingsBar = await navBar.openSettings();
-    const settingsExtensionPage = await settingsBar.openTabPage(SettingsExtensionsPage);
-    const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
-    await playExpect(extension).toBeVisible();
-    await extension.scrollIntoViewIfNeeded();
-    const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
-    await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(activeExtensionStatus);
+  test('Extension card is present and active', async () => {
+    const extensions = await navBar.openExtensions();
+    playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
+    const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
+    await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
   });
 
-  test('Extension appears under Settings bar extensions', async () => {
-    const settingsBar = await navBar.openSettings();
-    const extensions = await settingsBar.getCurrentExtensions();
-    await playExpect.poll(async () => await extensionExists(extensions, extensionName), { timeout: 30000 }).toBeTruthy();
+  test('Extension Details show correct status', async () => {
+    const extensions = await navBar.openExtensions();
+    const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
+    await extensionCard.openExtensionDetails();
+    const details = new SSOExtensionPage(page);
+    await playExpect(details.heading).toBeVisible();
+    await playExpect(details.status).toHaveText(activeExtensionStatus);
   });
 
   test('SSO provider is available in Authentication Page', async () => {
@@ -104,15 +103,14 @@ describe('Red Hat Authentication extension verification', async () => {
 
   describe('Red Hat Authentication extension handling', async () => {
     test('Extension can be disabled', async () => {
-      const settingsBar = await navBar.openSettings();
-      const settingsExtensionPage = await settingsBar.openTabPage(SettingsExtensionsPage);
-      const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
-      await extension.scrollIntoViewIfNeeded();
-      await settingsExtensionPage.getExtensionStopButton(extension).click();
-      const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
-      await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(disabledExtensionStatus);
+      const extensions = await navBar.openExtensions();
+      playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
+      const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
+      await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
+      await extensionCard.disableExtension();
+      await playExpect(extensionCard.status).toHaveText(disabledExtensionStatus);
 
-      await navBar.openSettings();
+      const settingsBar = await navBar.openSettings();
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(authPage.heading).toHaveText('Authentication');
       const provider = authPage.getProvider(authProviderName);
@@ -120,15 +118,14 @@ describe('Red Hat Authentication extension verification', async () => {
     });
 
     test('Extension can be re-enabled correctly', async () => {
-      const settingsBar = await navBar.openSettings();
-      const settingsExtensionPage = await settingsBar.openTabPage(SettingsExtensionsPage);
-      const extension = settingsExtensionPage.getExtensionRowFromTable(extensionLabelName);
-      await extension.scrollIntoViewIfNeeded();
-      await settingsExtensionPage.getExtensionStartButton(extension).click();
-      const extensionDetails = extension.getByRole('cell', { name: extensionDetailsLabel });
-      await playExpect(extensionDetails.getByLabel(extensionStatusLabel)).toHaveText(activeExtensionStatus);
+      const extensions = await navBar.openExtensions();
+      playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
+      const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
+      await playExpect(extensionCard.status).toHaveText(disabledExtensionStatus);
+      await extensionCard.enableExtension();
+      await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
 
-      await navBar.openSettings();
+      const settingsBar = await navBar.openSettings();
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(authPage.heading).toHaveText('Authentication');
       await playExpect(authPage.getProvider(authProviderName)).toHaveCount(1);
@@ -136,26 +133,14 @@ describe('Red Hat Authentication extension verification', async () => {
   });
 
   test('SSO extension can be removed', async () => {
-    await removeExtension(extensionName);
+    await removeExtension();
   });
 });
 
-async function extensionExists(extensionList: Locator[], extensionName: string): Promise<boolean> {
-  for (const extension of extensionList) {
-    if ((await extension.getByText(extensionName, { exact: true }).count()) > 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-async function removeExtension(extensionName: string): Promise<void> {
-  const settingsBar = await navBar.openSettings();
-  let extensions = await settingsBar.getCurrentExtensions();
-  const authPage = await settingsBar.openTabPage(SSOExtensionPage);
-  const settingsExtensionPage = await authPage.removeExtension();
-  await playExpect(settingsExtensionPage.heading).toBeVisible();
-
-  extensions = await settingsBar.getCurrentExtensions();
-  await playExpect.poll(async () => await extensionExists(extensions, extensionName), { timeout: 15000 }).toBeFalsy();
+async function removeExtension(): Promise<void> {
+  const extensions = await navBar.openExtensions();
+  const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
+  await extensionCard.disableExtension();
+  await extensionCard.removeExtension();
+  await playExpect.poll(async () => await extensions.extensionIsInstalled(extensionLabel), { timeout: 15000 }).toBeFalsy();
 }
