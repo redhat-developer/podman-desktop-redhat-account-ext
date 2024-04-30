@@ -67,7 +67,7 @@ beforeEach(() => {
 
 test('runSubscriptionManager returns 0 when it is installed', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runSubscriptionManager();
+  const result = await runSubscriptionManager('machine1');
   expect(result).toBe(0);
 });
 
@@ -78,15 +78,15 @@ test('runSubscriptionManager returns 1 when it is not installed', async () => {
     stderr: 'stderr output',
     toString: () => 'error message',
   });
-  const result = await runSubscriptionManager();
+  const result = await runSubscriptionManager('machine1');
   expect(result).toBe(1);
 });
 
 test('runRpmInstallSubscription manager returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runRpmInstallSubscriptionManager();
+  const result = await runRpmInstallSubscriptionManager('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM());
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM('machine1'));
 });
 
 test('runRpmInstallSubscription manager returns none 0 error code when failed and send telemetry', async () => {
@@ -96,7 +96,7 @@ test('runRpmInstallSubscription manager returns none 0 error code when failed an
   });
   const consoleError = vi.spyOn(console, 'error');
   let error: Error | undefined;
-  const result = await runRpmInstallSubscriptionManager().catch(err => {
+  const result = await runRpmInstallSubscriptionManager('machine1').catch(err => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -111,7 +111,7 @@ test('runRpmInstallSubscription manager returns none 0 error code when failed an
 
 test('runSubscriptionManagerActivationStatus returns 0 when it has subscription activated', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runSubscriptionManagerActivationStatus();
+  const result = await runSubscriptionManagerActivationStatus('machine1');
   expect(result).toBe(0);
 });
 
@@ -122,17 +122,17 @@ test('runSubscriptionManagerActivationStatus returns 1 when it has no active sub
     stderr: 'stderr output',
     toString: () => 'error message',
   });
-  const result = await runSubscriptionManagerActivationStatus();
+  const result = await runSubscriptionManagerActivationStatus('machine1');
   expect(result).toBe(1);
 });
 
 test('runSubscriptionManagerRegister returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runSubscriptionManagerRegister('activation-key-name', 'orgId');
+  const result = await runSubscriptionManagerRegister('machine1', 'activation-key-name', 'orgId');
   expect(result).toBe(runResult);
   expect(podmanProcess.exec).toBeCalledWith(
     getPodmanCli(),
-    PODMAN_COMMANDS.SM_ACTIVATE_SUBS('activation-key-name', 'orgId'),
+    PODMAN_COMMANDS.SM_ACTIVATE_SUBS('machine1', 'activation-key-name', 'orgId'),
   );
 });
 
@@ -143,7 +143,7 @@ test('runSubscriptionManagerRegister manager returns none 0 error code when fail
   });
   const consoleError = vi.spyOn(console, 'error');
   let error: Error | undefined;
-  const result = await runSubscriptionManagerRegister('activation-key-name', 'orgId').catch(err => {
+  const result = await runSubscriptionManagerRegister('machine1', 'activation-key-name', 'orgId').catch(err => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -158,9 +158,12 @@ test('runSubscriptionManagerRegister manager returns none 0 error code when fail
 
 test('runCreateFactsFile returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runCreateFactsFile('{"field":"value"}');
+  const result = await runCreateFactsFile('machine1', '{"field":"value"}');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.CREATE_FACTS_FILE('{"field":"value"}'));
+  expect(podmanProcess.exec).toBeCalledWith(
+    getPodmanCli(),
+    PODMAN_COMMANDS.CREATE_FACTS_FILE('machine1', '{"field":"value"}'),
+  );
 });
 
 test('runCreateFactsFile manager returns none 0 error code when failed and send telemetry', async () => {
@@ -170,7 +173,7 @@ test('runCreateFactsFile manager returns none 0 error code when failed and send 
   });
   const consoleError = vi.spyOn(console, 'error');
   let error: Error | undefined;
-  const result = await runCreateFactsFile('{"field":"value"}').catch(err => {
+  const result = await runCreateFactsFile('machine1', '{"field":"value"}').catch(err => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -185,9 +188,9 @@ test('runCreateFactsFile manager returns none 0 error code when failed and send 
 
 test('runStopPodmanMachine returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runStopPodmanMachine();
+  const result = await runStopPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP());
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP('machine1'));
 });
 
 test('runStopPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
@@ -197,7 +200,7 @@ test('runStopPodmanMachine manager returns none 0 error code when failed and sen
   });
   const consoleError = vi.spyOn(console, 'error');
   let error: Error | undefined;
-  const result = await runStopPodmanMachine().catch(err => {
+  const result = await runStopPodmanMachine('machine1').catch(err => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -212,9 +215,9 @@ test('runStopPodmanMachine manager returns none 0 error code when failed and sen
 
 test('runStartPodmanMachine returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
-  const result = await runStartPodmanMachine();
+  const result = await runStartPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START());
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START('machine1'));
 });
 
 test('runStartPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
@@ -224,7 +227,7 @@ test('runStartPodmanMachine manager returns none 0 error code when failed and se
   });
   const consoleError = vi.spyOn(console, 'error');
   let error: Error | undefined;
-  const result = await runStartPodmanMachine().catch(err => {
+  const result = await runStartPodmanMachine('machine1').catch(err => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
