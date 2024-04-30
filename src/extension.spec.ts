@@ -27,6 +27,7 @@ import {
 } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import * as podmanCli from './podman-cli';
+import * as subscription from './subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import { OrganizationService } from '@redhat-developer/rhsm-client';
 
@@ -175,7 +176,8 @@ suite('signin command telemetry reports', () => {
         };
       },
     );
-    vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(false);
+    vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockResolvedValue(true);
+    vi.spyOn(podmanCli, 'getRunningPodmanMachineName').mockReturnValue(undefined);
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();
@@ -238,7 +240,8 @@ suite('signin command telemetry reports', () => {
         };
       },
     );
-    vi.spyOn(podmanCli, 'isPodmanMachineRunning').mockReturnValue(true);
+    vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockReturnValue(true);
+    vi.spyOn(podmanCli, 'getRunningPodmanMachineName').mockReturnValue('machine1');
     vi.spyOn(OrganizationService.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
