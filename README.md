@@ -6,15 +6,15 @@ The Podman Desktop Red Hat Account Extension puts the [Red Hat Developers Subscr
 
 Once installed, you can find the extension in the Settings menu which you can find in the bottom left corner of Podman Desktop.  To sign into your Red Hat account, open the Authentication menu and click on the "Sign in" button:
 
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/authentication-menu.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.1/screenshots/authentication-menu.png)
 
 To sign into your Red Had account, Podman Desktop will open Red Hat SSO in your browser of choice.  The SSO form will make sure that each user has accepted the terms and conditions, and has a valid Red Hat [developers subscription](https://developers.redhat.com/about?source=sso). If needed, you may also create a new Red Hat account and further use social login via an existing Google, Microsoft or GitHub account:
 
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v0.0.2/screenshots/sso.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.1/screenshots/sso.png)
 
 Once signed in, there is nothing further to be done. Podman Desktop will automatically use the SSO token to log into the Red Hat container registry and to register the Linux virtual machine (i.e., podman machine) via subscription-manager. The two tasks are listed in the Tasks menu which you can open on the bottom right of Podman Desktop:
 
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/tasks.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.1/screenshots/tasks.png)
 
 To verify that the sign-in process was successful, you may build the following Dockerfile:
 ```Dockerfile
@@ -25,7 +25,7 @@ RUN  dnf install -y kernel
 Pulling the container image `registry.redhat.io/rhel9/toolbox` requires having logged into the Red Hat container registry.  Installing the `kernel` package requires access to protected content.
 
 Once signed in, you can now see being logged into the Red Hat Container Registry `registry.redhat.io` in the Registries menu:
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.0/screenshots/registries.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.1/screenshots/registries.png)
 
 ## Usage on Linux
 
@@ -37,4 +37,4 @@ From a technical perspective, the extension is not required when running on Linu
 
 You can install the Red Hat Account Extension directly inside of Podman Desktop.  It is also part of the Red Hat Extension Pack:
 
-![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/main/screenshots/installation.png)
+![image](https://raw.githubusercontent.com/redhat-developer/podman-desktop-redhat-account-ext/v1.0.1/screenshots/installation.png)
