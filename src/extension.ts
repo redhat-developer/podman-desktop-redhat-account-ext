@@ -307,6 +307,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
 
   // build and initialize auth service and update status bar state
   authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
+
   context.subscriptions.push(
     extensionApi.registry.suggestRegistry({
       name: 'Red Hat Container Registry',
@@ -354,7 +355,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     }
   });
 
-  await signIntoRedHatDeveloperAccount(false);
+  signIntoRedHatDeveloperAccount(false).catch(console.log);
 
   context.subscriptions.push(providerDisposable);
 

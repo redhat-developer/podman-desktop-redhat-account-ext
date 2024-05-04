@@ -96,34 +96,59 @@ export interface RedHatAuthenticationSession extends AuthenticationSession {
   };
 }
 
+class ClientHolder {
+  private client: Client;
+  private clientPromise: Promise<Client>;
+  private config: AuthConfig;
+
+  constructor(config: AuthConfig) {
+    this.config = config;
+  }
+
+  async getClient(): Promise<Client> {
+    if (this.clientPromise) {
+      return this.clientPromise;
+    }
+
+    Logger.info(`Configuring ${this.config.serviceId} {auth: ${this.config.authUrl}, api: ${this.config.apiUrl}}`);
+
+    this.clientPromise = Issuer.discover(this.config.authUrl)
+      .then(issuer => {
+        this.clientPromise = undefined;
+        this.client = new issuer.Client({
+          client_id: this.config.clientId,
+          response_types: ['code'],
+          token_endpoint_auth_method: 'none',
+        });
+        return this.client;
+      })
+      .catch(error => {
+        this.clientPromise = undefined;
+        throw error;
+      });
+
+    return this.clientPromise;
+  }
+}
+
 export class RedHatAuthenticationService {
   private _tokens: IToken[] = [];
   private _refreshTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>();
-  //private _uriHandler: UriEventHandler;
   private _disposables: Disposable[] = [];
-  private client: Client;
+  private clientHolder: ClientHolder;
   private config: AuthConfig;
 
   constructor(
-    issuer: Issuer<Client>,
     private context: ExtensionContext,
     config: AuthConfig,
   ) {
-    //this._uriHandler = new UriEventHandler();
-    //this._disposables.push(vscode.window.registerUriHandler(this._uriHandler));
     this.config = config;
-    this.client = new issuer.Client({
-      client_id: config.clientId,
-      response_types: ['code'],
-      token_endpoint_auth_method: 'none',
-    });
+    this.clientHolder = new ClientHolder(config);
   }
 
   public static async build(context: ExtensionContext, config: AuthConfig): Promise<RedHatAuthenticationService> {
     Logger.info(`Configuring ${config.serviceId} {auth: ${config.authUrl}, api: ${config.apiUrl}}`);
-    const issuer = await Issuer.discover(config.authUrl);
-
-    const provider = new RedHatAuthenticationService(issuer, context, config);
+    const provider = new RedHatAuthenticationService(context, config);
     return provider;
   }
 
@@ -345,7 +370,8 @@ export class RedHatAuthenticationService {
         const defaultScopes = 'openid id.username email';
         const scope = scopes;
 
-        const authUrl = this.client.authorizationUrl({
+        const client = await this.clientHolder.getClient();
+        const authUrl = client.authorizationUrl({
           scope: `${defaultScopes} ${scope}`,
           resource: this.config.apiUrl,
           code_challenge,
@@ -374,7 +400,7 @@ export class RedHatAuthenticationService {
         }
         let tokenSet: TokenSet;
         try {
-          tokenSet = await this.client.callback(redirect_uri, this.client.callbackParams(callbackResult.req), {
+          tokenSet = await client.callback(redirect_uri, client.callbackParams(callbackResult.req), {
             code_verifier,
             nonce,
           });
@@ -487,7 +513,8 @@ export class RedHatAuthenticationService {
   private async refreshToken(refreshToken: string, scope: string, sessionId: string): Promise<IToken> {
     Logger.info(`Refreshing token from ${this.config.authUrl}`);
     try {
-      const refreshedToken = await this.client.refresh(refreshToken);
+      const client = await this.clientHolder.getClient();
+      const refreshedToken = await client.refresh(refreshToken);
       const token = this.convertToken(refreshedToken, scope, sessionId);
       this.setToken(token, scope);
       Logger.info('Token refresh success');
