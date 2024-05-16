@@ -23,8 +23,11 @@ on:
       - 'main'
 
 jobs:
-  build:
+  CI:
+    strategy:
+      matrix:
+        target: [ubuntu-20.04]
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with: 
-      runs-on: ubuntu-latest
+      runs-on: ${{ matrix.target }}
       registry: 'ghcr'
