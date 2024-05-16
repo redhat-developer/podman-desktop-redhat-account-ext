@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    name: build
+    name: ${{ inputs.runs-on }}
     runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 60
     env:
