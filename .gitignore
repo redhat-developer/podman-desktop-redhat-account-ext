@@ -1,4 +1,5 @@
 .electron-vendors.cache.json
+.eslintcache
 builtin
 dist
 node_modules
