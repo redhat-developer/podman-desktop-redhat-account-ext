@@ -20,10 +20,68 @@ name: pr-check
 on: [pull_request]
 
 jobs:
-  pr-check-job:
+  
+  build:
+    name: Build
+    needs: test
     strategy:
       matrix:
         target: [windows-2022, macos-14, ubuntu-20.04]
+      fail-fast: true
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with:
       runs-on: ${{ matrix.target }}
+  
+  test:
+    name: Test
+    runs-on: ${{ matrix.target }}
+    strategy:
+      matrix:
+        target: [windows-2022, macos-14, ubuntu-22.04]
+      fail-fast: true
+      
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get yarn cache directory path (Windows)
+        if: ${{ matrix.target=='windows-2022' }}
+        id: yarn-cache-dir-path-windows
+        run: echo "dir=$(yarn cache dir)" >> ${env:GITHUB_OUTPUT}
+
+      - name: Get yarn cache directory path (mac/Linux)
+        if: ${{ matrix.target=='ubuntu-22.04'}}
+        id: yarn-cache-dir-path-unix
+        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
+
+      - uses: actions/cache@v4
+        if: ${{ matrix.target=='windows-2022' }}
+        id: yarn-cache-windows
+        with:
+          path: ${{ steps.yarn-cache-dir-path-windows.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.target }}-yarn-
+
+      - uses: actions/cache@v4
+        if: ${{ matrix.target=='ubuntu-22.04'}}
+        id: yarn-cache-unix
+        with:
+          path: ${{ steps.yarn-cache-dir-path-unix.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Execute yarn
+        run: yarn --frozen-lockfile --network-timeout 180000
+
+      - name: Run linter
+        run: yarn lint:check
+
+      - name: Run formatter
+        run: yarn format:check
+
+      - name: Run unit tests
+        run: yarn test

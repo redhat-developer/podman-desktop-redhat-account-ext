@@ -19,20 +19,23 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-import {
-  AuthenticationSession,
-  window,
-  EventEmitter,
+/* eslint-disable header/header */
+
+import type { ServerResponse } from 'node:http';
+
+import type {
   AuthenticationProviderAuthenticationSessionsChangeEvent,
-  env,
-  Uri,
-  ExtensionContext,
+  AuthenticationSession,
   Disposable,
+  ExtensionContext,
 } from '@podman-desktop/api';
-import { ServerResponse } from 'node:http';
-import { Client, generators, Issuer, TokenSet } from 'openid-client';
-import { RedirectResult, createServer, startServer } from './authentication-server';
-import { AuthConfig } from './configuration';
+import { env, EventEmitter, Uri, window } from '@podman-desktop/api';
+import type { Client, TokenSet } from 'openid-client';
+import { generators, Issuer } from 'openid-client';
+
+import type { RedirectResult } from './authentication-server';
+import { createServer, startServer } from './authentication-server';
+import type { AuthConfig } from './configuration';
 import Logger from './logger';
 
 interface IToken {
@@ -106,7 +109,7 @@ class ClientHolder {
   }
 
   async getClient(): Promise<Client> {
-    if (this.clientPromise) {
+    if (this.clientPromise !== undefined) {
       return this.clientPromise;
     }
 
@@ -122,7 +125,7 @@ class ClientHolder {
         });
         return this.client;
       })
-      .catch(error => {
+      .catch((error: unknown) => {
         this.clientPromise = undefined;
         throw error;
       });
@@ -148,8 +151,7 @@ export class RedHatAuthenticationService {
 
   public static async build(context: ExtensionContext, config: AuthConfig): Promise<RedHatAuthenticationService> {
     Logger.info(`Configuring ${config.serviceId} {auth: ${config.authUrl}, api: ${config.apiUrl}}`);
-    const provider = new RedHatAuthenticationService(context, config);
-    return provider;
+    return new RedHatAuthenticationService(context, config);
   }
 
   public async initialize(): Promise<void> {
@@ -164,7 +166,7 @@ export class RedHatAuthenticationService {
 
           try {
             await this.refreshToken(session.refreshToken, session.scope, session.id);
-          } catch (e: any) {
+          } catch (e) {
             if (e.message === REFRESH_NETWORK_FAILURE) {
               const didSucceedOnRetry = await this.handleRefreshNetworkError(
                 session.id,
@@ -198,7 +200,7 @@ export class RedHatAuthenticationService {
 
       this._disposables.push(
         this.context.secrets.onDidChange(() => {
-          this.checkForUpdates();
+          this.checkForUpdates().catch(console.error);
         }),
       );
     }
@@ -228,7 +230,7 @@ export class RedHatAuthenticationService {
     if (storedData) {
       try {
         const sessions = this.parseStoredData(storedData);
-        let promises = sessions.map(async session => {
+        const promises = sessions.map(async session => {
           const matchesExisting = this._tokens.some(
             token => token.scope === session.scope && token.sessionId === session.id,
           );
@@ -236,7 +238,7 @@ export class RedHatAuthenticationService {
             try {
               const token = await this.refreshToken(session.refreshToken, session.scope, session.id);
               added.push(convertToSession(token));
-            } catch (e: any) {
+            } catch (e) {
               if (e.message === REFRESH_NETWORK_FAILURE) {
                 // Ignore, will automatically retry on next poll.
               } else {
@@ -246,24 +248,22 @@ export class RedHatAuthenticationService {
           }
         });
 
-        promises = promises.concat(
-          this._tokens.map(async token => {
-            const matchesExisting = sessions.some(
-              session => token.scope === session.scope && token.sessionId === session.id,
-            );
-            if (!matchesExisting) {
-              await this.removeSession(token.sessionId);
-              removed.push(convertToSession(token));
-            }
-          }),
-        );
+        const promises1 = this._tokens.map(async token => {
+          const matchesExisting = sessions.some(
+            session => token.scope === session.scope && token.sessionId === session.id,
+          );
+          if (!matchesExisting) {
+            await this.removeSession(token.sessionId);
+            removed.push(convertToSession(token));
+          }
+        });
 
-        await Promise.all(promises);
-      } catch (e: any) {
+        await Promise.all(promises.concat(promises1));
+      } catch (e) {
         Logger.error(e.message);
         // if data is improperly formatted, remove all of it and send change event
         removed = this._tokens.map(convertToSession);
-        this.clearSessions();
+        this.clearSessions().catch(console.error);
       }
     } else {
       if (this._tokens.length) {
@@ -329,7 +329,7 @@ export class RedHatAuthenticationService {
       return Promise.all(this._tokens.map(token => this.convertToSession(token)));
     }
 
-    const orderedScopes = scopes.sort().join(' ');
+    const orderedScopes = [...scopes].sort().join(' ');
     const matchingTokens = this._tokens.filter(token => token.scope === orderedScopes);
     return Promise.all(matchingTokens.map(token => this.convertToSession(token)));
   }
@@ -337,112 +337,95 @@ export class RedHatAuthenticationService {
   public async createSession(scopes: string): Promise<RedHatAuthenticationSession> {
     Logger.info(`Logging in ${this.config.authUrl}...`);
 
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      const nonce = generators.nonce();
-      const { server, redirectPromise, callbackPromise } = createServer(this.config, nonce);
+    const nonce = generators.nonce();
+    const { server, redirectPromise, callbackPromise } = createServer(this.config, nonce);
 
-      try {
-        const serverBase = this.config.serverConfig.externalUrl;
-        const port = await startServer(this.config.serverConfig, server);
-        env.openExternal(Uri.parse(`${serverBase}:${port}/signin?nonce=${encodeURIComponent(nonce)}`));
-        const redirectReq = await redirectPromise;
-        if ('err' in redirectReq) {
-          const { err, res } = redirectReq;
-          res.writeHead(302, {
-            Location: `/?service=${this.config.serviceId}&error=${encodeURIComponent(
-              (err && err.message) || 'Unknown error',
-            )}`,
-          });
-          res.end();
-          throw err;
-        }
-
-        const host = redirectReq.req.headers.host || '';
-        const updatedPortStr = (/^[^:]+:(\d+)$/.exec(Array.isArray(host) ? host[0] : host) || [])[1];
-        const updatedPort = updatedPortStr ? parseInt(updatedPortStr, 10) : port;
-
-        const redirect_uri = `${serverBase}:${updatedPort}/${this.config.serverConfig.callbackPath}`;
-        const code_verifier = generators.codeVerifier();
-        const code_challenge = generators.codeChallenge(code_verifier);
-
-        // email and id.username scopes required to render user name on Authentication Settings page
-        const defaultScopes = 'openid id.username email';
-        const scope = scopes;
-
-        const client = await this.clientHolder.getClient();
-        const authUrl = client.authorizationUrl({
-          scope: `${defaultScopes} ${scope}`,
-          resource: this.config.apiUrl,
-          code_challenge,
-          code_challenge_method: 'S256',
-          redirect_uri: redirect_uri,
-          nonce: nonce,
+    try {
+      const serverBase = this.config.serverConfig.externalUrl;
+      const port = await startServer(this.config.serverConfig, server);
+      await env.openExternal(Uri.parse(`${serverBase}:${port}/signin?nonce=${encodeURIComponent(nonce)}`));
+      const redirectReq = await redirectPromise;
+      if ('err' in redirectReq) {
+        const { err, res } = redirectReq;
+        res.writeHead(302, {
+          Location: `/?service=${this.config.serviceId}&error=${encodeURIComponent((err as Error)?.message || 'Unknown error')}`,
         });
-        console.log(authUrl);
-        redirectReq.res.writeHead(302, { Location: authUrl });
-        redirectReq.res.end();
-
-        // wait 10 minutes for call back and then close the server to free local port
-        const callbackReturn = await Promise.race([
-          callbackPromise,
-          new Promise((_resolve, reject) => {
-            setTimeout(() => {
-              reject(new Error('Timeout period for login is expired'));
-            }, 600000);
-          }),
-        ]);
-        const callbackResult = callbackReturn as RedirectResult;
-
-        if ('err' in callbackResult) {
-          this.error(callbackResult.res, callbackResult.err);
-          throw callbackResult.err;
-        }
-        let tokenSet: TokenSet;
-        try {
-          tokenSet = await client.callback(redirect_uri, client.callbackParams(callbackResult.req), {
-            code_verifier,
-            nonce,
-          });
-        } catch (error) {
-          this.error(callbackResult.res, error);
-          throw error;
-        }
-
-        const token = this.convertToken(tokenSet!, scope);
-
-        callbackResult.res.writeHead(302, {
-          Location: `/?service=${this.config.serviceId}&login=${encodeURIComponent(token.account.label)}`,
-        });
-        callbackResult.res.end();
-
-        this.setToken(token, scope);
-        Logger.info('Login successful');
-        const session = await this.convertToSession(token);
-
-        resolve(session);
-      } catch (e: any) {
-        Logger.error(e.message);
-        // If the error was about starting the server, try directly hitting the login endpoint instead
-        if (
-          e.message === 'Error listening to server' ||
-          e.message === 'Closed' ||
-          e.message === 'Timeout waiting for port'
-        ) {
-          //await this.loginWithoutLocalServer(scope);
-        }
-
-        reject(e.message);
-      } finally {
-        setTimeout(() => {
-          server.close();
-        }, 5000);
+        res.end();
+        throw err;
       }
-    });
+
+      const host = redirectReq.req.headers.host || '';
+      const updatedPortStr = (/^[^:]+:(\d+)$/.exec(Array.isArray(host) ? host[0] : host) || [])[1];
+      const updatedPort = updatedPortStr ? parseInt(updatedPortStr, 10) : port;
+
+      const redirect_uri = `${serverBase}:${updatedPort}/${this.config.serverConfig.callbackPath}`;
+      const code_verifier = generators.codeVerifier();
+      const code_challenge = generators.codeChallenge(code_verifier);
+
+      // email and id.username scopes required to render user name on Authentication Settings page
+      const defaultScopes = 'openid id.username email';
+      const scope = scopes;
+
+      const client = await this.clientHolder.getClient();
+      const authUrl = client.authorizationUrl({
+        scope: `${defaultScopes} ${scope}`,
+        resource: this.config.apiUrl,
+        code_challenge,
+        code_challenge_method: 'S256',
+        redirect_uri: redirect_uri,
+        nonce: nonce,
+      });
+      console.log(authUrl);
+      redirectReq.res.writeHead(302, { Location: authUrl });
+      redirectReq.res.end();
+
+      // wait 10 minutes for call back and then close the server to free local port
+      const callbackReturn = await Promise.race([
+        callbackPromise,
+        new Promise((_resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('Timeout period for login is expired'));
+          }, 600000);
+        }),
+      ]);
+      const callbackResult = callbackReturn as RedirectResult;
+
+      if ('err' in callbackResult) {
+        this.error(callbackResult.res, callbackResult.err);
+        throw callbackResult.err;
+      }
+      let tokenSet: TokenSet;
+      try {
+        tokenSet = await client.callback(redirect_uri, client.callbackParams(callbackResult.req), {
+          code_verifier,
+          nonce,
+        });
+      } catch (error) {
+        this.error(callbackResult.res, error);
+        throw error;
+      }
+
+      const token = this.convertToken(tokenSet!, scope);
+
+      callbackResult.res.writeHead(302, {
+        Location: `/?service=${this.config.serviceId}&login=${encodeURIComponent(token.account.label)}`,
+      });
+      callbackResult.res.end();
+
+      await this.setToken(token, scope);
+      Logger.info('Login successful');
+      return await this.convertToSession(token);
+    } finally {
+      setTimeout(() => {
+        server.close();
+      }, 5000);
+    }
   }
 
-  public error(response: ServerResponse, error: any): void {
-    response.writeHead(302, { Location: `/?error=${encodeURIComponent((error && error.message) || 'Unknown error')}` });
+  public error(response: ServerResponse, error: unknown): void {
+    response.writeHead(302, {
+      Location: `/?error=${encodeURIComponent((error as Error)?.message || 'Unknown error')}`,
+    });
     response.end();
   }
 
@@ -465,11 +448,12 @@ export class RedHatAuthenticationService {
       this._refreshTimeouts.set(
         token.sessionId,
         setTimeout(
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           async () => {
             try {
               const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
               onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(refreshedToken)] });
-            } catch (e: any) {
+            } catch (e) {
               if (e.message === REFRESH_NETWORK_FAILURE) {
                 const didSucceedOnRetry = await this.handleRefreshNetworkError(
                   token.sessionId,
@@ -490,7 +474,7 @@ export class RedHatAuthenticationService {
       );
     }
 
-    this.storeTokenData();
+    await this.storeTokenData();
   }
 
   private convertToken(tokenSet: TokenSet, scope: string, existingId?: string): IToken {
@@ -516,12 +500,14 @@ export class RedHatAuthenticationService {
       const client = await this.clientHolder.getClient();
       const refreshedToken = await client.refresh(refreshToken);
       const token = this.convertToken(refreshedToken, scope, sessionId);
-      this.setToken(token, scope);
+      await this.setToken(token, scope);
       Logger.info('Token refresh success');
       return token;
     } catch (error) {
       Logger.error(`Refreshing token failed: ${error}`);
-      window.showErrorMessage('You have been signed out because reading stored authentication information failed.');
+      await window.showErrorMessage(
+        'You have been signed out because reading stored authentication information failed.',
+      );
       throw new Error('Refreshing token failed');
     }
   }
@@ -552,6 +538,7 @@ export class RedHatAuthenticationService {
     this._refreshTimeouts.set(
       sessionId,
       setTimeout(
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async () => {
           try {
             await this.refreshToken(refreshToken, scope, sessionId);
@@ -573,7 +560,7 @@ export class RedHatAuthenticationService {
     return new Promise((resolve, _) => {
       if (attempts === 3) {
         Logger.error('Token refresh failed after 3 attempts');
-        return resolve(false);
+        resolve(false);
       }
 
       if (attempts === 1) {
@@ -590,14 +577,18 @@ export class RedHatAuthenticationService {
 
       this._refreshTimeouts.set(
         sessionId,
-        setTimeout(async () => {
-          try {
-            await this.refreshToken(refreshToken, scope, sessionId);
-            return resolve(true);
-          } catch (e) {
-            return resolve(await this.handleRefreshNetworkError(sessionId, refreshToken, scope, attempts + 1));
-          }
-        }, 1000 * delayBeforeRetry),
+        setTimeout(
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          async () => {
+            try {
+              await this.refreshToken(refreshToken, scope, sessionId);
+              resolve(true);
+            } catch (e) {
+              resolve(this.handleRefreshNetworkError(sessionId, refreshToken, scope, attempts + 1));
+            }
+          },
+          1000 * delayBeforeRetry,
+        ),
       );
     });
   }
@@ -612,12 +603,12 @@ export class RedHatAuthenticationService {
     if (this._tokens.length === 0) {
       await this.context.secrets.delete(this.config.serviceId);
     } else {
-      this.storeTokenData();
+      await this.storeTokenData();
     }
     return session;
   }
 
-  public async clearSessions() {
+  public async clearSessions(): Promise<void> {
     Logger.info('Logging out of all sessions');
     this._tokens = [];
     await this.context.secrets.delete(this.config.serviceId);

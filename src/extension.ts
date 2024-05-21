@@ -16,50 +16,57 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import * as extensionApi from '@podman-desktop/api';
-import { getAuthConfig } from './configuration';
-import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
-import { ServiceAccountV1, ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
-import path from 'node:path';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+import * as extensionApi from '@podman-desktop/api';
+import type { ServiceAccountV1 } from '@redhat-developer/rhcra-client';
+import { ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
+import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
+
+import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
+import { getAuthConfig } from './configuration';
 import {
+  getRunningPodmanMachineName,
+  runCreateFactsFile,
   runRpmInstallSubscriptionManager,
+  runStartPodmanMachine,
+  runStopPodmanMachine,
   runSubscriptionManager,
   runSubscriptionManagerActivationStatus,
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
-  runCreateFactsFile,
-  runStartPodmanMachine,
-  runStopPodmanMachine,
-  getRunningPodmanMachineName,
 } from './podman-cli';
-import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
-import { isLinux } from './util';
 import { SSOStatusBarItem } from './status-bar-item';
+import { isRedHatRegistryConfigured, REGISTRY_REDHAT_IO, signIntoRedHatDeveloperAccount } from './subscription';
 import { ExtensionTelemetryLogger as TelemetryLogger } from './telemetry';
-import { signIntoRedHatDeveloperAccount } from './subscription';
-import { isRedHatRegistryConfigured } from './subscription';
-import { REGISTRY_REDHAT_IO } from './subscription';
+import { isLinux } from './util';
+
+interface JwtToken {
+  organization: {
+    id: string;
+  };
+}
 
 let authenticationServicePromise: Promise<RedHatAuthenticationService>;
 let currentSession: extensionApi.AuthenticationSession | undefined;
 
-async function getAuthenticationService() {
+async function getAuthenticationService(): Promise<RedHatAuthenticationService> {
   return authenticationServicePromise;
 }
 
 // function to encode file data to base64 encoded string
-function fileToBase64(file: string) {
+function fileToBase64(file: string): string {
   // read binary data
-  var bitmap = readFileSync(file);
+  const bitmap = readFileSync(file);
   // convert binary data to base64 encoded string
   return bitmap.toString('base64');
 }
 
-function parseJwt(token: string) {
-  var base64Url = token.split('.')[1];
-  var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  var jsonPayload = decodeURIComponent(
+function parseJwt(token: string): JwtToken {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
     Buffer.from(base64, 'base64')
       .toString()
       .split('')
@@ -119,14 +126,14 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
     });
   }
 
-  createRegistry(
+  await createRegistry(
     selectedServiceAccount!.credentials!.username!,
     selectedServiceAccount!.credentials!.password!,
     currentSession.account.label,
   );
 }
 
-async function createOrReuseActivationKey(machineName: string) {
+async function createOrReuseActivationKey(machineName: string): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
   const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new SubscriptionManagerClient({
@@ -166,7 +173,7 @@ async function isSubscriptionManagerInstalled(machineName: string): Promise<bool
   return exitCode === 0;
 }
 
-async function installSubscriptionManger(machineName: string) {
+async function installSubscriptionManger(machineName: string): Promise<extensionApi.RunResult> {
   try {
     return await runRpmInstallSubscriptionManager(machineName);
   } catch (err) {
@@ -176,7 +183,7 @@ async function installSubscriptionManger(machineName: string) {
   }
 }
 
-async function isPodmanVmSubscriptionActivated(machineName: string) {
+async function isPodmanVmSubscriptionActivated(machineName: string): Promise<boolean> {
   const exitCode = await runSubscriptionManagerActivationStatus(machineName);
   return exitCode === 0;
 }
@@ -192,7 +199,10 @@ async function removeSession(sessionId: string): Promise<void> {
   onDidChangeSessions.fire({ removed: [session!] });
 }
 
-async function buildAndInitializeAuthService(context: extensionApi.ExtensionContext, statusBarItem: SSOStatusBarItem) {
+async function buildAndInitializeAuthService(
+  context: extensionApi.ExtensionContext,
+  statusBarItem: SSOStatusBarItem,
+): Promise<RedHatAuthenticationService> {
   const service = await RedHatAuthenticationService.build(context, getAuthConfig());
   context.subscriptions.push(service);
   await service.initialize();
@@ -209,7 +219,7 @@ interface StepTelemetryData {
   successful: boolean;
 }
 
-async function configureRegistryAndActivateSubscription() {
+async function configureRegistryAndActivateSubscription(): Promise<void> {
   const telemetryData: StepTelemetryData = {
     successful: true,
   };
@@ -229,7 +239,7 @@ async function configureRegistryAndActivateSubscription() {
       },
     )
     .then(() => false)
-    .catch(error => {
+    .catch((error: unknown) => {
       telemetryData.errorIn = 'registry-configuration';
       telemetryData.error = String(error);
       telemetryData.successful = false;
@@ -242,7 +252,7 @@ async function configureRegistryAndActivateSubscription() {
           location: extensionApi.ProgressLocation.TASK_WIDGET,
           title: 'Activating Red Hat Subscription',
         },
-        async progress => {
+        async () => {
           const podmanRunningMachineName = getRunningPodmanMachineName();
           if (!podmanRunningMachineName) {
             if (isLinux()) {
@@ -255,7 +265,6 @@ async function configureRegistryAndActivateSubscription() {
               );
               throw new Error('No running podman');
             }
-            return;
           } else {
             if (!(await isSimpleContentAccessEnabled())) {
               const choice = await extensionApi.window.showInformationMessage(
@@ -264,7 +273,7 @@ async function configureRegistryAndActivateSubscription() {
                 'Enable SCA',
               );
               if (choice === 'Enable SCA') {
-                extensionApi.env.openExternal(extensionApi.Uri.parse('https://access.redhat.com/management'));
+                await extensionApi.env.openExternal(extensionApi.Uri.parse('https://access.redhat.com/management'));
                 throw new Error('SCA is not enabled and subscription management page requested');
               }
               throw new Error('SCA is not enabled and message closed');
@@ -284,14 +293,14 @@ async function configureRegistryAndActivateSubscription() {
           }
         },
       )
-      .catch(error => {
+      .catch((error: unknown) => {
         telemetryData.errorIn = 'subscription-activation';
         telemetryData.error = String(error);
         telemetryData.successful = false;
       });
 
     if (!telemetryData.successful && currentSession?.id) {
-      removeSession(currentSession.id); // if at least one fail, remove session
+      await removeSession(currentSession.id); // if at least one fail, remove session
     }
   }
   TelemetryLogger.logUsage('signin', telemetryData);
@@ -323,7 +332,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       onDidChangeSessions: onDidChangeSessions.event,
       createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
         const service = await getAuthenticationService();
-        const session = await service.createSession(scopes.sort().join(' '));
+        const session = await service.createSession([...scopes].sort().join(' '));
         onDidChangeSessions.fire({ added: [session] });
         return session;
       },
@@ -365,7 +374,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     };
 
     try {
-      const session = await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
+      await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
     } catch (err) {
       telemetryData.errorIn = 'sign-in';
       telemetryData.error = String(err);
@@ -378,20 +387,20 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
 
   const SignOutCommand = extensionApi.commands.registerCommand('redhat.authentication.signout', async () => {
     const service = await getAuthenticationService();
-    service.removeSession(currentSession!.id);
+    await service.removeSession(currentSession!.id);
     onDidChangeSessions.fire({ added: [], removed: [currentSession!], changed: [] });
     currentSession = undefined;
     TelemetryLogger.logUsage('signout');
   });
 
   const SignUpCommand = extensionApi.commands.registerCommand('redhat.authentication.signup', async () => {
-    extensionApi.env.openExternal(
+    return extensionApi.env.openExternal(
       extensionApi.Uri.parse('https://developers.redhat.com/articles/faqs-no-cost-red-hat-enterprise-linux#general'),
     );
   });
 
   const GotoAuthCommand = extensionApi.commands.registerCommand('redhat.authentication.navigate.settings', async () => {
-    extensionApi.navigation.navigateToAuthentication();
+    return extensionApi.navigation.navigateToAuthentication();
   });
 
   context.subscriptions.push(

@@ -16,10 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { ExtensionContext } from '@podman-desktop/api';
+import { authentication } from '@podman-desktop/api';
+import type { BaseClient, TokenSet } from 'openid-client';
+import { Issuer } from 'openid-client';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { RedHatAuthenticationService, convertToSession } from './authentication-service';
-import { AuthenticationProvider, ExtensionContext, authentication } from '@podman-desktop/api';
-import { TokenSet, Issuer, BaseClient } from 'openid-client';
+
+import { convertToSession, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
 
 vi.mock('@podman-desktop/api', async () => {
@@ -70,11 +73,11 @@ test('An authentication token is converted to a session', () => {
 });
 
 test('Authentication service loads tokens form secret storage during initialization', async () => {
-  vi.spyOn(Issuer, 'discover').mockImplementation(async (url: string) => {
+  vi.spyOn(Issuer, 'discover').mockImplementation(async () => {
     return {
       Client: vi.fn().mockImplementation(() => {
         return {
-          refresh: vi.fn().mockImplementation((refreshToken: string): TokenSet => {
+          refresh: vi.fn().mockImplementation((): TokenSet => {
             return {
               claims: vi.fn().mockImplementation(() => {
                 return {
@@ -98,9 +101,7 @@ test('Authentication service loads tokens form secret storage during initializat
     } as unknown as Issuer<BaseClient>;
   });
 
-  let provider: AuthenticationProvider;
-  vi.mocked(authentication.registerAuthenticationProvider).mockImplementation((_id, _label, ssoProvider) => {
-    provider = ssoProvider;
+  vi.mocked(authentication.registerAuthenticationProvider).mockImplementation((_id, _label, _ssoProvider) => {
     return {
       dispose: vi.fn(),
     };

@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import { platform } from 'node:os';
-import type { LifecycleContext, Logger } from '@podman-desktop/api';
 
 const windows = platform() === 'win32';
 export function isWindows(): boolean {

@@ -15,27 +15,29 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { isMac, isWindows } from './util';
-import { process as podmanProcess, configuration, RunResult, RunError, provider } from '@podman-desktop/api';
+import type { RunError, RunResult } from '@podman-desktop/api';
+import { configuration, process as podmanProcess, provider } from '@podman-desktop/api';
+
 import { ExtensionTelemetryLogger } from './telemetry';
+import { isMac, isWindows } from './util';
 
 const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 
 export const PODMAN_COMMANDS = {
-  SM_VERSION: (machineName: string) => `machine ssh ${machineName} sudo subscription-manager`.split(' '),
-  RPM_INSTALL_SM: (machineName: string) =>
+  SM_VERSION: (machineName: string): string[] => `machine ssh ${machineName} sudo subscription-manager`.split(' '),
+  RPM_INSTALL_SM: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo rpm-ostree install -y subscription-manager`.split(' '),
-  SM_ACTIVATION_STATUS: (machineName: string) =>
+  SM_ACTIVATION_STATUS: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager status`.split(' '),
-  SM_ACTIVATE_SUBS: (machineName: string, activationKeyName: string, orgId: string) =>
+  SM_ACTIVATE_SUBS: (machineName: string, activationKeyName: string, orgId: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager register --force --activationkey ${activationKeyName} --org ${orgId}`.split(
       ' ',
     ),
-  SM_DEACTIVATE_SUBS: (machineName: string) =>
+  SM_DEACTIVATE_SUBS: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager unregister`.split(' '),
-  MACHINE_STOP: (machineName: string) => `machine stop ${machineName}`.split(' '),
-  MACHINE_START: (machineName: string) => `machine start ${machineName}`.split(' '),
-  CREATE_FACTS_FILE: (machineName: string, oneLineJson: string) => [
+  MACHINE_STOP: (machineName: string): string[] => `machine stop ${machineName}`.split(' '),
+  MACHINE_START: (machineName: string): string[] => `machine start ${machineName}`.split(' '),
+  CREATE_FACTS_FILE: (machineName: string, oneLineJson: string): string[] => [
     'machine',
     'ssh',
     machineName,
@@ -84,11 +86,7 @@ export interface InstalledPodman {
 type ErrorHandler<T> = (commandName: string, error: unknown) => T;
 type TelemetryErrorHandler<T> = (commandName: string, telemetryEventName: string, error: unknown) => T;
 
-async function runCommand<T>(
-  commandName: string,
-  command: string[],
-  errorHandler: ErrorHandler<number>,
-): Promise<number> {
+async function runCommand(commandName: string, command: string[], errorHandler: ErrorHandler<number>): Promise<number> {
   try {
     console.log(`Executing: ${getPodmanCli()} ${command.join(' ')}`);
     return await podmanProcess.exec(getPodmanCli(), command).then(() => 0);
@@ -97,7 +95,7 @@ async function runCommand<T>(
   }
 }
 
-async function runCommandAndSendTelemetry<T>(
+async function runCommandAndSendTelemetry(
   commandName: string,
   telemetryEventName: string,
   command: string[],
