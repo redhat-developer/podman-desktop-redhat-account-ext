@@ -20,7 +20,8 @@
     "sourceType": "module",
     "warnOnUnsupportedTypeScriptVersion": false,
     "project": [
-      "tsconfig.json"
+      "tsconfig.json",
+      "tests/tsconfig.json"
     ]
   },
   "overrides": [

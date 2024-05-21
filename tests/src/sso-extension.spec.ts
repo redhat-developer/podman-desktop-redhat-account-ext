@@ -15,9 +15,12 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { Page, expect as playExpect } from '@playwright/test';
-import { afterAll, beforeAll, describe, test, beforeEach } from 'vitest';
-import { AuthenticationPage, ExtensionCardPage, NavigationBar, PodmanDesktopRunner, RunnerTestContext, WelcomePage } from '@podman-desktop/tests-playwright';
+import type { Page} from '@playwright/test';
+import { expect as playExpect } from '@playwright/test';
+import type { RunnerTestContext} from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, ExtensionCardPage, NavigationBar, PodmanDesktopRunner, WelcomePage } from '@podman-desktop/tests-playwright';
+import { afterAll, beforeAll, beforeEach,describe, test } from 'vitest';
+
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
 
 let pdRunner: PodmanDesktopRunner;

@@ -15,12 +15,16 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import { ProgressLocation, TelemetryLogger, commands, process as podmanProcess } from '@podman-desktop/api';
-import { beforeEach, expect, suite, test, vi } from 'vitest';
+import type { TelemetryLogger } from '@podman-desktop/api';
+import { process as podmanProcess } from '@podman-desktop/api';
+import { beforeEach, expect, test, vi } from 'vitest';
+
 import {
-  PODMAN_COMMANDS,
   getPodmanCli,
+  PODMAN_COMMANDS,
   runCreateFactsFile,
   runRpmInstallSubscriptionManager,
   runStartPodmanMachine,
@@ -59,7 +63,12 @@ vi.mock('@podman-desktop/api', async () => {
 });
 
 const runResult = { command: 'command line', stdout: 'stdout output', stderr: 'stderr output' };
-const runError = { exitCode: 1, stdout: 'stdout output', stderr: 'stderr output', toString: () => 'error message' };
+const runError = {
+  exitCode: 1,
+  stdout: 'stdout output',
+  stderr: 'stderr output',
+  toString: (): string => 'error message',
+};
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -95,8 +104,8 @@ test('runRpmInstallSubscription manager returns none 0 error code when failed an
     return;
   });
   const consoleError = vi.spyOn(console, 'error');
-  let error: Error | undefined;
-  const result = await runRpmInstallSubscriptionManager('machine1').catch(err => {
+  let error: unknown;
+  await runRpmInstallSubscriptionManager('machine1').catch((err: unknown) => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -142,8 +151,8 @@ test('runSubscriptionManagerRegister manager returns none 0 error code when fail
     return;
   });
   const consoleError = vi.spyOn(console, 'error');
-  let error: Error | undefined;
-  const result = await runSubscriptionManagerRegister('machine1', 'activation-key-name', 'orgId').catch(err => {
+  let error: unknown;
+  await runSubscriptionManagerRegister('machine1', 'activation-key-name', 'orgId').catch((err: unknown) => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -172,8 +181,8 @@ test('runCreateFactsFile manager returns none 0 error code when failed and send 
     return;
   });
   const consoleError = vi.spyOn(console, 'error');
-  let error: Error | undefined;
-  const result = await runCreateFactsFile('machine1', '{"field":"value"}').catch(err => {
+  let error: unknown;
+  await runCreateFactsFile('machine1', '{"field":"value"}').catch((err: unknown) => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -199,8 +208,8 @@ test('runStopPodmanMachine manager returns none 0 error code when failed and sen
     return;
   });
   const consoleError = vi.spyOn(console, 'error');
-  let error: Error | undefined;
-  const result = await runStopPodmanMachine('machine1').catch(err => {
+  let error: unknown;
+  await runStopPodmanMachine('machine1').catch((err: unknown) => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));
@@ -226,8 +235,8 @@ test('runStartPodmanMachine manager returns none 0 error code when failed and se
     return;
   });
   const consoleError = vi.spyOn(console, 'error');
-  let error: Error | undefined;
-  const result = await runStartPodmanMachine('machine1').catch(err => {
+  let error: unknown;
+  await runStartPodmanMachine('machine1').catch((err: unknown) => {
     error = err;
   });
   expect(String(error)).toBe(String(runError));

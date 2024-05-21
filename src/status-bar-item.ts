@@ -16,7 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { StatusBarAlignLeft, StatusBarItem, window, Disposable } from '@podman-desktop/api';
+import type { Disposable, StatusBarItem } from '@podman-desktop/api';
+import { StatusBarAlignLeft, window } from '@podman-desktop/api';
 
 export class SSOStatusBarItem implements Disposable {
   #statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignLeft, 50);
@@ -30,17 +31,17 @@ export class SSOStatusBarItem implements Disposable {
     this.#statusBarItem.dispose();
   }
 
-  public logInAs(email: string) {
+  public logInAs(email: string): void {
     this.#statusBarItem.tooltip = `Red Hat SSO: Logged in as ${email}`;
     this.#statusBarItem.command = 'redhat.authentication.navigate.settings';
   }
 
-  public logOut() {
+  public logOut(): void {
     this.#statusBarItem.tooltip = 'Red Hat SSO: Logged Out';
     this.#statusBarItem.command = 'redhat.authentication.signin';
   }
 
-  public show() {
+  public show(): void {
     this.#statusBarItem.show();
   }
 }

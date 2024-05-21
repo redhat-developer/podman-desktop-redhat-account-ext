@@ -15,21 +15,25 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import { beforeEach, afterEach, expect, suite, test, vi } from 'vitest';
-import * as extension from './extension';
-import {
+import type {
   AuthenticationGetSessionOptions,
-  TelemetryLogger,
-  ExtensionContext,
   AuthenticationSession,
+  ExtensionContext,
   ProgressLocation,
+  TelemetryLogger,
 } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
+import { OrganizationService } from '@redhat-developer/rhsm-client';
+import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
+
+import * as extension from './extension';
 import * as podmanCli from './podman-cli';
 import * as subscription from './subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
-import { OrganizationService } from '@redhat-developer/rhsm-client';
+import * as util from './util';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -61,7 +65,7 @@ vi.mock('@podman-desktop/api', async () => {
         callback: (progress: { report: (m: string) => void }) => void,
       ) => {
         return callback({
-          report: (message: string) => {},
+          report: () => {},
         });
       },
       showInformationMessage: vi.fn(),
@@ -125,7 +129,9 @@ suite('extension activation', () => {
 });
 
 suite('signin command telemetry reports', () => {
-  test('unsuccessful login when podman machine is not running', async () => {
+  test('unsuccessful login when podman machine is not running on windows or darwin', async () => {
+    vi.spyOn(util, 'isLinux').mockReturnValue(false);
+
     const logSpy = vi.spyOn(ExtensionTelemetryLogger, 'logUsage').mockImplementation(() => {
       return;
     });
@@ -162,7 +168,6 @@ suite('signin command telemetry reports', () => {
             },
           });
         }
-        return;
       },
     );
     let commandFunctionCopy: () => Promise<void>;
@@ -226,7 +231,6 @@ suite('signin command telemetry reports', () => {
             },
           });
         }
-        return;
       },
     );
     let commandFunctionCopy: () => Promise<void>;

@@ -16,22 +16,30 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import * as fs from 'fs';
-import * as http from 'http';
-import * as path from 'path';
-import * as url from 'url';
-import { ServerConfig, AuthConfig } from './configuration';
+import * as fs from 'node:fs';
+import * as http from 'node:http';
+import * as path from 'node:path';
+import * as url from 'node:url';
+
+import type { AuthConfig, ServerConfig } from './configuration';
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
-  reject: (reason: any) => void;
+  reject: (reason: unknown) => void;
 }
 
 export type RedirectResult =
   | { req: http.IncomingMessage; res: http.ServerResponse }
-  | { err: any; res: http.ServerResponse };
+  | { err: unknown; res: http.ServerResponse };
 
-export function createServer(config: AuthConfig, nonce: string) {
+export function createServer(
+  config: AuthConfig,
+  nonce: string,
+): {
+  server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>;
+  redirectPromise: Promise<RedirectResult>;
+  callbackPromise: Promise<RedirectResult>;
+} {
   let deferredRedirect: Deferred<RedirectResult>;
   const redirectPromise = new Promise<RedirectResult>((resolve, reject) => (deferredRedirect = { resolve, reject }));
 
@@ -76,7 +84,7 @@ export function createServer(config: AuthConfig, nonce: string) {
 export async function startServer(config: ServerConfig, server: http.Server): Promise<string> {
   let portTimer: NodeJS.Timeout;
 
-  function cancelPortTimer() {
+  function cancelPortTimer(): void {
     clearTimeout(portTimer);
   }
 
@@ -87,6 +95,7 @@ export async function startServer(config: ServerConfig, server: http.Server): Pr
 
     server.on('listening', () => {
       const address = server.address();
+      // eslint-disable-next-line no-null/no-null
       if (typeof address === 'undefined' || address === null) {
         reject(new Error('adress is null or undefined'));
       } else if (typeof address === 'string') {
@@ -111,7 +120,7 @@ export async function startServer(config: ServerConfig, server: http.Server): Pr
   return port;
 }
 
-function sendFile(res: http.ServerResponse, filepath: string, contentType: string) {
+function sendFile(res: http.ServerResponse, filepath: string, contentType: string): void {
   fs.stat(filepath, (err, stats) => {
     if (err) {
       console.error(err);

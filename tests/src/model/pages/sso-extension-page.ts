@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import type { Page } from '@playwright/test';
-
 import { ExtensionDetailsPage } from '@podman-desktop/tests-playwright';
 
 export class SSOExtensionPage extends ExtensionDetailsPage {
