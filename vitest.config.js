@@ -111,7 +111,7 @@ const config = {
   },
   resolve: {
     alias: {
-      '@podman-desktop/api': path.resolve(PACKAGE_ROOT, '__mocks__/@podman-desktop/api.js'),
+      '@podman-desktop/api': path.resolve(PACKAGE_ROOT, '__mocks__/@podman-desktop/api.ts'),
     },
   },
 };

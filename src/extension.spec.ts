@@ -18,13 +18,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import type {
-  AuthenticationGetSessionOptions,
-  AuthenticationSession,
-  ExtensionContext,
-  ProgressLocation,
-  TelemetryLogger,
-} from '@podman-desktop/api';
+import type { AuthenticationGetSessionOptions, AuthenticationSession, ExtensionContext } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
 import { OrganizationService } from '@redhat-developer/rhsm-client';
 import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
@@ -35,66 +29,7 @@ import * as subscription from './subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    EventEmitter: vi.fn().mockImplementation(() => {
-      return {
-        fire: vi.fn(),
-      };
-    }),
-    registry: {
-      suggestRegistry: vi.fn(),
-      unregisterRegistry: vi.fn(),
-    },
-    authentication: {
-      registerAuthenticationProvider: vi.fn(),
-      getSession: vi.fn(),
-      onDidChangeSessions: vi.fn(),
-    },
-    commands: {
-      registerCommand: vi.fn(),
-      executeCommand: vi.fn(),
-    },
-    window: {
-      createStatusBarItem: () => ({
-        show: vi.fn(),
-        iconClass: '',
-      }),
-      withProgress: (
-        options: { location: ProgressLocation; title: string },
-        callback: (progress: { report: (m: string) => void }) => void,
-      ) => {
-        return callback({
-          report: () => {},
-        });
-      },
-      showInformationMessage: vi.fn(),
-    },
-    env: {
-      createTelemetryLogger: vi.fn().mockImplementation(
-        () =>
-          ({
-            logUsage: vi.fn(),
-            logError: vi.fn(),
-          }) as unknown as TelemetryLogger,
-      ),
-    },
-    StatusBarAlignLeft: 'LEFT',
-    ProgressLocation: {
-      TASK_WIDGET: 2,
-    },
-    process: {
-      exec: vi.fn(),
-    },
-    configuration: {
-      getConfiguration: () => {
-        return {
-          get: vi.fn(),
-        };
-      },
-    },
-  };
-});
+vi.mock('@podman-desktop/api');
 
 function createExtContext(): ExtensionContext {
   return {
