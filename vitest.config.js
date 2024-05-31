@@ -37,7 +37,8 @@ const excludeArray = [
 ];
 
 export function coverageConfig(packageRoot, packageName) {
-  const obj = { coverage: {
+  const obj = {
+    coverage: {
       all: true,
       clean: true,
       src: [packageRoot],
