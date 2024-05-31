@@ -1,0 +1,7 @@
+package.json
+LICENSE
+icon.png
+redhat-icon.woff2
+README.md
+dist/**
+www/**
