@@ -15,17 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Page } from '@playwright/test';
+import type { Page} from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
-import type { RunnerTestContext } from '@podman-desktop/tests-playwright';
-import {
-  AuthenticationPage,
-  ExtensionCardPage,
-  NavigationBar,
-  PodmanDesktopRunner,
-  WelcomePage,
-} from '@podman-desktop/tests-playwright';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
+import type { RunnerTestContext} from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, ExtensionCardPage, NavigationBar, PodmanDesktopRunner, WelcomePage } from '@podman-desktop/tests-playwright';
+import { afterAll, beforeAll, beforeEach,describe, test } from 'vitest';
 
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
 
@@ -40,6 +34,7 @@ const extensionLabelName = 'redhat-authentication';
 const authProviderName = 'Red Hat SSO';
 const activeExtensionStatus = 'ACTIVE';
 const disabledExtensionStatus = 'DISABLED';
+
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -61,6 +56,7 @@ afterAll(async () => {
 });
 
 describe('Red Hat Authentication extension verification', async () => {
+
   test('Go to extensions and check if extension is already installed', async () => {
     const extensions = await navBar.openExtensions();
     if (await extensions.extensionIsInstalled(extensionLabel)) {
@@ -103,12 +99,8 @@ describe('Red Hat Authentication extension verification', async () => {
     const authPage = await settingsBar.openTabPage(AuthenticationPage);
     await playExpect(authPage.heading).toHaveText('Authentication');
     const provider = authPage.getProvider(authProviderName);
-    await playExpect(provider.getByLabel('Provider Information').getByLabel('Provider Name')).toHaveText(
-      authProviderName,
-    );
-    await playExpect(provider.getByLabel('Provider Information').getByLabel('Provider Status')).toHaveText(
-      'Logged out',
-    );
+    await playExpect(provider.getByLabel('Provider Information').getByLabel('Provider Name')).toHaveText(authProviderName);
+    await playExpect(provider.getByLabel('Provider Information').getByLabel('Provider Status')).toHaveText('Logged out');
     await playExpect(provider.getByLabel('Provider Actions').getByRole('button')).toContainText('Sign in');
   });
 
@@ -140,7 +132,7 @@ describe('Red Hat Authentication extension verification', async () => {
       const authPage = await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(authPage.heading).toHaveText('Authentication');
       await playExpect(authPage.getProvider(authProviderName)).toHaveCount(1);
-    });
+    }); 
   });
 
   test('SSO extension can be removed', async () => {
@@ -153,7 +145,5 @@ async function removeExtension(): Promise<void> {
   const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
   await extensionCard.disableExtension();
   await extensionCard.removeExtension();
-  await playExpect
-    .poll(async () => await extensions.extensionIsInstalled(extensionLabel), { timeout: 15000 })
-    .toBeFalsy();
+  await playExpect.poll(async () => await extensions.extensionIsInstalled(extensionLabel), { timeout: 15000 }).toBeFalsy();
 }
