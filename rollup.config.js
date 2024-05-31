@@ -34,6 +34,6 @@ export default {
     typescript(),
     commonjs({ extensions: ['.js', '.ts'] }), // the ".ts" extension is required],
     json(),
-    nodeResolve({preferBuiltins: true}),
+    nodeResolve({ preferBuiltins: true }),
   ],
 };
