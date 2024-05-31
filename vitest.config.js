@@ -51,7 +51,6 @@ export function coverageConfig(packageRoot, packageName) {
         '**/*-info.ts',
         '**/.{cache,git,idea,output,temp,cdix}/**',
         '**/*{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tailwind,postcss}.config.*',
-        'tests/**',
       ],
       provider: 'v8',
       reportsDirectory: path.join(packageRoot, `test-resources/coverage/${packageName}`),
