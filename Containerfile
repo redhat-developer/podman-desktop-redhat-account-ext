@@ -22,10 +22,4 @@ LABEL org.opencontainers.image.title="Red Hat Account" \
   org.opencontainers.image.vendor="Red Hat" \
   io.podman-desktop.api.version=">= 1.9.0"
 
-COPY package.json /extension/
-COPY LICENSE /extension/
-COPY icon.png /extension/
-COPY redhat-icon.woff2 /extension/
-COPY README.md /extension/
-COPY dist /extension/dist
-COPY www /extension/www
+COPY builtin/redhat-authentication.cdix /extension
