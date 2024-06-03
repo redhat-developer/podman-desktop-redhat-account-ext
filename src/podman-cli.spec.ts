@@ -18,7 +18,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import type { TelemetryLogger } from '@podman-desktop/api';
 import { process as podmanProcess } from '@podman-desktop/api';
 import { beforeEach, expect, test, vi } from 'vitest';
 
@@ -35,32 +34,7 @@ import {
 } from './podman-cli';
 import { ExtensionTelemetryLogger } from './telemetry';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    env: {
-      createTelemetryLogger: vi.fn().mockImplementation(
-        () =>
-          ({
-            logUsage: vi.fn(),
-            logError: vi.fn(),
-          }) as unknown as TelemetryLogger,
-      ),
-    },
-    ProgressLocation: {
-      TASK_WIDGET: 2,
-    },
-    process: {
-      exec: vi.fn(),
-    },
-    configuration: {
-      getConfiguration: () => {
-        return {
-          get: vi.fn(),
-        };
-      },
-    },
-  };
-});
+vi.mock('@podman-desktop/api');
 
 const runResult = { command: 'command line', stdout: 'stdout output', stderr: 'stderr output' };
 const runError = {

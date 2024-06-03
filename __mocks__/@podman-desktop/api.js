@@ -20,5 +20,57 @@
  * Mock the extension API for vitest.
  * This file is referenced from vitest.config.js file.
  */
-const plugin = {};
+const plugin = {
+  EventEmitter: vi.fn().mockImplementation(() => {
+    return {
+      fire: vi.fn(),
+    };
+  }),
+  registry: {
+    suggestRegistry: vi.fn(),
+    unregisterRegistry: vi.fn(),
+  },
+  authentication: {
+    registerAuthenticationProvider: vi.fn(),
+    getSession: vi.fn(),
+    onDidChangeSessions: vi.fn(),
+  },
+  commands: {
+    registerCommand: vi.fn(),
+    executeCommand: vi.fn(),
+  },
+  window: {
+    createStatusBarItem: () => ({
+      show: vi.fn(),
+      iconClass: '',
+    }),
+    withProgress: (options, callback) => {
+      return callback({
+        report: () => {},
+      });
+    },
+    showInformationMessage: vi.fn(),
+  },
+  env: {
+    createTelemetryLogger: vi.fn().mockImplementation(() => ({
+      logUsage: vi.fn(),
+      logError: vi.fn(),
+    })),
+  },
+  StatusBarAlignLeft: 'LEFT',
+  ProgressLocation: {
+    TASK_WIDGET: 2,
+  },
+  process: {
+    exec: vi.fn(),
+  },
+  configuration: {
+    getConfiguration: () => {
+      return {
+        get: vi.fn(),
+      };
+    },
+  },
+};
+
 module.exports = plugin;

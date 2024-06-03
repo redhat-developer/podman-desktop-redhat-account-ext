@@ -25,26 +25,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { convertToSession, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
 
-vi.mock('@podman-desktop/api', async () => {
-  return {
-    EventEmitter: vi.fn().mockImplementation(() => {
-      return {
-        fire: vi.fn(),
-      };
-    }),
-    registry: {
-      suggestRegistry: vi.fn(),
-    },
-    authentication: {
-      registerAuthenticationProvider: vi.fn(),
-      onDidChangeSessions: vi.fn(),
-      getSession: vi.fn(),
-    },
-    commands: {
-      registerCommand: vi.fn(),
-    },
-  };
-});
+vi.mock('@podman-desktop/api');
 
 beforeEach(() => {
   vi.restoreAllMocks();
