@@ -100,8 +100,8 @@ export interface RedHatAuthenticationSession extends AuthenticationSession {
 }
 
 class ClientHolder {
-  private client: Client;
-  private clientPromise: Promise<Client>;
+  private client: Client | undefined;
+  private clientPromise: Promise<Client> | undefined;
   private config: AuthConfig;
 
   constructor(config: AuthConfig) {
@@ -167,7 +167,7 @@ export class RedHatAuthenticationService {
           try {
             await this.refreshToken(session.refreshToken, session.scope, session.id);
           } catch (e) {
-            if (e.message === REFRESH_NETWORK_FAILURE) {
+            if ((e as Error).message === REFRESH_NETWORK_FAILURE) {
               const didSucceedOnRetry = await this.handleRefreshNetworkError(
                 session.id,
                 session.refreshToken,
@@ -239,7 +239,7 @@ export class RedHatAuthenticationService {
               const token = await this.refreshToken(session.refreshToken, session.scope, session.id);
               added.push(convertToSession(token));
             } catch (e) {
-              if (e.message === REFRESH_NETWORK_FAILURE) {
+              if ((e as Error).message === REFRESH_NETWORK_FAILURE) {
                 // Ignore, will automatically retry on next poll.
               } else {
                 await this.removeSession(session.id);
@@ -260,7 +260,7 @@ export class RedHatAuthenticationService {
 
         await Promise.all(promises.concat(promises1));
       } catch (e) {
-        Logger.error(e.message);
+        Logger.error((e as Error).message);
         // if data is improperly formatted, remove all of it and send change event
         removed = this._tokens.map(convertToSession);
         this.clearSessions().catch(console.error);
@@ -454,7 +454,7 @@ export class RedHatAuthenticationService {
               const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
               onDidChangeSessions.fire({ added: [], removed: [], changed: [convertToSession(refreshedToken)] });
             } catch (e) {
-              if (e.message === REFRESH_NETWORK_FAILURE) {
+              if ((e as Error).message === REFRESH_NETWORK_FAILURE) {
                 const didSucceedOnRetry = await this.handleRefreshNetworkError(
                   token.sessionId,
                   token.refreshToken,
