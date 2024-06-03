@@ -33,6 +33,7 @@ const extFiles = path.resolve(__dirname, '../.extfiles');
 const fileStream = fs.createReadStream(extFiles, { encoding: 'utf8' });
 
 const includedFiles = [];
+const excludedFiles = [];
 
 // remove the .cdix file before zipping
 if (fs.existsSync(destFile)) {
@@ -53,7 +54,7 @@ cproc.exec('yarn add object-hash@2.2.0 --cwd .', { cwd: './dist' }, (error, stdo
 
   byline(fileStream)
     .on('data', line => {
-      includedFiles.push(line);
+      line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
     })
     .on('error', () => {
       throw new Error('Error reading .extfiles');
@@ -62,7 +63,7 @@ cproc.exec('yarn add object-hash@2.2.0 --cwd .', { cwd: './dist' }, (error, stdo
       includedFiles.push(zipDirectory); // add destination dir
       mkdirp.sync(zipDirectory);
       console.log(`Copying files to ${zipDirectory}`);
-      cp(includedFiles, error => {
+      cp(includedFiles, { exclude: excludedFiles }, error => {
         if (error) {
           throw new Error('Error copying files', error);
         }

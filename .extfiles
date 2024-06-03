@@ -5,3 +5,4 @@ redhat-icon.woff2
 README.md
 dist/**
 www/**
+!**/yarn.lock
