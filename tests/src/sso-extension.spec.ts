@@ -81,7 +81,9 @@ describe('Red Hat Authentication extension verification', async () => {
 
   test('Extension card is present and active', async () => {
     const extensions = await navBar.openExtensions();
-    playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
+    await playExpect.poll(async () => 
+      await extensions.extensionIsInstalled(extensionLabel), { timeout: 30000 }
+    ).toBeTruthy();
     const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
     await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
   });
