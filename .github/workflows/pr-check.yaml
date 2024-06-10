@@ -85,3 +85,96 @@ jobs:
 
       - name: Run unit tests
         run: yarn test
+
+  e2e-tests:
+    name: e2e tests
+    runs-on: ubuntu-24.04
+    needs: test
+    env:
+      SKIP_INSTALLATION: true
+    steps:
+      - uses: actions/checkout@v4
+        with: 
+          path: podman-desktop-redhat-account-ext
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      # Checkout podman desktop
+      - uses: actions/checkout@v4
+        with:
+          repository: containers/podman-desktop
+          ref: main
+          path: podman-desktop
+
+      - name: Update podman
+        run: |
+          # ubuntu version from kubic repository to install podman we need (v5)
+          ubuntu_version='23.04'
+          sudo sh -c "echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list"
+          curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add -
+          # install necessary dependencies for criu package which is not part of 23.04
+          sudo apt-get install -qq libprotobuf32t64 python3-protobuf libnet1
+          # install criu manually from static location
+          curl -sLO http://cz.archive.ubuntu.com/ubuntu/pool/universe/c/criu/criu_3.16.1-2_amd64.deb && sudo dpkg -i criu_3.16.1-2_amd64.deb
+          sudo apt-get update -qq
+          sudo apt-get -qq -y install podman || { echo "Start fallback steps for podman nightly installation from a static mirror" && \
+            sudo sh -c "echo 'deb http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list" && \
+            curl -L "http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add - && \
+            sudo apt-get update && \
+            sudo apt-get -y install podman; }
+          podman version
+
+      - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
+        run: |
+          # allow unprivileged user namespace
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Build Podman Desktop for E2E tests
+        working-directory: ./podman-desktop
+        run: |
+          yarn --frozen-lockfile
+          yarn test:e2e:build
+
+      - name: Get yarn cache directory path
+        working-directory: ./podman-desktop-redhat-account-ext
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
+
+      - uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Ensure getting current HEAD version of the test framework
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: yarn add -D @podman-desktop/tests-playwright@next 
+
+      - name: Execute yarn in SSO Extension
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: yarn --frozen-lockfile
+      
+      - name: Build SSO extension from container file
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: |
+          yarn build
+          podman build -t local_sso_image ./
+          CONTAINER_ID=$(podman create localhost/local_sso_image --entrypoint "")
+          podman export $CONTAINER_ID > /tmp/local_sso_image.tar
+          mkdir -p tests/output/sso-tests-pd/plugins
+          tar -xf /tmp/local_sso_image.tar -C tests/output/sso-tests-pd/plugins/
+          
+      - name: Run All E2E tests
+        working-directory: ./podman-desktop-redhat-account-ext
+        env:
+          PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+        run: yarn test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-tests
+          path: ./**/tests/output/

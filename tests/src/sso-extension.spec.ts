@@ -34,14 +34,14 @@ const extensionLabelName = 'redhat-authentication';
 const authProviderName = 'Red Hat SSO';
 const activeExtensionStatus = 'ACTIVE';
 const disabledExtensionStatus = 'DISABLED';
-
+const skipInstallation = process.env.SKIP_INSTALLATION ? process.env.SKIP_INSTALLATION : false;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
 });
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner();
+  pdRunner = new PodmanDesktopRunner({ customFolder: 'sso-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('sso-e2e');
 
@@ -64,7 +64,8 @@ describe('Red Hat Authentication extension verification', async () => {
     }
   });
 
-  test.runIf(extensionInstalled)(
+  // we want to skip removing of the extension when we are running tests from PR check
+  test.runIf(extensionInstalled && !skipInstallation)(
     'Uninstalled previous version of sso extension',
     async () => {
       await removeExtension();
@@ -72,7 +73,7 @@ describe('Red Hat Authentication extension verification', async () => {
     60000,
   );
 
-  test('Extension can be installed using OCI image', async () => {
+  test.runIf(!skipInstallation)('Extension can be installed using OCI image', async () => {
     const extensions = await navBar.openExtensions();
     await extensions.installExtensionFromOCIImage(imageName);
     await playExpect(extensionCard.card).toBeVisible();
@@ -80,7 +81,9 @@ describe('Red Hat Authentication extension verification', async () => {
 
   test('Extension card is present and active', async () => {
     const extensions = await navBar.openExtensions();
-    playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
+    await playExpect.poll(async () => 
+      await extensions.extensionIsInstalled(extensionLabel), { timeout: 30000 }
+    ).toBeTruthy();
     const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
     await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
   });
