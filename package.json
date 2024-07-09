@@ -45,7 +45,7 @@
     "test:e2e": "cross-env E2E_TESTS=true npm run test:e2e:setup vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
   },
   "dependencies": {
-    "@podman-desktop/api": "^1.10.0",
+    "@podman-desktop/api": "^1.11.1",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4",
     "axios": "^1.6.5",
