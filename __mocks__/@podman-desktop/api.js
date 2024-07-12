@@ -44,7 +44,7 @@ const plugin = {
       show: vi.fn(),
       iconClass: '',
     }),
-    withProgress: (options, callback) => {
+    withProgress: (_options, callback) => {
       return callback({
         report: () => {},
       });
@@ -71,6 +71,9 @@ const plugin = {
       };
     },
   },
+  extensions: {
+    getExtension: vi.fn(),
+  }
 };
 
 module.exports = plugin;
