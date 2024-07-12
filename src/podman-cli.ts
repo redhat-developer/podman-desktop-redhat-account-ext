@@ -16,12 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { RunError, RunResult } from '@podman-desktop/api';
-import { configuration, process as podmanProcess, provider } from '@podman-desktop/api';
+import * as podmanDesktopAPI from '@podman-desktop/api';
+import type { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 
 import { ExtensionTelemetryLogger } from './telemetry';
-import { isMac, isWindows } from './util';
-
-const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 
 export const PODMAN_COMMANDS = {
   smVersion: (machineName: string): string[] => `machine ssh ${machineName} sudo subscription-manager`.split(' '),
@@ -45,42 +43,16 @@ export const PODMAN_COMMANDS = {
   ],
 };
 
-export function getInstallationPath(): string | undefined {
-  const env = process.env;
-  if (isWindows()) {
-    return `c:\\Program Files\\RedHat\\Podman;${env.PATH}`;
-  } else if (isMac()) {
-    if (!env.PATH) {
-      return macosExtraPath;
-    } else {
-      return env.PATH.concat(':').concat(macosExtraPath);
-    }
-  } else {
-    return env.PATH;
-  }
-}
+const podmanApiDummy = {
+  exec: (): Promise<RunResult> => {
+    throw Error('Podman extension API is not available.');
+  },
+};
 
-export function getPodmanCli(): string {
-  // If we have a custom binary path regardless if we are running Windows or not
-  const customBinaryPath = getCustomBinaryPath();
-  if (customBinaryPath) {
-    return customBinaryPath;
-  }
-
-  if (isWindows()) {
-    return 'podman.exe';
-  }
-  return 'podman';
-}
-
-// Get the Podman binary path from configuration podman.binary.path
-// return string or undefined
-export function getCustomBinaryPath(): string | undefined {
-  return configuration.getConfiguration('podman').get('binary.path');
-}
-
-export interface InstalledPodman {
-  version: string;
+function getPodmanApi(): PodmanExtensionApi {
+  const podmanExports = podmanDesktopAPI.extensions.getExtension<PodmanExtensionApi>('podman-desktop.podman')?.exports;
+  const podmanApi = podmanExports ? podmanExports : podmanApiDummy;
+  return podmanApi;
 }
 
 type ErrorHandler<T> = (commandName: string, error: unknown) => T;
@@ -88,8 +60,10 @@ type TelemetryErrorHandler<T> = (commandName: string, telemetryEventName: string
 
 async function runCommand(commandName: string, command: string[], errorHandler: ErrorHandler<number>): Promise<number> {
   try {
-    console.log(`Executing: ${getPodmanCli()} ${command.join(' ')}`);
-    return await podmanProcess.exec(getPodmanCli(), command).then(() => 0);
+    console.log(`Executing podman command: ${command.join(' ')}`);
+    return await getPodmanApi()
+      .exec(command)
+      .then(() => 0);
   } catch (err) {
     return errorHandler(commandName, err);
   }
@@ -100,10 +74,10 @@ async function runCommandAndSendTelemetry(
   telemetryEventName: string,
   command: string[],
   errorHandler: TelemetryErrorHandler<void>,
-): Promise<RunResult> {
+): Promise<RunResult | undefined> {
   try {
-    console.log(`Executing: ${getPodmanCli()} ${command.join(' ')}`);
-    return await podmanProcess.exec(getPodmanCli(), command);
+    console.log(`Executing podman command: ${command.join(' ')}`);
+    return await getPodmanApi().exec(command);
   } catch (err) {
     errorHandler(commandName, telemetryEventName, err);
   }
@@ -126,7 +100,7 @@ export async function runSubscriptionManager(machineName: string): Promise<numbe
   return runCommand('Subscription manager execution', PODMAN_COMMANDS.smVersion(machineName), errToExitCodeHandler);
 }
 
-export async function runRpmInstallSubscriptionManager(machineName: string): Promise<RunResult> {
+export async function runRpmInstallSubscriptionManager(machineName: string): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Subscription manager installation',
     'subscriptionManagerInstallationError',
@@ -147,7 +121,7 @@ export async function runSubscriptionManagerRegister(
   machineName: string,
   activationKeyName: string,
   orgId: string,
-): Promise<RunResult> {
+): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Subscription manager registration',
     'subscriptionManagerRegisterError',
@@ -156,7 +130,7 @@ export async function runSubscriptionManagerRegister(
   );
 }
 
-export async function runSubscriptionManagerUnregister(machineName: string): Promise<RunResult> {
+export async function runSubscriptionManagerUnregister(machineName: string): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Subscription manager unregister',
     'subscriptionManagerUnregisterError',
@@ -165,7 +139,7 @@ export async function runSubscriptionManagerUnregister(machineName: string): Pro
   );
 }
 
-export async function runCreateFactsFile(machineName: string, jsonText: string): Promise<RunResult> {
+export async function runCreateFactsFile(machineName: string, jsonText: string): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts',
     'subscriptionManagerCreateFactsFileError',
@@ -174,7 +148,7 @@ export async function runCreateFactsFile(machineName: string, jsonText: string):
   );
 }
 
-export async function runStopPodmanMachine(machineName: string): Promise<RunResult> {
+export async function runStopPodmanMachine(machineName: string): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Podman machine stop',
     'stopPodmanMachineError',
@@ -183,7 +157,7 @@ export async function runStopPodmanMachine(machineName: string): Promise<RunResu
   );
 }
 
-export async function runStartPodmanMachine(machineName): Promise<RunResult> {
+export async function runStartPodmanMachine(machineName: string): Promise<RunResult | undefined> {
   return runCommandAndSendTelemetry(
     'Podman machine start',
     'startPodmanMachineError',
@@ -193,7 +167,7 @@ export async function runStartPodmanMachine(machineName): Promise<RunResult> {
 }
 
 export function getRunningPodmanMachineName(): string | undefined {
-  const conns = provider.getContainerConnections();
+  const conns = podmanDesktopAPI.provider.getContainerConnections();
   const startedPodman = conns.filter(
     conn =>
       conn.providerId === 'podman' &&
