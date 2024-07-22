@@ -79,7 +79,7 @@
     "mkdirp": "^3.0.1",
     "prettier": "^3.3.3",
     "tslib": "^2.6.3",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "vite": "^5.3.4",
     "vitest": "^2.0.3",
     "xvfb-maybe": "^0.2.1",
