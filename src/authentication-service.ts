@@ -299,9 +299,11 @@ export class RedHatAuthenticationService {
 
   private async resolveAccessAndIdTokens(token: IToken): Promise<IResolvedToken> {
     if (token.accessToken && (!token.expiresAt || token.expiresAt > Date.now())) {
-      token.expiresAt
-        ? Logger.info(`Token available from cache, expires in ${token.expiresAt - Date.now()} milliseconds`)
-        : Logger.info('Token available from cache');
+      if (token.expiresAt) {
+        Logger.info(`Token available from cache, expires in ${token.expiresAt - Date.now()} milliseconds`);
+      } else {
+        Logger.info('Token available from cache');
+      }
       return Promise.resolve({
         accessToken: token.accessToken,
         idToken: token.idToken,
