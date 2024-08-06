@@ -345,9 +345,9 @@
   integrity sha512-W4CmilZIIKn6l0XyDApOpufHfmxpqeYP2FEdYQeL3IK0Fjtaxo6NPnZzoZJmX1uCLoD6G2nw6IJuicZJMfbMSg==
 
 "@podman-desktop/tests-playwright@next":
-  version "1.12.0-202408052012-7c3c5ee"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.12.0-202408052012-7c3c5ee.tgz#85209f2ed1c6e0ba3fd0658114a6772ef9e024dc"
-  integrity sha512-lLdhKpVetm7kJO2gTFxRl3ghIUYecUqw6XWsgAOcimb4PMNGeGQ66ZebQ8usBzJvGtQVb5vEbhnX2UZNCFnluw==
+  version "1.12.0-202408061335-cb7a329"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.12.0-202408061335-cb7a329.tgz#ed18a6069f621f729297f0a46a55cb61cba663e5"
+  integrity sha512-voXFwR8bZcH5z6266OEFPcuvaBfRS5T27J8BYJgZCb+CqK7xvwrcP3CYBgzIkZfdMZf6A2NIcYtxGndgwk6xlQ==
 
 "@redhat-developer/rhcra-client@^0.0.1":
   version "0.0.1"
