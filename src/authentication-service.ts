@@ -194,7 +194,7 @@ export class RedHatAuthenticationService {
 
         await Promise.all(refreshes);
       } catch (e) {
-        Logger.info('Failed to initialize stored data');
+        Logger.info(`Failed to initialize stored data with error: ${String(e)}`);
         await this.clearSessions();
       }
 
@@ -265,20 +265,18 @@ export class RedHatAuthenticationService {
         removed = this._tokens.map(convertToSession);
         this.clearSessions().catch(console.error);
       }
-    } else {
-      if (this._tokens.length) {
-        // Log out all, remove all local data
-        removed = this._tokens.map(convertToSession);
-        Logger.info('No stored keychain data, clearing local data');
+    } else if (this._tokens.length) {
+      // Log out all, remove all local data
+      removed = this._tokens.map(convertToSession);
+      Logger.info('No stored keychain data, clearing local data');
 
-        this._tokens = [];
+      this._tokens = [];
 
-        this._refreshTimeouts.forEach(timeout => {
-          clearTimeout(timeout);
-        });
+      this._refreshTimeouts.forEach(timeout => {
+        clearTimeout(timeout);
+      });
 
-        this._refreshTimeouts.clear();
-      }
+      this._refreshTimeouts.clear();
     }
 
     if (added.length || removed.length) {
@@ -322,7 +320,7 @@ export class RedHatAuthenticationService {
         throw new Error();
       }
     } catch (e) {
-      throw new Error('Unavailable due to network problems');
+      throw new Error(`Unavailable due to network errors: ${String(e)}`);
     }
   }
 
@@ -356,7 +354,7 @@ export class RedHatAuthenticationService {
         throw err;
       }
 
-      const host = redirectReq.req.headers.host || '';
+      const host = redirectReq.req.headers.host ?? '';
       const updatedPortStr = (/^[^:]+:(\d+)$/.exec(Array.isArray(host) ? host[0] : host) || [])[1];
       const updatedPort = updatedPortStr ? parseInt(updatedPortStr, 10) : port;
 
@@ -450,7 +448,7 @@ export class RedHatAuthenticationService {
       this._refreshTimeouts.set(
         token.sessionId,
         setTimeout(
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises,sonarjs/no-misused-promises
           async () => {
             try {
               const refreshedToken = await this.refreshToken(token.refreshToken, scope, token.sessionId);
@@ -487,10 +485,12 @@ export class RedHatAuthenticationService {
       idToken: tokenSet.id_token,
       accessToken: tokenSet.access_token,
       refreshToken: tokenSet.refresh_token!,
-      sessionId: existingId || tokenSet.session_state!,
+      sessionId: existingId ?? tokenSet.session_state!,
       scope: scope,
       account: {
         id: claims.sub,
+        // ignore eslint rule because it is no clear if empty string as a value is possible here
+        // eslint-disable-next-line sonarjs/prefer-nullish-coalescing
         label: claims.preferred_username || claims.email || 'email not found',
       },
     };
@@ -540,11 +540,12 @@ export class RedHatAuthenticationService {
     this._refreshTimeouts.set(
       sessionId,
       setTimeout(
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises,sonarjs/no-misused-promises
         async () => {
           try {
             await this.refreshToken(refreshToken, scope, sessionId);
           } catch (e) {
+            console.log(`Trying to reconnect after error: ${String(e)}`);
             this.pollForReconnect(sessionId, refreshToken, scope);
           }
         },
@@ -580,12 +581,13 @@ export class RedHatAuthenticationService {
       this._refreshTimeouts.set(
         sessionId,
         setTimeout(
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises,sonarjs/no-misused-promises
           async () => {
             try {
               await this.refreshToken(refreshToken, scope, sessionId);
               resolve(true);
             } catch (e) {
+              console.log(`Attempting to refresh token again after network error: ${String(e)}`);
               resolve(this.handleRefreshNetworkError(sessionId, refreshToken, scope, attempts + 1));
             }
           },

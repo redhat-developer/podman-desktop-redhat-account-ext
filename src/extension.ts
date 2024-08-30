@@ -118,6 +118,7 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
       accessTokenJson.organization.id,
     );
   } catch (err) {
+    console.log(`'podman-desktop' service account does not exist yet: ${String(err)}`);
     // ignore error when there is no podman-desktop service account yet
     selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
       name: 'podman-desktop',
@@ -145,8 +146,7 @@ async function createOrReuseActivationKey(machineName: string): Promise<void> {
     await client.activationKey.showActivationKey('podman-desktop');
     // podman-desktop activation key exists
   } catch (err) {
-    // ignore and continue with activation key creation
-    // TODO: add check that used role and usage exists in organization
+    console.log(`Activation key is not available: ${String(err)}`);
     await client.activationKey.createActivationKeys({
       name: 'podman-desktop',
       role: 'RHEL Server',

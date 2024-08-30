@@ -29,7 +29,15 @@
       // enable the rule specifically for TypeScript files
       "files": ["*.ts"],
       "rules": {
-        "@typescript-eslint/explicit-function-return-type": "error"
+        "@typescript-eslint/explicit-function-return-type": "error",
+        "sonarjs/no-alphabetical-sort": "off",
+        "sonarjs/new-cap": "off"
+      }
+    },
+    {
+      "files": ["*.spec.ts"],
+      "rules": {
+        "sonarjs/no-nested-functions" : "off"
       }
     }
   ],
