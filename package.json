@@ -3,6 +3,7 @@
   "displayName": "Red Hat Authentication",
   "description": "Login to Red Hat Developers",
   "version": "1.0.2",
+  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
@@ -40,9 +41,9 @@
     "lint:fix": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache . --fix --ext js,ts",
     "lint:check": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache . --ext js,ts",
     "test": "vitest run --coverage",
-    "test:all": "npm run test && npm run test:e2e",
+    "test:all": "pnpm test && pnpm test:e2e",
     "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
-    "test:e2e": "cross-env E2E_TESTS=true npm run test:e2e:setup vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
+    "test:e2e": "cross-env E2E_TESTS=true pnpm run test:e2e:setup vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
   },
   "dependencies": {
     "@podman-desktop/api": "^1.12.0",
