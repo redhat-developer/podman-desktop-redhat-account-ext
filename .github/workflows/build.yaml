@@ -24,45 +24,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
-      - name: Get yarn cache directory path (Windows)
-        if: ${{ inputs.runs-on == 'windows-2022' }}
-        id: yarn-cache-dir-path-windows
-        run: echo "dir=$(yarn cache dir)" >> ${env:GITHUB_OUTPUT}
-
-      - name: Get yarn cache directory path (mac/Linux)
-        if: ${{ inputs.runs-on == 'ubuntu-22.04' || inputs.runs-on == 'macos-14' }}
-        id: yarn-cache-dir-path-unix
-        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
-
-      - uses: actions/cache@v4
-        if: ${{ inputs.runs-on == 'windows-2022' }}
-        id: yarn-cache-windows
-        with:
-          path: ${{ steps.yarn-cache-dir-path-windows.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - uses: actions/cache@v4
-        if: ${{ inputs.runs-on == 'ubuntu-22.04' || inputs.runs-on == 'macos-14' }}
-        id: yarn-cache-unix
-        with:
-          path: ${{ steps.yarn-cache-dir-path-unix.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install dependencies (no cache found)
+      - name: Install dependencies
         run: |
-          yarn --frozen-lockfile --network-timeout 180000
+          pnpm install
 
       - name: Run Build
         timeout-minutes: 20
-        run: yarn build
+        run: pnpm build
 
       - name: Login to quay.io
         if: ${{ inputs.registry == 'quay' }}
