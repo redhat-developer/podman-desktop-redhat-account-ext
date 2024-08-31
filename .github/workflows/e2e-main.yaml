@@ -74,9 +74,16 @@ jobs:
           ref: main
           path: podman-desktop
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+          package_json_file: ./podman-desktop/package.json
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
       - name: Update podman
         run: |
@@ -97,33 +104,20 @@ jobs:
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop
         run: |
-          yarn --frozen-lockfile
-          yarn test:e2e:build
+          pnpm install
+          pnpm test:e2e:build
 
-      - name: Get yarn cache directory path
-        working-directory: ${{ env.REPOSITORY }}
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Execute yarn in Red Hat Account Extension
+      - name: Execute pnpm in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         run: |
-          yarn add -D @podman-desktop/tests-playwright@next
-          yarn --frozen-lockfile
+          pnpm install -D @podman-desktop/tests-playwright@1.13.0-202408291153-ccbdd9b
+          pnpm build
 
       - name: Run All E2E tests in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
