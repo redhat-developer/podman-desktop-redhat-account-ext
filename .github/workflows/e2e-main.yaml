@@ -110,7 +110,7 @@ jobs:
       - name: Execute pnpm in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         run: |
-          pnpm install -D @podman-desktop/tests-playwright@1.13.0-202408291153-ccbdd9b
+          pnpm install -D @podman-desktop/tests-playwright@next
           pnpm build
 
       - name: Run All E2E tests in Red Hat Account Extension
