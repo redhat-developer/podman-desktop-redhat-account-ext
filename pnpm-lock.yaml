@@ -18,8 +18,8 @@ importers:
         specifier: ^0.0.4
         version: 0.0.4
       axios:
-        specifier: ^1.7.5
-        version: 1.7.6
+        specifier: ^1.7.7
+        version: 1.7.7
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -759,8 +759,8 @@ packages:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
 
-  axios@1.7.6:
-    resolution: {integrity: sha512-Ekur6XDwhnJ5RgOCaxFnXyqlPALI3rVeukZMwOdfghW7/wGz784BYKiQq+QD8NPcr91KRo30KfHOchyijwWw7g==}
+  axios@1.7.7:
+    resolution: {integrity: sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -2681,14 +2681,14 @@ snapshots:
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
-      axios: 1.7.6
+      axios: 1.7.7
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
 
   '@redhat-developer/rhsm-client@0.0.4':
     dependencies:
-      axios: 1.7.6
+      axios: 1.7.7
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -3106,7 +3106,7 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.0.0
 
-  axios@1.7.6:
+  axios@1.7.7:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
