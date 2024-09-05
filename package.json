@@ -34,7 +34,7 @@
     }
   },
   "scripts": {
-    "build": "vite build && node ./scripts/build.js",
+    "build": "vite build && node ./scripts/build.cjs",
     "watch": "vite build -w",
     "format:check": "prettier --end-of-line auto --cache --check \"{src,types,scripts}/**/*.{ts,js}\"",
     "format:fix": "prettier --cache --write \"{src,types,scripts}/**/*.{ts,js}\"",
@@ -52,6 +52,7 @@
     "@redhat-developer/rhsm-client": "^0.0.4",
     "axios": "^1.7.7",
     "js-yaml": "^4.1.0",
+    "object-hash": "2.2.0",
     "openid-client": "^5.6.5"
   },
   "devDependencies": {
