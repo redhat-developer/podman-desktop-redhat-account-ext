@@ -16,9 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Page} from '@playwright/test';
-import { expect as playExpect } from '@playwright/test';
+import { expect as playExpect, test } from '@playwright/test';
 import { AuthenticationPage, ExtensionCardPage, NavigationBar, PodmanDesktopRunner, WelcomePage } from '@podman-desktop/tests-playwright';
-import { test } from '@playwright/test';
 
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
 
@@ -61,11 +60,10 @@ test.describe('Red Hat Authentication extension verification', () => {
 
     // we want to skip removing of the extension when we are running tests from PR check
     test('Uninstalle previous version of sso extension', async () => {
-        test.skip(!extensionInstalled || !!skipInstallation);
-        test.setTimeout(60000);
-        await removeExtension();
-      }
-    );
+      test.skip(!extensionInstalled || !!skipInstallation);
+      test.setTimeout(60000);
+      await removeExtension();
+    });
 
     test('Extension can be installed using OCI image', async () => {
       test.skip(extensionInstalled && !skipInstallation);
@@ -104,7 +102,7 @@ test.describe('Red Hat Authentication extension verification', () => {
     });
   });
 
-  test.describe('Red Hat Authentication extension handling', async () => {
+  test.describe('Red Hat Authentication extension handling', () => {
     test('Extension can be disabled', async () => {
       const extensions = await navBar.openExtensions();
       playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
