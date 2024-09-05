@@ -125,7 +125,7 @@ jobs:
 
       - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-redhat-account-ext
-        run: pnpm add -D @podman-desktop/tests-playwright@1.13.0-202408291153-ccbdd9b 
+        run: pnpm install -D @podman-desktop/tests-playwright@next 
 
       - name: Execute pnpm in SSO Extension
         working-directory: ./podman-desktop-redhat-account-ext

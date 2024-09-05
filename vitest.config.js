@@ -71,33 +71,6 @@ function unitTestConfig() {
   };
 }
 
-function e2eTestConfig() {
-  return {
-    globals: true,
-    globalSetup: './node_modules/@podman-desktop/tests-playwright/src/globalSetup/global-setup.ts',
-    setupFiles: './tests/src/setupFiles/extended-hooks.ts',
-    /**
-     * By default, vitest search test files in all packages.
-     * For e2e tests have sense search only is project root tests folder
-     */
-    include: ['tests/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: excludeArray,
-
-    /**
-     * A default timeout of 5000ms is sometimes not enough for playwright.
-     */
-    testTimeout: 30_000,
-    hookTimeout: 60_000,
-    // test reporters - default for all and junit for CI
-    reporters: process.env.CI ? ['default', 'junit'] : ['verbose'],
-    outputFile: process.env.CI ? { junit: 'tests/output/junit-e2e-results.xml' } : {},
-  };
-}
-
-export function testConfig() {
-  return process.env.E2E_TESTS ? e2eTestConfig() : unitTestConfig();
-}
-
 /**
  * Config for global end-to-end tests
  * placed in project root tests folder
@@ -107,7 +80,7 @@ export function testConfig() {
 
 const config = {
   test: {
-    ...testConfig(),
+    ...unitTestConfig(),
     ...coverageConfig(PACKAGE_ROOT, PACKAGE_NAME),
   },
   resolve: {

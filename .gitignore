@@ -4,6 +4,7 @@ builtin
 dist
 node_modules
 redhat-authentication.cdix
-tests/output
+tests/**/output
 test-resources
+test-results
  

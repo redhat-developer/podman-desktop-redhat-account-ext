@@ -16,9 +16,25 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { type RunnerTestContext,takeScreenshotHook } from '@podman-desktop/tests-playwright';
-import { afterEach } from 'vitest';
+import { defineConfig, devices } from '@playwright/test';
 
-afterEach(async (context: RunnerTestContext) => {
-  context.onTestFailed(async () => await takeScreenshotHook(context.pdRunner, context.task.name));
+export default defineConfig({
+  outputDir: 'output/',
+  workers: 1,
+
+  reporter: [
+    ['list'],
+    ['junit', { outputFile: 'output/junit-results.xml' }],
+    ['json', { outputFile: 'output/json-results.json' }],
+    ['html', { open: 'never', outputFolder: 'output/html-results/' }],
+  ],
+
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+  ],
 });

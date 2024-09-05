@@ -3,5 +3,6 @@ scripts
 builtin/**
 www
 *.config.js
+*.config.ts
 types/**/*.ts
 __mocks__
