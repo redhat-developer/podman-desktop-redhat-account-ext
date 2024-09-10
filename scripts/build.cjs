@@ -45,30 +45,38 @@ if (fs.existsSync(builtinDirectory)) {
 }
 
 // install external modules into dist folder
-cproc.exec('pnpm add object-hash@2.2.0', { cwd: './dist' }, (error, stdout, stderr) => {
+cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
   if (error) {
     console.log(stdout);
     console.log(stderr);
     throw error;
   }
 
-  byline(fileStream)
-    .on('data', line => {
-      line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
-    })
-    .on('error', () => {
-      throw new Error('Error reading .extfiles');
-    })
-    .on('end', () => {
-      includedFiles.push(zipDirectory); // add destination dir
-      mkdirp.sync(zipDirectory);
-      console.log(`Copying files to ${zipDirectory}`);
-      cp(includedFiles, { exclude: excludedFiles }, error => {
-        if (error) {
-          throw new Error('Error copying files', error);
-        }
-        console.log(`Zipping files to ${destFile}`);
-        zipper.sync.zip(zipDirectory).compress().save(destFile);
+  cproc.exec('pnpm install object-hash@2.2.0', { cwd: './dist' }, (error, stdout, stderr) => {
+    if (error) {
+      console.log(stdout);
+      console.log(stderr);
+      throw error;
+    }
+    
+    byline(fileStream)
+      .on('data', line => {
+        line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
+      })
+      .on('error', () => {
+        throw new Error('Error reading .extfiles');
+      })
+      .on('end', () => {
+        includedFiles.push(zipDirectory); // add destination dir
+        mkdirp.sync(zipDirectory);
+        console.log(`Copying ${includedFiles} to ${zipDirectory}`);
+        cp(includedFiles, { exclude: excludedFiles }, error => {
+          if (error) {
+            throw new Error('Error copying files', error);
+          }
+          console.log(`Zipping files to ${destFile}`);
+          zipper.sync.zip(zipDirectory).compress().save(destFile);
+        });
       });
-    });
+  });
 });
