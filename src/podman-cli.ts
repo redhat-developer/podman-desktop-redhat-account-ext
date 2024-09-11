@@ -24,20 +24,20 @@ import { isMac, isWindows } from './util';
 const macosExtraPath = '/usr/local/bin:/opt/homebrew/bin:/opt/local/bin:/opt/podman/bin';
 
 export const PODMAN_COMMANDS = {
-  SM_VERSION: (machineName: string): string[] => `machine ssh ${machineName} sudo subscription-manager`.split(' '),
-  RPM_INSTALL_SM: (machineName: string): string[] =>
+  smVersion: (machineName: string): string[] => `machine ssh ${machineName} sudo subscription-manager`.split(' '),
+  rpmInstallSm: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo rpm-ostree install -y subscription-manager`.split(' '),
-  SM_ACTIVATION_STATUS: (machineName: string): string[] =>
+  smActgivationStatus: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager status`.split(' '),
-  SM_ACTIVATE_SUBS: (machineName: string, activationKeyName: string, orgId: string): string[] =>
+  smActivateSubs: (machineName: string, activationKeyName: string, orgId: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager register --force --activationkey ${activationKeyName} --org ${orgId}`.split(
       ' ',
     ),
-  SM_DEACTIVATE_SUBS: (machineName: string): string[] =>
+  smDeactivateSubs: (machineName: string): string[] =>
     `machine ssh ${machineName} sudo subscription-manager unregister`.split(' '),
-  MACHINE_STOP: (machineName: string): string[] => `machine stop ${machineName}`.split(' '),
-  MACHINE_START: (machineName: string): string[] => `machine start ${machineName}`.split(' '),
-  CREATE_FACTS_FILE: (machineName: string, oneLineJson: string): string[] => [
+  machineStop: (machineName: string): string[] => `machine stop ${machineName}`.split(' '),
+  machineStart: (machineName: string): string[] => `machine start ${machineName}`.split(' '),
+  createFactFile: (machineName: string, oneLineJson: string): string[] => [
     'machine',
     'ssh',
     machineName,
@@ -123,14 +123,14 @@ function errTelemetryHandler(commandName: string, telemetryEventName: string, er
 }
 
 export async function runSubscriptionManager(machineName: string): Promise<number> {
-  return runCommand('Subscription manager execution', PODMAN_COMMANDS.SM_VERSION(machineName), errToExitCodeHandler);
+  return runCommand('Subscription manager execution', PODMAN_COMMANDS.smVersion(machineName), errToExitCodeHandler);
 }
 
 export async function runRpmInstallSubscriptionManager(machineName: string): Promise<RunResult> {
   return runCommandAndSendTelemetry(
     'Subscription manager installation',
     'subscriptionManagerInstallationError',
-    PODMAN_COMMANDS.RPM_INSTALL_SM(machineName),
+    PODMAN_COMMANDS.rpmInstallSm(machineName),
     errTelemetryHandler,
   );
 }
@@ -138,7 +138,7 @@ export async function runRpmInstallSubscriptionManager(machineName: string): Pro
 export async function runSubscriptionManagerActivationStatus(machineName: string): Promise<number> {
   return runCommand(
     'Subscription manager subscription activation check',
-    PODMAN_COMMANDS.SM_ACTIVATION_STATUS(machineName),
+    PODMAN_COMMANDS.smActgivationStatus(machineName),
     errToExitCodeHandler,
   );
 }
@@ -151,7 +151,7 @@ export async function runSubscriptionManagerRegister(
   return runCommandAndSendTelemetry(
     'Subscription manager registration',
     'subscriptionManagerRegisterError',
-    PODMAN_COMMANDS.SM_ACTIVATE_SUBS(machineName, activationKeyName, orgId),
+    PODMAN_COMMANDS.smActivateSubs(machineName, activationKeyName, orgId),
     errTelemetryHandler,
   );
 }
@@ -160,7 +160,7 @@ export async function runSubscriptionManagerUnregister(machineName: string): Pro
   return runCommandAndSendTelemetry(
     'Subscription manager unregister',
     'subscriptionManagerUnregisterError',
-    PODMAN_COMMANDS.SM_DEACTIVATE_SUBS(machineName),
+    PODMAN_COMMANDS.smDeactivateSubs(machineName),
     errTelemetryHandler,
   );
 }
@@ -169,7 +169,7 @@ export async function runCreateFactsFile(machineName: string, jsonText: string):
   return runCommandAndSendTelemetry(
     'Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts',
     'subscriptionManagerCreateFactsFileError',
-    PODMAN_COMMANDS.CREATE_FACTS_FILE(machineName, jsonText.replace('\n', '\\n')),
+    PODMAN_COMMANDS.createFactFile(machineName, jsonText.replace('\n', '\\n')),
     errTelemetryHandler,
   );
 }
@@ -178,7 +178,7 @@ export async function runStopPodmanMachine(machineName: string): Promise<RunResu
   return runCommandAndSendTelemetry(
     'Podman machine stop',
     'stopPodmanMachineError',
-    PODMAN_COMMANDS.MACHINE_STOP(machineName),
+    PODMAN_COMMANDS.machineStop(machineName),
     errTelemetryHandler,
   );
 }
@@ -187,7 +187,7 @@ export async function runStartPodmanMachine(machineName): Promise<RunResult> {
   return runCommandAndSendTelemetry(
     'Podman machine start',
     'startPodmanMachineError',
-    PODMAN_COMMANDS.MACHINE_START(machineName),
+    PODMAN_COMMANDS.machineStart(machineName),
     errTelemetryHandler,
   );
 }

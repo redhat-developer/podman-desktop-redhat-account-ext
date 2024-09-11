@@ -265,20 +265,18 @@ export class RedHatAuthenticationService {
         removed = this._tokens.map(convertToSession);
         this.clearSessions().catch(console.error);
       }
-    } else {
-      if (this._tokens.length) {
-        // Log out all, remove all local data
-        removed = this._tokens.map(convertToSession);
-        Logger.info('No stored keychain data, clearing local data');
+    } else if (this._tokens.length) {
+      // Log out all, remove all local data
+      removed = this._tokens.map(convertToSession);
+      Logger.info('No stored keychain data, clearing local data');
 
-        this._tokens = [];
+      this._tokens = [];
 
-        this._refreshTimeouts.forEach(timeout => {
-          clearTimeout(timeout);
-        });
+      this._refreshTimeouts.forEach(timeout => {
+        clearTimeout(timeout);
+      });
 
-        this._refreshTimeouts.clear();
-      }
+      this._refreshTimeouts.clear();
     }
 
     if (added.length || removed.length) {
@@ -331,6 +329,7 @@ export class RedHatAuthenticationService {
       return Promise.all(this._tokens.map(token => this.convertToSession(token)));
     }
 
+    // eslint-disable-next-line sonarjs/no-alphabetical-sort
     const orderedScopes = [...scopes].sort().join(' ');
     const matchingTokens = this._tokens.filter(token => token.scope === orderedScopes);
     return Promise.all(matchingTokens.map(token => this.convertToSession(token)));
@@ -356,7 +355,7 @@ export class RedHatAuthenticationService {
         throw err;
       }
 
-      const host = redirectReq.req.headers.host || '';
+      const host = redirectReq.req.headers.host ?? '';
       const updatedPortStr = (/^[^:]+:(\d+)$/.exec(Array.isArray(host) ? host[0] : host) || [])[1];
       const updatedPort = updatedPortStr ? parseInt(updatedPortStr, 10) : port;
 
@@ -487,10 +486,12 @@ export class RedHatAuthenticationService {
       idToken: tokenSet.id_token,
       accessToken: tokenSet.access_token,
       refreshToken: tokenSet.refresh_token!,
-      sessionId: existingId || tokenSet.session_state!,
+      sessionId: existingId ?? tokenSet.session_state!,
       scope: scope,
       account: {
         id: claims.sub,
+        // not sure if claim can't be an empty string in some specific use cases
+        // eslint-disable-next-line sonarjs/prefer-nullish-coalescing
         label: claims.preferred_username || claims.email || 'email not found',
       },
     };

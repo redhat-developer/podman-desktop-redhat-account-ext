@@ -332,6 +332,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       onDidChangeSessions: onDidChangeSessions.event,
       createSession: async function (scopes: string[]): Promise<extensionApi.AuthenticationSession> {
         const service = await getAuthenticationService();
+        // eslint-disable-next-line sonarjs/no-alphabetical-sort
         const session = await service.createSession([...scopes].sort().join(' '));
         onDidChangeSessions.fire({ added: [session] });
         return session;

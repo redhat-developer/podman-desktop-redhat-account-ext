@@ -27,7 +27,7 @@ type LogLevel = 'Trace' | 'Info' | 'Error';
 class Log {
   private data2String(data: any): string {
     if (data instanceof Error) {
-      return data.stack || data.message;
+      return data.stack ?? data.message;
     }
     if (data.success === false && data.message) {
       return data.message;
