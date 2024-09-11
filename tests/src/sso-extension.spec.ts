@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect as playExpect } from '@playwright/test';
-import { AuthenticationPage, ExtensionCardPage,RunnerOptions, test } from '@podman-desktop/tests-playwright';
+import type { NavigationBar } from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, expect as playExpect, ExtensionCardPage, RunnerOptions, test } from '@podman-desktop/tests-playwright';
 
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
 
@@ -31,7 +31,9 @@ const activeExtensionStatus = 'ACTIVE';
 const disabledExtensionStatus = 'DISABLED';
 const skipInstallation = process.env.SKIP_INSTALLATION ? process.env.SKIP_INSTALLATION : false;
 
-test.use({ runnerOptions: new RunnerOptions({ customFolder: 'sso-tests-pd' }) });
+test.use({ 
+  runnerOptions: new RunnerOptions({ customFolder: 'sso-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
+});
 test.beforeAll(async ({ runner, page, welcomePage }) => {
   runner.setVideoAndTraceName('sso-e2e');
   await welcomePage.handleWelcomePage(true);
@@ -42,8 +44,8 @@ test.afterAll(async ({ runner }) => {
   await runner.close();
 });
 
-test.describe('Red Hat Authentication extension verification', () => {
-  test.describe('Red Hat Authentication extension installation', () => {
+test.describe.serial('Red Hat Authentication extension verification', () => {
+  test.describe.serial('Red Hat Authentication extension installation', () => {
     test('Go to extensions and check if extension is already installed', async ({ navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       if (await extensions.extensionIsInstalled(extensionLabel)) {
@@ -95,7 +97,7 @@ test.describe('Red Hat Authentication extension verification', () => {
     });
   });
 
-  test.describe('Red Hat Authentication extension handling', () => {
+  test.describe.serial('Red Hat Authentication extension handling', () => {
     test('Extension can be disabled', async ({ navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       playExpect(await extensions.extensionIsInstalled(extensionLabel)).toBeTruthy();
