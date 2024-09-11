@@ -69,7 +69,7 @@ test('runRpmInstallSubscription manager returns 0 when successful', async () => 
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
   const result = await runRpmInstallSubscriptionManager('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.RPM_INSTALL_SM('machine1'));
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.rpmInstallSm('machine1'));
 });
 
 test('runRpmInstallSubscription manager returns none 0 error code when failed and send telemetry', async () => {
@@ -115,7 +115,7 @@ test('runSubscriptionManagerRegister returns 0 when successful', async () => {
   expect(result).toBe(runResult);
   expect(podmanProcess.exec).toBeCalledWith(
     getPodmanCli(),
-    PODMAN_COMMANDS.SM_ACTIVATE_SUBS('machine1', 'activation-key-name', 'orgId'),
+    PODMAN_COMMANDS.smActivateSubs('machine1', 'activation-key-name', 'orgId'),
   );
 });
 
@@ -145,7 +145,7 @@ test('runCreateFactsFile returns 0 when successful', async () => {
   expect(result).toBe(runResult);
   expect(podmanProcess.exec).toBeCalledWith(
     getPodmanCli(),
-    PODMAN_COMMANDS.CREATE_FACTS_FILE('machine1', '{"field":"value"}'),
+    PODMAN_COMMANDS.createFactFile('machine1', '{"field":"value"}'),
   );
 });
 
@@ -173,7 +173,7 @@ test('runStopPodmanMachine returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
   const result = await runStopPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_STOP('machine1'));
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.machineStop('machine1'));
 });
 
 test('runStopPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
@@ -200,7 +200,7 @@ test('runStartPodmanMachine returns 0 when successful', async () => {
   vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
   const result = await runStartPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.MACHINE_START('machine1'));
+  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.machineStart('machine1'));
 });
 
 test('runStartPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
+    "strictNullChecks": true,
     "lib": [ "ES2017", "webworker" ],
     "module": "esnext",
     "target": "esnext",

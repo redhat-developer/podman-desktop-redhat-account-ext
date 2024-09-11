@@ -108,6 +108,11 @@
     "header/header": [2, "block", [{ "pattern": "SPDX-License-Identifier: Apache-2\\.0" }]],
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "unicorn/prefer-node-protocol": "error"
+    "unicorn/prefer-node-protocol": "error",
+    // redundant with @typescript-eslint/no-unused-vars
+    "sonarjs/no-ignored-exceptions": "off",
+    "sonarjs/todo-tag": "off",
+    // redundant with @typescript-eslint/no-misused-promises
+    "sonarjs/no-misused-promises" : "off"
   }
 }
