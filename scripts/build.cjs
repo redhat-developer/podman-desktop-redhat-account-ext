@@ -69,7 +69,7 @@ cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
       .on('end', () => {
         includedFiles.push(zipDirectory); // add destination dir
         mkdirp.sync(zipDirectory);
-        console.log(`Copying ${includedFiles} to ${zipDirectory}`);
+        console.log(`Copying files to ${zipDirectory}`);
         cp(includedFiles, { exclude: excludedFiles }, error => {
           if (error) {
             throw new Error('Error copying files', error);
