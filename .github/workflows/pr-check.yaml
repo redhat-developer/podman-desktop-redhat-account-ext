@@ -209,15 +209,15 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Build Podman Desktop for E2E tests locally in production mode
+        working-directory: ./podman-desktop
         env:
           ELECTRON_ENABLE_INSPECT: true
-        working-directory: ./podman-desktop
         run: |
           pnpm install --frozen-lockfile
-          pnpm compile:current
-          $path=$(realpah ./dist/linux-unpacked/podman-desktop)
-          echo $path
-          echo ("PODMAN_DESKTOP_BINARY=" + $path) >> $env:GITHUB_ENV
+          pnpm compile:current --linux dir
+          path=$(realpath ./dist/linux-unpacked/podman-desktop)
+          echo "Podman Desktop built binary: $path"
+          echo "PODMAN_DESKTOP_BINARY_PATH=$path" >> $GITHUB_ENV
 
       - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-redhat-account-ext
@@ -243,8 +243,9 @@ jobs:
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-redhat-account-ext
+        env:
+          PODMAN_DESKTOP_BINARY: ${{ env.PODMAN_DESKTOP_BINARY_PATH }}
         run: |
-          echo "${{ env.PODMAN_DESKTOP_BINARY }}"
           pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
