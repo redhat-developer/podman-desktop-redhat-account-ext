@@ -3,6 +3,7 @@ LICENSE
 icon.png
 redhat-icon.woff2
 README.md
-dist/**
+!dist/package.json
+!dist/pnpm-lock.yaml
+dist/**/**
 www/**
-!**/yarn.lock
