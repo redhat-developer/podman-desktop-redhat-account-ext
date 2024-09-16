@@ -16,22 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { NavigationBar } from '@podman-desktop/tests-playwright';
-import { expect as playExpect, ExtensionCardPage, RunnerOptions, test } from '@podman-desktop/tests-playwright';
-
-
-let extensionCard: ExtensionCardPage;
-const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest';
-const extensionLabel = 'redhat.redhat-authentication';
-const extensionLabelName = 'redhat-authentication';
+import { expect as playExpect, RunnerOptions, test } from '@podman-desktop/tests-playwright';
 
 test.use({ 
   runnerOptions: new RunnerOptions({ customFolder: 'sso-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
 });
-test.beforeAll(async ({ runner, page, welcomePage }) => {
+test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('sso-e2e');
   await welcomePage.handleWelcomePage(true);
-  extensionCard = new ExtensionCardPage(page, extensionLabelName, extensionLabel);
 });
 
 test.afterAll(async ({ runner }) => {
