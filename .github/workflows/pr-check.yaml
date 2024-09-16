@@ -156,3 +156,100 @@ jobs:
         with:
           name: e2e-tests
           path: ./**/tests/**/output/
+
+  e2e-tests-production:
+    name: e2e tests production mode
+    runs-on: ubuntu-24.04
+    needs: test
+    env:
+      SKIP_INSTALLATION: true
+    steps:
+      - uses: actions/checkout@v4
+        with: 
+          path: podman-desktop-redhat-account-ext
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+          package_json_file: ./podman-desktop-redhat-account-ext/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      # Checkout podman desktop
+      - uses: actions/checkout@v4
+        with:
+          repository: containers/podman-desktop
+          ref: main
+          path: podman-desktop
+
+      - name: Update podman
+        run: |
+          # ubuntu version from kubic repository to install podman we need (v5)
+          ubuntu_version='23.04'
+          sudo sh -c "echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list"
+          curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add -
+          # install necessary dependencies for criu package which is not part of 23.04
+          sudo apt-get install -qq libprotobuf32t64 python3-protobuf libnet1
+          # install criu manually from static location
+          curl -sLO http://cz.archive.ubuntu.com/ubuntu/pool/universe/c/criu/criu_3.16.1-2_amd64.deb && sudo dpkg -i criu_3.16.1-2_amd64.deb
+          sudo apt-get update -qq
+          sudo apt-get -qq -y install podman || { echo "Start fallback steps for podman nightly installation from a static mirror" && \
+            sudo sh -c "echo 'deb http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list" && \
+            curl -L "http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add - && \
+            sudo apt-get update && \
+            sudo apt-get -y install podman; }
+          podman version
+
+      - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
+        run: |
+          # allow unprivileged user namespace
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Build Podman Desktop for E2E tests locally in production mode
+        working-directory: ./podman-desktop
+        env:
+          ELECTRON_ENABLE_INSPECT: true
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm compile:current --linux dir
+          path=$(realpath ./dist/linux-unpacked/podman-desktop)
+          echo "Podman Desktop built binary: $path"
+          echo "PODMAN_DESKTOP_BINARY_PATH=$path" >> $GITHUB_ENV
+
+      - name: Ensure getting current HEAD version of the test framework
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: |
+          # workaround for https://github.com/containers/podman-desktop-extension-bootc/issues/712
+          version=$(npm view @podman-desktop/tests-playwright@next version)
+          echo "Version of @podman-desktop/tests-playwright to be used: $version"
+          jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
+
+      - name: Execute pnpm in SSO Extension
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: pnpm install --no-frozen-lockfile
+      
+      - name: Build SSO extension from container file
+        working-directory: ./podman-desktop-redhat-account-ext
+        run: |
+          pnpm build
+          podman build -t local_sso_image ./
+          CONTAINER_ID=$(podman create localhost/local_sso_image --entrypoint "")
+          podman export $CONTAINER_ID > /tmp/local_sso_image.tar
+          mkdir -p tests/output/sso-tests-pd/plugins
+          tar -xf /tmp/local_sso_image.tar -C tests/output/sso-tests-pd/plugins/
+          
+      - name: Run All E2E tests
+        working-directory: ./podman-desktop-redhat-account-ext
+        env:
+          PODMAN_DESKTOP_BINARY: ${{ env.PODMAN_DESKTOP_BINARY_PATH }}
+        run: |
+          pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-tests-production
+          path: ./**/tests/**/output/

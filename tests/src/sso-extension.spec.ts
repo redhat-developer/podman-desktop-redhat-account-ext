@@ -46,6 +46,7 @@ test.afterAll(async ({ runner }) => {
 
 test.describe.serial('Red Hat Authentication extension verification', () => {
   test.describe.serial('Red Hat Authentication extension installation', () => {
+    // PR check builds extension locally and so it is available already
     test('Go to extensions and check if extension is already installed', async ({ navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       if (await extensions.extensionIsInstalled(extensionLabel)) {
@@ -54,12 +55,14 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     // we want to skip removing of the extension when we are running tests from PR check
-    test('Uninstalle previous version of sso extension', async ({ navigationBar }) => {
+    test('Uninstall previous version of sso extension', async ({ navigationBar }) => {
       test.skip(!extensionInstalled || !!skipInstallation);
       test.setTimeout(60000);
       await removeExtension(navigationBar);
     });
 
+    // we want to install extension from OCI image (usually using latest tag) after new code was added to the codebase
+    // and extension was published already
     test('Extension can be installed using OCI image', async ({ navigationBar }) => {
       test.skip(extensionInstalled && !skipInstallation);
       test.setTimeout(200000);
@@ -68,7 +71,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(extensionCard.card).toBeVisible();
     });
 
-    test('Extension card is present and active', async ({ navigationBar }) => {
+    test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       await playExpect.poll(async () => 
         await extensions.extensionIsInstalled(extensionLabel), { timeout: 30000 },
@@ -77,13 +80,21 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(extensionCard.status).toHaveText(activeExtensionStatus);
     });
 
-    test('Extension Details show correct status', async ({ page,navigationBar }) => {
+    test('Extension\'s details show correct status, no error', async ({ page,navigationBar }) => {
       const extensions = await navigationBar.openExtensions();
       const extensionCard = await extensions.getInstalledExtension(extensionLabelName, extensionLabel);
       await extensionCard.openExtensionDetails('Red Hat Authentication');
       const details = new SSOExtensionPage(page);
       await playExpect(details.heading).toBeVisible();
       await playExpect(details.status).toHaveText(activeExtensionStatus);
+      const errorTab = details.tabs.getByRole('button', { name: 'Error' });
+      // we would like to propagate the error's stack trace into test failure message
+      let stackTrace = '';
+      if ((await errorTab.count()) > 0) {
+        await details.activateTab('Error');
+        stackTrace = await details.errorStackTrace.innerText();
+      }
+      await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
     });
 
     test('SSO provider is available in Authentication Page', async ({ navigationBar }) => {
