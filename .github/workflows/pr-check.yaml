@@ -155,7 +155,7 @@ jobs:
         if: always()
         with:
           name: e2e-tests
-          path: ./tests/**/output/
+          path: ./**/tests/**/output/
 
   e2e-tests-production:
     name: e2e tests production mode
