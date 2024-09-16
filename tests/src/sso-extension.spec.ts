@@ -87,12 +87,12 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       const details = new SSOExtensionPage(page);
       await playExpect(details.heading).toBeVisible();
       await playExpect(details.status).toHaveText(activeExtensionStatus);
-      const tabs = details.page.getByRole('region', { name: 'Tabs' });
-      const errorTab = tabs.getByRole('button', { name: 'Error' });
+      const errorTab = details.tabs.getByRole('button', { name: 'Error' });
       // we would like to propagate the error's stack trace into test failure message
       let stackTrace = '';
       if ((await errorTab.count()) > 0) {
-        stackTrace = await errorTab.innerText();
+        await details.activateTab('Error');
+        stackTrace = await details.errorStackTrace.innerText();
       }
       await playExpect(errorTab, `Error Tab was present with stackTrace: ${stackTrace}`).not.toBeVisible();
     });
