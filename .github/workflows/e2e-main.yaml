@@ -18,9 +18,10 @@
 name: e2e-tests-main
 
 on:
-  push:
-    branches: [main]
-
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       organization:
@@ -38,19 +39,29 @@ on:
         description: 'Red Hat Account Extension repo branch'
         type: string
         required: true
+      mode:
+        description: 'Build mode for Podman Desktop'
+        type: choice
+        options:
+          - production
+          - development
 
 jobs:
   e2e-tests:
     name: Red Hat Account Extension E2E tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    env: 
+      MODE: ${{ inputs.mode || 'production' }}
+      REPO: ${{ inputs.repositoryName || 'podman-desktop-redhat-account-ext' }}
+      ORGANIZATION: ${{ inputs.organization || 'redhat-developer' }}
+      BRANCH: ${{ inputs.branch || 'main' }}
     steps:
-
       - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run'
         with:
-          repository: ${{ github.event.inputs.organization }}/${{ github.event.inputs.repositoryName }}
-          ref: ${{ github.event.inputs.branch }}
-          path: ${{ github.event.inputs.repositoryName }}
+          repository: ${{ env.ORGANIZATION }}/${{ env.REPO }}
+          ref: ${{ env.BRANCH }}
+          path: ${{ env.REPO }}
 
       - uses: actions/checkout@v4
         if: github.event_name == 'push'
@@ -62,11 +73,10 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           repository=podman-desktop-redhat-account-ext
-          if [[ "$EVENT" == 'workflow_dispatch' ]]; then
-            repository=${{ github.event.inputs.repositoryName }}
+          if [[ "$EVENT" == 'workflow_dispatch' || "$EVENT" == 'workflow_run' ]]; then
+            repository=${{ env.REPO }}
           fi
           echo "REPOSITORY=$repository" >> $GITHUB_ENV
-
       # Checkout podman desktop
       - uses: actions/checkout@v4
         with:
@@ -78,35 +88,50 @@ jobs:
         name: Install pnpm
         with:
           run_install: false
-          package_json_file: ./podman-desktop/package.json
+          package_json_file: ./${{ env.REPO }}/package.json
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
-      - name: Update podman
+      - name: Update podman v. 5.x
         run: |
-          sudo sh -c "echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_22.04/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list"
-          curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/Release.key" | sudo apt-key add -
+          # ubuntu version from kubic repository to install podman we need (v5)
+          ubuntu_version='23.04'
+          sudo sh -c "echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list"
+          curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add -
+          # install necessary dependencies for criu package which is not part of 23.04
+          sudo apt-get install -qq libprotobuf32t64 python3-protobuf libnet1
+          # install criu manually from static location
+          curl -sLO http://cz.archive.ubuntu.com/ubuntu/pool/universe/c/criu/criu_3.16.1-2_amd64.deb && sudo dpkg -i criu_3.16.1-2_amd64.deb
           sudo apt-get update -qq
           sudo apt-get -qq -y install podman || { echo "Start fallback steps for podman nightly installation from a static mirror" && \
-            sudo sh -c "echo 'deb http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_22.04/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list" && \
-            curl -L "http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/Release.key" | sudo apt-key add - && \
+            sudo sh -c "echo 'deb http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list" && \
+            curl -L "http://ftp.lysator.liu.se/pub/opensuse/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_${ubuntu_version}/Release.key" | sudo apt-key add - && \
             sudo apt-get update && \
             sudo apt-get -y install podman; }
           podman version
-          # downgrade conmon package version to workaround issue with starting containers, see  https://github.com/containers/conmon/issues/475
-          # remove once the repository contains conmon 2.1.10
-          wget https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_22.04/amd64/conmon_2.1.2~0_amd64.deb -O /tmp/conmon_2.1.2.deb
-          sudo apt install /tmp/conmon_2.1.2.deb
-
-      - name: Build Podman Desktop for E2E tests
+      - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
+        run: |
+          # allow unprivileged user namespace
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Build Podman Desktop for E2E tests Development Mode
         working-directory: ./podman-desktop
+        if: ${{ env.MODE == 'development' }}
         run: |
           pnpm install
           pnpm test:e2e:build
-
+      - name: Build Podman Desktop for E2E tests Production Mode
+        working-directory: ./podman-desktop
+        if: ${{ env.MODE == 'production' }} 
+        env:
+          ELECTRON_ENABLE_INSPECT: true
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm compile:current --linux dir
+          path=$(realpath ./dist/linux-unpacked/podman-desktop)
+          echo "Podman Desktop built binary: $path"
+          echo "PODMAN_DESKTOP_BINARY_PATH=$path" >> $GITHUB_ENV
       - name: Execute pnpm in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         run: |
@@ -115,11 +140,18 @@ jobs:
           echo "Version of @podman-desktop/tests-playwright to be used: $version"
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
           pnpm install --no-frozen-lockfile
-
-      - name: Run All E2E tests in Red Hat Account Extension
+      - name: Run All E2E tests in Red Hat Account Extension in Development Mode
         working-directory: ${{ env.REPOSITORY }}
+        if: ${{ env.MODE == 'development' }}
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+        run: pnpm test:e2e
+
+      - name: Run All E2E tests in Red Hat Account Extension in Production mode
+        working-directory: ${{ env.REPOSITORY }}
+        if: ${{ env.MODE == 'production' }}
+        env:
+          PODMAN_DESKTOP_BINARY: ${{ env.PODMAN_DESKTOP_BINARY_PATH }}
         run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
