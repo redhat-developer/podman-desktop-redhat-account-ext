@@ -38,7 +38,7 @@ importers:
         version: 1.47.2
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.13.0-202410042224-6220158ba2
+        version: 1.13.0-202410071804-876e8b5114
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -1023,8 +1023,8 @@ packages:
   '@podman-desktop/api@1.12.0':
     resolution: {integrity: sha512-yZmrqVlXftnK8JcXab6tEdLy7h6Sf6d+lUZdrnPmzO9ec+UVDYXI3ezoEe2URdi9+e0CaK9YO0Tp0W9Kkoedkg==}
 
-  '@podman-desktop/tests-playwright@1.13.0-202410042224-6220158ba2':
-    resolution: {integrity: sha512-pBo8dZ9qE6uO8G/+NgTqqtSA6jr4sC5IOaD/M0svCuIzH0McQI+YeoP9AyNqG2wDEROgEpb6Rv6Gi3R6cOVEaA==}
+  '@podman-desktop/tests-playwright@1.13.0-202410071804-876e8b5114':
+    resolution: {integrity: sha512-fu7Do4mhW463onmNbKWxrVHQvzXBkHmWpqgL3+tdwBMd+J/LJBQBdktgX6ikVInzKr3a3b2ALjdDxPECQPqZkw==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -1967,6 +1967,7 @@ packages:
   eslint@8.57.1:
     resolution: {integrity: sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.6.1:
@@ -4479,7 +4480,7 @@ snapshots:
 
   '@podman-desktop/api@1.12.0': {}
 
-  '@podman-desktop/tests-playwright@1.13.0-202410042224-6220158ba2': {}
+  '@podman-desktop/tests-playwright@1.13.0-202410071804-876e8b5114': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
