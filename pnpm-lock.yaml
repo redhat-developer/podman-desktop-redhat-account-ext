@@ -38,7 +38,7 @@ importers:
         version: 1.48.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.14.0-202410152136-1798725603
+        version: 1.14.0-202410161909-9d80c320c1
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -64,8 +64,8 @@ importers:
         specifier: 7.0.3
         version: 7.0.3
       electron:
-        specifier: ^33.0.0
-        version: 33.0.0
+        specifier: ^33.0.1
+        version: 33.0.1
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
@@ -1023,8 +1023,8 @@ packages:
   '@podman-desktop/api@1.13.2':
     resolution: {integrity: sha512-tMLHRSCkFguSu0gA+4OZgEjDH6Um1iAhNAeq4zWfeVz/LiPi34BGgQKh4xMHibLkkkA0w7e7hHIIlFWw+3uF5A==}
 
-  '@podman-desktop/tests-playwright@1.14.0-202410152136-1798725603':
-    resolution: {integrity: sha512-CECEUJ0AQkNk4oND41rc90ae/5Tni0AgiAiM/S67av8qNU8Nl8ffBTiLK92D5Zr8gVbn1AQqbzFHUd8NuFHFtw==}
+  '@podman-desktop/tests-playwright@1.14.0-202410161909-9d80c320c1':
+    resolution: {integrity: sha512-jVdNHOQ5njXneZVNxXZM6Pr2msvee7IT7FJWyMxjw8xERXnBQbe2lkcVbS/7wH8zHV6oGdIw4zX8GcXzplav5A==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -1728,8 +1728,8 @@ packages:
   electron-to-chromium@1.5.13:
     resolution: {integrity: sha512-lbBcvtIJ4J6sS4tb5TLp1b4LyfCdMkwStzXPyAgVgTRAsep4bvrAGaBOP7ZJtQMNJpSQ9SqG4brWOroNaQtm7Q==}
 
-  electron@33.0.0:
-    resolution: {integrity: sha512-OdLLR/zAVuNfKahSSYokZmSi7uK2wEYTbCoiIdqWLsOWmCqO9j0JC2XkYQmXQcAk2BJY0ri4lxwAfc5pzPDYsA==}
+  electron@33.0.1:
+    resolution: {integrity: sha512-PipPnWH4gvf7o+P8jlKQZGgPfb5eHcLgTrnKkFzb98MXhyPjVJYCR7YWqcawZ8IfyJCut8vMxLuBFLT1Ag8TSQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -4480,7 +4480,7 @@ snapshots:
 
   '@podman-desktop/api@1.13.2': {}
 
-  '@podman-desktop/tests-playwright@1.14.0-202410152136-1798725603': {}
+  '@podman-desktop/tests-playwright@1.14.0-202410161909-9d80c320c1': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
@@ -5318,7 +5318,7 @@ snapshots:
 
   electron-to-chromium@1.5.13: {}
 
-  electron@33.0.0:
+  electron@33.0.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 20.16.11
