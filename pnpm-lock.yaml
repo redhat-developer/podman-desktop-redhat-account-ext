@@ -11,6 +11,9 @@ importers:
       '@podman-desktop/api':
         specifier: ^1.13.2
         version: 1.13.2
+      '@podman-desktop/podman-extension-api':
+        specifier: 1.14.0-202410161537-40ecb8de58
+        version: 1.14.0-202410161537-40ecb8de58
       '@redhat-developer/rhcra-client':
         specifier: ^0.0.1
         version: 0.0.1
@@ -38,7 +41,7 @@ importers:
         version: 1.48.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.14.0-202410181623-bad6d696ad
+        version: 1.14.0-202410211536-63001e3094
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -1023,8 +1026,14 @@ packages:
   '@podman-desktop/api@1.13.2':
     resolution: {integrity: sha512-tMLHRSCkFguSu0gA+4OZgEjDH6Um1iAhNAeq4zWfeVz/LiPi34BGgQKh4xMHibLkkkA0w7e7hHIIlFWw+3uF5A==}
 
-  '@podman-desktop/tests-playwright@1.14.0-202410181623-bad6d696ad':
-    resolution: {integrity: sha512-INkAZh+ZQTIkPlfLljd+YsJN1Z90tja2OcGLmlnk++eCIadr/mTl2s7DAx2iL4SCvtJxA2SxMNHzSCqZ1WLCJA==}
+  '@podman-desktop/api@1.14.0-202410161537-40ecb8de58':
+    resolution: {integrity: sha512-m+XA6S8vcMuD6GKvcCa7RVPNGTaJEgva3BywgO4eB6BlyJ2pKbLYEw1RPJQggTFWhsgv9+0PtA5oSvIc5MGPXA==}
+
+  '@podman-desktop/podman-extension-api@1.14.0-202410161537-40ecb8de58':
+    resolution: {integrity: sha512-6RtA/Iq7HkLDSMJgD5rAI+pCQKor8/QEEVsAzkg8Ja6aPa4Ix6UmRCli/QL+sx1z29wHFpSj6M4KnPIAOGQgWQ==}
+
+  '@podman-desktop/tests-playwright@1.14.0-202410211536-63001e3094':
+    resolution: {integrity: sha512-bd7jE2KcwbycUcVO36+t9cgfPLpTvZqRnpaFlaP9udC+cPfFboHV103m6kdObdas2vn2tSzieaAUqq16HtPXFQ==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -1479,7 +1488,6 @@ packages:
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -4469,7 +4477,13 @@ snapshots:
 
   '@podman-desktop/api@1.13.2': {}
 
-  '@podman-desktop/tests-playwright@1.14.0-202410181623-bad6d696ad': {}
+  '@podman-desktop/api@1.14.0-202410161537-40ecb8de58': {}
+
+  '@podman-desktop/podman-extension-api@1.14.0-202410161537-40ecb8de58':
+    dependencies:
+      '@podman-desktop/api': 1.14.0-202410161537-40ecb8de58
+
+  '@podman-desktop/tests-playwright@1.14.0-202410211536-63001e3094': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
