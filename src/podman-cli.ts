@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { RunError, RunResult, extensions } from '@podman-desktop/api';
-import { provider } from '@podman-desktop/api';
+import type { RunError, RunResult } from '@podman-desktop/api';
+import { extensions, provider } from '@podman-desktop/api';
 import type { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
+
 import { ExtensionTelemetryLogger } from './telemetry';
 
 export const PODMAN_COMMANDS = {
@@ -43,7 +44,7 @@ export const PODMAN_COMMANDS = {
 };
 
 const podmanApiDummy = {
-  exec: () => {
+  exec: (): Promise<RunResult> => {
     throw Error('Podman extension API is not available.');
   },
 };
