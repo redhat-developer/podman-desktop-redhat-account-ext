@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { RunError, RunResult } from '@podman-desktop/api';
-import { extensions, provider } from '@podman-desktop/api';
+import * as pdApi from '@podman-desktop/api';
 import type { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 
 import { ExtensionTelemetryLogger } from './telemetry';
@@ -48,8 +48,12 @@ const podmanApiDummy = {
     throw Error('Podman extension API is not available.');
   },
 };
-const podmanExports = extensions.getExtension<PodmanExtensionApi>('podman-desktop.podman')?.exports;
-const podmanApi = podmanExports ? podmanExports : podmanApiDummy;
+
+function getPodmanApi(): PodmanExtensionApi {
+  const podmanExports = pdApi.extensions.getExtension<PodmanExtensionApi>('podman-desktop.podman')?.exports;
+  const podmanApi = podmanExports ? podmanExports : podmanApiDummy;
+  return podmanApi;
+}
 
 type ErrorHandler<T> = (commandName: string, error: unknown) => T;
 type TelemetryErrorHandler<T> = (commandName: string, telemetryEventName: string, error: unknown) => T;
@@ -57,7 +61,9 @@ type TelemetryErrorHandler<T> = (commandName: string, telemetryEventName: string
 async function runCommand(commandName: string, command: string[], errorHandler: ErrorHandler<number>): Promise<number> {
   try {
     console.log(`Executing podman command: ${command.join(' ')}`);
-    return await podmanApi.exec(command).then(() => 0);
+    return await getPodmanApi()
+      .exec(command)
+      .then(() => 0);
   } catch (err) {
     return errorHandler(commandName, err);
   }
@@ -71,7 +77,7 @@ async function runCommandAndSendTelemetry(
 ): Promise<RunResult | undefined> {
   try {
     console.log(`Executing podman command: ${command.join(' ')}`);
-    return await podmanApi.exec(command);
+    return await getPodmanApi().exec(command);
   } catch (err) {
     errorHandler(commandName, telemetryEventName, err);
   }
@@ -161,7 +167,7 @@ export async function runStartPodmanMachine(machineName: string): Promise<RunRes
 }
 
 export function getRunningPodmanMachineName(): string | undefined {
-  const conns = provider.getContainerConnections();
+  const conns = pdApi.provider.getContainerConnections();
   const startedPodman = conns.filter(
     conn =>
       conn.providerId === 'podman' &&

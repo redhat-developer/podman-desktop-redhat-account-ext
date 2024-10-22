@@ -18,11 +18,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import { process as podmanProcess } from '@podman-desktop/api';
+import { Extension, extensions } from '@podman-desktop/api';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import {
-  getPodmanCli,
   PODMAN_COMMANDS,
   runCreateFactsFile,
   runRpmInstallSubscriptionManager,
@@ -33,6 +32,7 @@ import {
   runSubscriptionManagerRegister,
 } from './podman-cli';
 import { ExtensionTelemetryLogger } from './telemetry';
+import { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 
 vi.mock('@podman-desktop/api');
 
@@ -44,18 +44,28 @@ const runError = {
   toString: (): string => 'error message',
 };
 
+let execMock = vi.fn();
+
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(extensions.getExtension).mockImplementation(
+    () =>
+      ({
+        exports: {
+          exec: execMock,
+        },
+      }) as unknown as Extension<PodmanExtensionApi>,
+  );
 });
 
 test('runSubscriptionManager returns 0 when it is installed', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runSubscriptionManager('machine1');
   expect(result).toBe(0);
 });
 
 test('runSubscriptionManager returns 1 when it is not installed', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue({
+  execMock.mockRejectedValue({
     exitCode: 1,
     stdout: 'stdout output',
     stderr: 'stderr output',
@@ -66,14 +76,14 @@ test('runSubscriptionManager returns 1 when it is not installed', async () => {
 });
 
 test('runRpmInstallSubscription manager returns 0 when successful', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runRpmInstallSubscriptionManager('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.rpmInstallSm('machine1'));
+  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.rpmInstallSm('machine1'));
 });
 
 test('runRpmInstallSubscription manager returns none 0 error code when failed and send telemetry', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue(runError);
+  execMock.mockRejectedValue(runError);
   const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockImplementation(() => {
     return;
   });
@@ -93,13 +103,13 @@ test('runRpmInstallSubscription manager returns none 0 error code when failed an
 });
 
 test('runSubscriptionManagerActivationStatus returns 0 when it has subscription activated', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runSubscriptionManagerActivationStatus('machine1');
   expect(result).toBe(0);
 });
 
 test('runSubscriptionManagerActivationStatus returns 1 when it has no active subscription', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue({
+  execMock.mockRejectedValue({
     exitCode: 1,
     stdout: 'stdout output',
     stderr: 'stderr output',
@@ -110,17 +120,14 @@ test('runSubscriptionManagerActivationStatus returns 1 when it has no active sub
 });
 
 test('runSubscriptionManagerRegister returns 0 when successful', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runSubscriptionManagerRegister('machine1', 'activation-key-name', 'orgId');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(
-    getPodmanCli(),
-    PODMAN_COMMANDS.smActivateSubs('machine1', 'activation-key-name', 'orgId'),
-  );
+  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.smActivateSubs('machine1', 'activation-key-name', 'orgId'));
 });
 
 test('runSubscriptionManagerRegister manager returns none 0 error code when failed and send telemetry', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue(runError);
+  execMock.mockRejectedValue(runError);
   const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockImplementation(() => {
     return;
   });
@@ -140,17 +147,14 @@ test('runSubscriptionManagerRegister manager returns none 0 error code when fail
 });
 
 test('runCreateFactsFile returns 0 when successful', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runCreateFactsFile('machine1', '{"field":"value"}');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(
-    getPodmanCli(),
-    PODMAN_COMMANDS.createFactFile('machine1', '{"field":"value"}'),
-  );
+  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.createFactFile('machine1', '{"field":"value"}'));
 });
 
 test('runCreateFactsFile manager returns none 0 error code when failed and send telemetry', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue(runError);
+  execMock.mockRejectedValue(runError);
   const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockImplementation(() => {
     return;
   });
@@ -170,18 +174,17 @@ test('runCreateFactsFile manager returns none 0 error code when failed and send 
 });
 
 test('runStopPodmanMachine returns 0 when successful', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runStopPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.machineStop('machine1'));
+  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.machineStop('machine1'));
 });
 
 test('runStopPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue(runError);
-  const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockImplementation(() => {
-    return;
-  });
+  execMock.mockRejectedValue(runError);
+  const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockReturnValue(undefined);
   const consoleError = vi.spyOn(console, 'error');
+
   let error: unknown;
   await runStopPodmanMachine('machine1').catch((err: unknown) => {
     error = err;
@@ -197,14 +200,14 @@ test('runStopPodmanMachine manager returns none 0 error code when failed and sen
 });
 
 test('runStartPodmanMachine returns 0 when successful', async () => {
-  vi.mocked(podmanProcess.exec).mockResolvedValue(runResult);
+  execMock.mockResolvedValue(runResult);
   const result = await runStartPodmanMachine('machine1');
   expect(result).toBe(runResult);
-  expect(podmanProcess.exec).toBeCalledWith(getPodmanCli(), PODMAN_COMMANDS.machineStart('machine1'));
+  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.machineStart('machine1'));
 });
 
 test('runStartPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
-  vi.mocked(podmanProcess.exec).mockRejectedValue(runError);
+  execMock.mockRejectedValue(runError);
   const logErrorSpy = vi.spyOn(ExtensionTelemetryLogger, 'logError').mockImplementation(() => {
     return;
   });
