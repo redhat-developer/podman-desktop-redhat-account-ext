@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import type { Extension} from '@podman-desktop/api';
+import type { Extension } from '@podman-desktop/api';
 import { extensions } from '@podman-desktop/api';
 import type { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 import { beforeEach, expect, test, vi } from 'vitest';
