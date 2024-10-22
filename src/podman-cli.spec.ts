@@ -18,7 +18,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 
-import { Extension, extensions } from '@podman-desktop/api';
+import type { Extension} from '@podman-desktop/api';
+import { extensions } from '@podman-desktop/api';
+import type { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import {
@@ -32,7 +34,6 @@ import {
   runSubscriptionManagerRegister,
 } from './podman-cli';
 import { ExtensionTelemetryLogger } from './telemetry';
-import { PodmanExtensionApi } from '@podman-desktop/podman-extension-api';
 
 vi.mock('@podman-desktop/api');
 
@@ -44,7 +45,7 @@ const runError = {
   toString: (): string => 'error message',
 };
 
-let execMock = vi.fn();
+const execMock = vi.fn();
 
 beforeEach(() => {
   vi.resetAllMocks();
