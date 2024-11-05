@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@podman-desktop/api':
-        specifier: ^1.14.0
-        version: 1.14.0
+        specifier: ^1.14.1
+        version: 1.14.1
       '@redhat-developer/rhcra-client':
         specifier: ^0.0.1
         version: 0.0.1
@@ -1020,8 +1020,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@podman-desktop/api@1.14.0':
-    resolution: {integrity: sha512-VcGy2R5uE2kPp3ThbD7CZ8ViKGVmWl80XPd8AZhyCjgbwJbRYeZAguErRGX/nrt0PWt7Paw4LwiqAQi1Kojmew==}
+  '@podman-desktop/api@1.14.1':
+    resolution: {integrity: sha512-mOX5XWAomOXgXt/S5o13t9LXSHylg8xvAzWYwIrHkXYQL6fy6QqChroezx6MlSotJ6bj1peHh0ToFfxVHTa79w==}
 
   '@podman-desktop/tests-playwright@1.15.0-202411051354-b1877639ef':
     resolution: {integrity: sha512-j2et13lgPbGQaB0jJrm8WI5WCsICzC+xpDPwYNax9sleobFlprd87R+9AjcZzL2Y2eT+8B/amxaOXeEPdY+vjQ==}
@@ -4467,7 +4467,7 @@ snapshots:
     dependencies:
       playwright: 1.48.2
 
-  '@podman-desktop/api@1.14.0': {}
+  '@podman-desktop/api@1.14.1': {}
 
   '@podman-desktop/tests-playwright@1.15.0-202411051354-b1877639ef': {}
 
