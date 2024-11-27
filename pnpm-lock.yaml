@@ -21,8 +21,8 @@ importers:
         specifier: ^0.0.4
         version: 0.0.4
       axios:
-        specifier: ^1.7.7
-        version: 1.7.7
+        specifier: ^1.7.8
+        version: 1.7.8
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -41,7 +41,7 @@ importers:
         version: 1.49.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.15.0-202411221726-0f9c9f9388
+        version: 1.15.0-202411261523-3d0e65cc9d
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -1035,8 +1035,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.14.0':
     resolution: {integrity: sha512-2qeszzyRnWrE7tdPoJDn/Ug9ro2spg/YQMVyUkvu5AFEup1M7qkiV2n7nV0XP5Pw5tJAF2qaG1er7ueAMgI6qQ==}
 
-  '@podman-desktop/tests-playwright@1.15.0-202411221726-0f9c9f9388':
-    resolution: {integrity: sha512-XYeyXMgor9exA8KSY+B/CpYHj5VfdKesd1wEF1A/BvQjhkPMD4IMm3SI8RFooTgoJrHhSgBrDZ6jKP2j8x4deQ==}
+  '@podman-desktop/tests-playwright@1.15.0-202411261523-3d0e65cc9d':
+    resolution: {integrity: sha512-pLW0WHCXasyvddJArrolt9mylGiGi3bZWXd8K8gaa51rtnhT/kdW0KwA1vumrLSC7Y8zcCLiv8+C3BjSUXv/IA==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -1474,8 +1474,8 @@ packages:
     resolution: {integrity: sha512-Mr2ZakwQ7XUAjp7pAwQWRhhK8mQQ6JAaNWSjmjxil0R8BPioMtQsTLOolGYkji1rcL++3dCqZA3zWqpT+9Ew6g==}
     engines: {node: '>=4'}
 
-  axios@1.7.7:
-    resolution: {integrity: sha512-S4kL7XrjgBmvdGut0sN3yJxqYzrDOnivkBiN0OFs6hLiUam3UPvswUo0kqGyhqUZGEOytHyumEdXsAkgCOUf3Q==}
+  axios@1.7.8:
+    resolution: {integrity: sha512-Uu0wb7KNqK2t5K+YQyVCLM76prD5sRFjKHbJYCP1J7JFGEQ6nN7HWn9+04LAeiJ3ji54lgS/gZCH1oxyrf1SPw==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -4525,18 +4525,18 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.14.0
 
-  '@podman-desktop/tests-playwright@1.15.0-202411221726-0f9c9f9388': {}
+  '@podman-desktop/tests-playwright@1.15.0-202411261523-3d0e65cc9d': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
-      axios: 1.7.7
+      axios: 1.7.8
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
 
   '@redhat-developer/rhsm-client@0.0.4':
     dependencies:
-      axios: 1.7.7
+      axios: 1.7.8
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -5051,7 +5051,7 @@ snapshots:
 
   axe-core@4.10.0: {}
 
-  axios@1.7.7:
+  axios@1.7.8:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
