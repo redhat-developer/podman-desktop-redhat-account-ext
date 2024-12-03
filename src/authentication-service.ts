@@ -491,7 +491,7 @@ export class RedHatAuthenticationService {
       account: {
         id: claims.sub,
         // not sure if claim can't be an empty string in some specific use cases
-        // eslint-disable-next-line sonarjs/prefer-nullish-coalescing
+        // eslint-disable-next-line
         label: claims.preferred_username || claims.email || 'email not found',
       },
     };
