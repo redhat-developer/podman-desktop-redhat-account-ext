@@ -41,7 +41,7 @@ importers:
         version: 1.49.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.15.0-202412032323-8e37da4b657
+        version: 1.15.0-202412042153-9cc50faddb2
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -106,8 +106,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       prettier:
-        specifier: ^3.4.1
-        version: 3.4.1
+        specifier: ^3.4.2
+        version: 3.4.2
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -1142,8 +1142,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.14.0':
     resolution: {integrity: sha512-2qeszzyRnWrE7tdPoJDn/Ug9ro2spg/YQMVyUkvu5AFEup1M7qkiV2n7nV0XP5Pw5tJAF2qaG1er7ueAMgI6qQ==}
 
-  '@podman-desktop/tests-playwright@1.15.0-202412032323-8e37da4b657':
-    resolution: {integrity: sha512-+cxkDeARs6d5gPgXsvpxrMpzyc/AGtAWZFQvZyn7QJbgQbJ7XI4xzoTBRSgGYMBGRIHBnVZ7HR7n5ypreTt8oA==}
+  '@podman-desktop/tests-playwright@1.15.0-202412042153-9cc50faddb2':
+    resolution: {integrity: sha512-dUtQ/gmZpSbAuGAcRZiQ6OYZ3AWvC0zzVTKGv8TKq5iwg+3MGKHsg2WHbOVEL0gz4jknb0dMIRKwzm7DjHNBSQ==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -2762,8 +2762,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.4.1:
-    resolution: {integrity: sha512-G+YdqtITVZmOJje6QkXQWzl3fSfMxFwm1tjTyo9exhkmWSqC4Yhd1+lug++IlR2mvRVAxEDDWYkQdeSztajqgg==}
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -4491,7 +4491,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.14.0
 
-  '@podman-desktop/tests-playwright@1.15.0-202412032323-8e37da4b657': {}
+  '@podman-desktop/tests-playwright@1.15.0-202412042153-9cc50faddb2': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
@@ -6324,7 +6324,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.4.1: {}
+  prettier@3.4.2: {}
 
   process-nextick-args@2.0.1: {}
 
