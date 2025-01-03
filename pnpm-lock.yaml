@@ -41,7 +41,7 @@ importers:
         version: 1.49.1
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.16.0-202501012128-55e7e111324
+        version: 1.16.0-202501021304-c0227fdd152
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -115,8 +115,8 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
       vite:
-        specifier: ^6.0.6
-        version: 6.0.6(@types/node@20.17.11)(terser@5.36.0)
+        specifier: ^6.0.7
+        version: 6.0.7(@types/node@20.17.11)(terser@5.36.0)
       vitest:
         specifier: ^2.0.5
         version: 2.0.5(@types/node@20.17.11)(terser@5.36.0)
@@ -1123,8 +1123,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.14.2':
     resolution: {integrity: sha512-KDLzvZP8/0BUR7IPYuv3NevsPWp9py2bScnYRU09OK5hbYmRCGKe9Y0Ni88Ihdg/GAbh0u8iWJcAbpgHEXoE+Q==}
 
-  '@podman-desktop/tests-playwright@1.16.0-202501012128-55e7e111324':
-    resolution: {integrity: sha512-NKVmmwHVhFKI64WCWC5Juu100D9isAt1HdBtrGYz0FhmOHuwxVU8ZXpItnZ67JlFVOg/YzYLc4LwXG13jZBYHg==}
+  '@podman-desktop/tests-playwright@1.16.0-202501021304-c0227fdd152':
+    resolution: {integrity: sha512-WaXG+HDCQoVvMjqmmye/fE5yUhLYtmLr3nppvS37kv33G+yT7RuyyGA0dBVd7Ewew/ubVq68RlnnPiZWXxkCgQ==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -3218,8 +3218,8 @@ packages:
       terser:
         optional: true
 
-  vite@6.0.6:
-    resolution: {integrity: sha512-NSjmUuckPmDU18bHz7QZ+bTYhRR0iA72cs2QAxCqDpafJ0S6qetco0LB3WW2OxlMHS0JmAv+yZ/R3uPmMyGTjQ==}
+  vite@6.0.7:
+    resolution: {integrity: sha512-RDt8r/7qx9940f8FcOIAH9PTViRrghKaK2K1jY3RaAURrEUbm9Du1mJ72G+jlhtG3WwodnfzY8ORQZbBavZEAQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -4402,7 +4402,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.14.2
 
-  '@podman-desktop/tests-playwright@1.16.0-202501012128-55e7e111324': {}
+  '@podman-desktop/tests-playwright@1.16.0-202501021304-c0227fdd152': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
@@ -6737,7 +6737,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.36.0
 
-  vite@6.0.6(@types/node@20.17.11)(terser@5.36.0):
+  vite@6.0.7(@types/node@20.17.11)(terser@5.36.0):
     dependencies:
       esbuild: 0.24.2
       postcss: 8.4.49
