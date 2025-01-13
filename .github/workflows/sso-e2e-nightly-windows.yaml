@@ -32,7 +32,7 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.3.1/podman-5.3.1-setup.exe''
+        default: 'https://github.com/containers/podman/releases/download/v5.3.1/podman-5.3.1-setup.exe'
         description: 'podman setup exe'
         type: string
         required: true
