@@ -51,6 +51,11 @@ on:
         description: 'Podman virtualization provider'
         type: 'string'
         required: true
+      images_version:
+        default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
+        description: 'Testing images versions, no spaces'
+        type: 'string'
+        required: true
 
 jobs:
   windows:
@@ -95,6 +100,8 @@ jobs:
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+        echo "${{ github.event.inputs.images_version || env.DEFAULT_IMAGES_VERSIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PDE2E_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
 
     - name: Create instance
       run: |
