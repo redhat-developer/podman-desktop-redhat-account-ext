@@ -26,6 +26,8 @@ let extensionCard: ExtensionCardPage;
 const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest';
 const extensionLabel = 'redhat.redhat-authentication';
 const extensionLabelName = 'redhat-authentication';
+const podmanExtensionLabel = 'podman-desktop.podman';
+const podmanExtensionLabelName = 'podman';
 const authProviderName = 'Red Hat SSO';
 const activeExtensionStatus = 'ACTIVE';
 const disabledExtensionStatus = 'DISABLED';
@@ -61,6 +63,13 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await removeExtension(navigationBar);
     });
 
+    test('Podman Extension is activated', async ({ navigationBar }) => {
+      const extensions = await navigationBar.openExtensions();
+      const podmanExtensionCard = await extensions.getInstalledExtension(podmanExtensionLabelName, podmanExtensionLabel);
+      await podmanExtensionCard.card.scrollIntoViewIfNeeded();
+      await playExpect(podmanExtensionCard.status).toHaveText(activeExtensionStatus, { timeout: 20_000 });
+    });
+
     // we want to install extension from OCI image (usually using latest tag) after new code was added to the codebase
     // and extension was published already
     test('Extension can be installed using OCI image', async ({ navigationBar }) => {
@@ -68,7 +77,8 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       test.setTimeout(200000);
       const extensions = await navigationBar.openExtensions();
       await extensions.installExtensionFromOCIImage(imageName);
-      await playExpect(extensionCard.card).toBeVisible();
+      await extensionCard.card.scrollIntoViewIfNeeded();
+      await playExpect(extensionCard.card).toBeVisible({ timeout: 15_000 });
     });
 
     test('Extension (card) is installed, present and active', async ({ navigationBar }) => {
