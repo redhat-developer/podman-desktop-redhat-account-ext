@@ -41,7 +41,7 @@ importers:
         version: 1.49.1
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.16.0-202501081802-57bf7774e68
+        version: 1.16.0-202501141544-6c963c0b87b
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -67,8 +67,8 @@ importers:
         specifier: 7.0.3
         version: 7.0.3
       electron:
-        specifier: ^33.3.1
-        version: 33.3.1
+        specifier: ^34.0.0
+        version: 34.0.0
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
@@ -1123,8 +1123,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.14.2':
     resolution: {integrity: sha512-KDLzvZP8/0BUR7IPYuv3NevsPWp9py2bScnYRU09OK5hbYmRCGKe9Y0Ni88Ihdg/GAbh0u8iWJcAbpgHEXoE+Q==}
 
-  '@podman-desktop/tests-playwright@1.16.0-202501081802-57bf7774e68':
-    resolution: {integrity: sha512-8ok7DbRPbK/DrHwx5NJYnlAp72p0ORYyDfkKrYSlV0WDfu1ulTWKrHo5COGFodxZ46FXSaZ1BwYcb6i4ROAjLQ==}
+  '@podman-desktop/tests-playwright@1.16.0-202501141544-6c963c0b87b':
+    resolution: {integrity: sha512-4Ou0rVV189dlutSctkWAl5blwb1TRRQRNYNzBB+ud5SKKqHYIeuOLUBQyxXejPX1W3asvY7IN/H/lCqfEfvUyg==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -1745,8 +1745,8 @@ packages:
   electron-to-chromium@1.5.68:
     resolution: {integrity: sha512-FgMdJlma0OzUYlbrtZ4AeXjKxKPk6KT8WOP8BjcqxWtlg8qyJQjRzPJzUtUn5GBg1oQ26hFs7HOOHJMYiJRnvQ==}
 
-  electron@33.3.1:
-    resolution: {integrity: sha512-Z7l2bVgpdKxHQMI4i0CirBX2n+iCYKOx5mbzNM3BpOyFELwlobEXKmzCmEnwP+3EcNeIhUQyIEBFQxN06QgdIw==}
+  electron@34.0.0:
+    resolution: {integrity: sha512-fpaPb0lifoUJ6UJa4Lk8/0B2Ku/xDZWdc1Gkj67jbygTCrvSon0qquju6Ltx1Kz23GRqqlIHXiy9EvrjpY7/Wg==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -4408,7 +4408,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.14.2
 
-  '@podman-desktop/tests-playwright@1.16.0-202501081802-57bf7774e68': {}
+  '@podman-desktop/tests-playwright@1.16.0-202501141544-6c963c0b87b': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
@@ -5101,7 +5101,7 @@ snapshots:
 
   electron-to-chromium@1.5.68: {}
 
-  electron@33.3.1:
+  electron@34.0.0:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 20.17.12
