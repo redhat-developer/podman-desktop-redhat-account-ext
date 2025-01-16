@@ -85,6 +85,7 @@ jobs:
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_PODMAN_PROVIDER: 'wsl'
+        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.1' }}"
         DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-redhat-account-ext,FORK=redhat-developer,BRANCH=main'
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_VERSION/podman-$DEFAULT_VERSION-setup.exe"
         DEFAULT_IMAGES_VERSIONS: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
