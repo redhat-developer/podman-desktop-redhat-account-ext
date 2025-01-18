@@ -133,7 +133,7 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
   );
 }
 
-async function createOrReuseActivationKey(machineName: string): Promise<void> {
+async function createOrReuseActivationKey(connection: extensionApi.ProviderContainerConnection): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
   const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new SubscriptionManagerClient({
@@ -155,7 +155,7 @@ async function createOrReuseActivationKey(machineName: string): Promise<void> {
     });
   }
 
-  await runSubscriptionManagerRegister(machineName, 'podman-desktop', accessTokenJson.organization.id);
+  await runSubscriptionManagerRegister(connection, 'podman-desktop', accessTokenJson.organization.id);
 }
 
 async function isSimpleContentAccessEnabled(): Promise<boolean> {
@@ -165,17 +165,19 @@ async function isSimpleContentAccessEnabled(): Promise<boolean> {
     TOKEN: currentSession!.accessToken,
   });
   const response = await client.organization.checkOrgScaCapability();
-  return response.body && response.body.simpleContentAccess === 'enabled';
+  return !!response.body && response.body.simpleContentAccess === 'enabled';
 }
 
-async function isSubscriptionManagerInstalled(machineName: string): Promise<boolean> {
-  const exitCode = await runSubscriptionManager(machineName);
+async function isSubscriptionManagerInstalled(connection: extensionApi.ProviderContainerConnection): Promise<boolean> {
+  const exitCode = await runSubscriptionManager(connection);
   return exitCode === 0;
 }
 
-async function installSubscriptionManger(machineName: string): Promise<extensionApi.RunResult> {
+async function installSubscriptionManger(
+  connection: extensionApi.ProviderContainerConnection,
+): Promise<extensionApi.RunResult | undefined> {
   try {
-    return await runRpmInstallSubscriptionManager(machineName);
+    return await runRpmInstallSubscriptionManager(connection);
   } catch (err) {
     console.error(`Subscription manager installation failed. ${String(err)}`);
     TelemetryLogger.logError('subscriptionManagerInstallationError', { error: String(err) });
@@ -183,15 +185,15 @@ async function installSubscriptionManger(machineName: string): Promise<extension
   }
 }
 
-async function isPodmanVmSubscriptionActivated(machineName: string): Promise<boolean> {
-  const exitCode = await runSubscriptionManagerActivationStatus(machineName);
+async function isPodmanVmSubscriptionActivated(connection: extensionApi.ProviderContainerConnection): Promise<boolean> {
+  const exitCode = await runSubscriptionManagerActivationStatus(connection);
   return exitCode === 0;
 }
 
 async function removeSession(sessionId: string): Promise<void> {
-  const machineName = getRunningPodmanMachineName();
-  if (machineName) {
-    runSubscriptionManagerUnregister(machineName).catch(console.error); // ignore error in case vm subscription activation failed on login
+  const connection = getRunningPodmanMachineName();
+  if (connection) {
+    runSubscriptionManagerUnregister(connection).catch(console.error); // ignore error in case vm subscription activation failed on login
   }
   removeRegistry(); // never fails, even if registry does not exist
   const service = await getAuthenticationService();
@@ -253,8 +255,8 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
           title: 'Activating Red Hat Subscription',
         },
         async () => {
-          const podmanRunningMachineName = getRunningPodmanMachineName();
-          if (!podmanRunningMachineName) {
+          const runningConnection = getRunningPodmanMachineName();
+          if (!runningConnection) {
             if (isLinux()) {
               await extensionApi.window.showInformationMessage(
                 'Signing into a Red Hat account requires a running Podman machine, and is currently not supported on a Linux host. Please start a Podman machine and try again.',
@@ -278,17 +280,17 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
               }
               throw new Error('SCA is not enabled and message closed');
             }
-            if (!(await isSubscriptionManagerInstalled(podmanRunningMachineName))) {
-              await installSubscriptionManger(podmanRunningMachineName);
-              await runStopPodmanMachine(podmanRunningMachineName);
-              await runStartPodmanMachine(podmanRunningMachineName);
+            if (!(await isSubscriptionManagerInstalled(runningConnection))) {
+              await installSubscriptionManger(runningConnection);
+              await runStopPodmanMachine(runningConnection);
+              await runStartPodmanMachine(runningConnection);
             }
-            if (!(await isPodmanVmSubscriptionActivated(podmanRunningMachineName))) {
+            if (!(await isPodmanVmSubscriptionActivated(runningConnection))) {
               const facts = {
                 supported_architectures: 'aarch64,x86_64',
               };
-              await runCreateFactsFile(podmanRunningMachineName, JSON.stringify(facts, undefined, 2));
-              await createOrReuseActivationKey(podmanRunningMachineName);
+              await runCreateFactsFile(runningConnection, JSON.stringify(facts, undefined, 2));
+              await createOrReuseActivationKey(runningConnection);
             }
           }
         },
