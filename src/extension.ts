@@ -105,13 +105,14 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 
 async function createOrReuseRegistryServiceAccount(): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
+  if (!currentSession) return;
   const accessTokenJson = parseJwt(currentSession!.accessToken);
   const client = new ContainerRegistryAuthorizerClient({
     BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
-    TOKEN: currentSession!.accessToken,
+    TOKEN: currentSession.accessToken,
   });
   const saApiV1 = client.serviceAccountsApiV1;
-  let selectedServiceAccount: ServiceAccountV1 | undefined;
+  let selectedServiceAccount: ServiceAccountV1;
   try {
     selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1(
       'podman-desktop',
@@ -119,16 +120,18 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
     );
   } catch (err) {
     // ignore error when there is no podman-desktop service account yet
-    selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
-      name: 'podman-desktop',
-      description: 'Service account to use from Podman Desktop',
-      redHatAccountId: accessTokenJson.organization.id,
-    });
+    console.info('Red Hat registry service account does not exist.');
   }
 
+  selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
+    name: 'podman-desktop',
+    description: 'Service account to use from Podman Desktop',
+    redHatAccountId: accessTokenJson.organization.id,
+  });
+
   await createRegistry(
-    selectedServiceAccount!.credentials!.username!,
-    selectedServiceAccount!.credentials!.password!,
+    selectedServiceAccount.credentials!.username!,
+    selectedServiceAccount.credentials!.password!,
     currentSession.account.label,
   );
 }
@@ -165,7 +168,7 @@ async function isSimpleContentAccessEnabled(): Promise<boolean> {
     TOKEN: currentSession!.accessToken,
   });
   const response = await client.organization.checkOrgScaCapability();
-  return response.body && response.body.simpleContentAccess === 'enabled';
+  return !!response.body && response.body.simpleContentAccess === 'enabled';
 }
 
 async function isSubscriptionManagerInstalled(machineName: string): Promise<boolean> {
@@ -173,7 +176,7 @@ async function isSubscriptionManagerInstalled(machineName: string): Promise<bool
   return exitCode === 0;
 }
 
-async function installSubscriptionManger(machineName: string): Promise<extensionApi.RunResult> {
+async function installSubscriptionManger(machineName: string): Promise<extensionApi.RunResult | undefined> {
   try {
     return await runRpmInstallSubscriptionManager(machineName);
   } catch (err) {
