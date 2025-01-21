@@ -117,7 +117,7 @@ suite('signin command telemetry reports', () => {
       },
     );
     vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockResolvedValue(true);
-    vi.spyOn(podmanCli, 'getRunningPodmanMachineName').mockReturnValue(undefined);
+    vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue(undefined);
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();
@@ -180,7 +180,7 @@ suite('signin command telemetry reports', () => {
       },
     );
     vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockReturnValue(true);
-    vi.spyOn(podmanCli, 'getRunningPodmanMachineName').mockReturnValue('machine1');
+    vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue('machine1');
     vi.spyOn(OrganizationService.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();

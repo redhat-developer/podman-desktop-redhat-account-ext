@@ -199,13 +199,13 @@ export async function runStartPodmanMachine(
   );
 }
 
-export function getRunningPodmanMachineName(): podmanDesktopAPI.ProviderContainerConnection | undefined {
+export function getConnectionForRunningPodmanMachine(): podmanDesktopAPI.ProviderContainerConnection | undefined {
   const conns = podmanDesktopAPI.provider.getContainerConnections();
-  const startedVms = conns.filter(
+  const connToRunningVms = conns.filter(
     conn =>
       conn.providerId === 'podman' &&
       conn.connection.status() === 'started' &&
       !conn.connection.endpoint.socketPath.startsWith('/run/user/'),
   );
-  return startedVms.length >= 1 ? startedVms[0] : undefined;
+  return connToRunningVms.length >= 1 ? connToRunningVms[0] : undefined;
 }

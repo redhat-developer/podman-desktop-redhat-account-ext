@@ -27,7 +27,7 @@ import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
 import {
-  getRunningPodmanMachineName,
+  getConnectionForRunningPodmanMachine,
   runCreateFactsFile,
   runRpmInstallSubscriptionManager,
   runStartPodmanMachine,
@@ -191,7 +191,7 @@ async function isPodmanVmSubscriptionActivated(connection: extensionApi.Provider
 }
 
 async function removeSession(sessionId: string): Promise<void> {
-  const connection = getRunningPodmanMachineName();
+  const connection = getConnectionForRunningPodmanMachine();
   if (connection) {
     runSubscriptionManagerUnregister(connection).catch(console.error); // ignore error in case vm subscription activation failed on login
   }
@@ -255,7 +255,7 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
           title: 'Activating Red Hat Subscription',
         },
         async () => {
-          const runningConnection = getRunningPodmanMachineName();
+          const runningConnection = getConnectionForRunningPodmanMachine();
           if (!runningConnection) {
             if (isLinux()) {
               await extensionApi.window.showInformationMessage(
