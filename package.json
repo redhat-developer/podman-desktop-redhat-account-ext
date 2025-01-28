@@ -47,7 +47,7 @@
     "test:e2e": "cross-env E2E_TESTS=true npm run test:e2e:setup npx playwright test tests/src"
   },
   "dependencies": {
-    "@podman-desktop/api": "^1.14.1",
+    "@podman-desktop/api": "^1.16.0",
     "@podman-desktop/podman-extension-api": "^1.14.2",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4",
