@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@podman-desktop/api": "^1.14.1",
-    "@podman-desktop/podman-extension-api": "^1.14.2",
+    "@podman-desktop/podman-extension-api": "^1.16.1",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4",
     "axios": "^1.7.9",
