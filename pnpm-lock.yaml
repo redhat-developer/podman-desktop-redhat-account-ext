@@ -41,7 +41,7 @@ importers:
         version: 1.50.1
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.17.0-202502190023-3960d804b0b
+        version: 1.17.0-202502201931-1a5a6ed12c0
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -572,8 +572,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.14.2':
     resolution: {integrity: sha512-KDLzvZP8/0BUR7IPYuv3NevsPWp9py2bScnYRU09OK5hbYmRCGKe9Y0Ni88Ihdg/GAbh0u8iWJcAbpgHEXoE+Q==}
 
-  '@podman-desktop/tests-playwright@1.17.0-202502190023-3960d804b0b':
-    resolution: {integrity: sha512-cYbghUgbXohFXuxxoC7Bp2GVaP6n4tG3FkvJvd1qyQBuAQ9/ZdlWO7ZdXyaq40ZpNliacssAV6+CoVHf3No9Cg==}
+  '@podman-desktop/tests-playwright@1.17.0-202502201931-1a5a6ed12c0':
+    resolution: {integrity: sha512-/jdTNcoiXIPaa0arCmoIx+8vZnqRy+VDJ2eWTr0q5e3dAYTuBS95eFU1W0nXGHt67tr8Kt4QvhNGueKHxSLyBw==}
 
   '@redhat-developer/rhcra-client@0.0.1':
     resolution: {integrity: sha512-Ltz1+LRistGEfvYP9mjmZcg9rn8YXdmg0YoNo2g8XeP4QvQ0E5Gv31+QTd7cw4w8sYc9ZVKCDH9cAFcMjMC5GA==}
@@ -3347,7 +3347,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.14.2
 
-  '@podman-desktop/tests-playwright@1.17.0-202502190023-3960d804b0b': {}
+  '@podman-desktop/tests-playwright@1.17.0-202502201931-1a5a6ed12c0': {}
 
   '@redhat-developer/rhcra-client@0.0.1':
     dependencies:
