@@ -51,7 +51,7 @@
     "@podman-desktop/podman-extension-api": "^1.14.2",
     "@redhat-developer/rhcra-client": "^0.0.1",
     "@redhat-developer/rhsm-client": "^0.0.4",
-    "axios": "^1.7.9",
+    "axios": "^1.8.1",
     "js-yaml": "^4.1.0",
     "object-hash": "3.0.0",
     "openid-client": "^5.7.0"
