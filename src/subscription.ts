@@ -19,8 +19,9 @@
 import { accessSync, constants, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
-
+import { createClient, Client, Auth } from '@hey-api/client-axios';
 import * as extensionApi from '@podman-desktop/api';
+import { ActivationKeys, checkOrgScaCapability, createActivationKeys, CreateActivationKeysData, ListActivationKeysData, showActivationKey } from '@redhat-developer/rhsm-client';
 
 export const REGISTRY_REDHAT_IO = 'registry.redhat.io';
 
@@ -58,4 +59,65 @@ export function isRedHatRegistryConfigured(): boolean {
     // if file is not there, ignore and return default value
   }
   return configured;
+}
+
+const security: Auth[] = [{
+  type: 'http',
+  scheme: 'bearer',
+}];
+
+class ClientOptionsHolder {
+  protected options: {
+    client: Client,
+    security: Auth[],
+    throwOnError: boolean,
+  };
+  constructor(client: Client) {
+    this.options = {
+      client,
+      security,
+      throwOnError: true,
+    }
+  }
+}
+
+class ActivationKey extends ClientOptionsHolder{
+
+  async showActivationKey(name: string): Promise<ActivationKeys | undefined> {
+    return showActivationKey({
+      path: {name},
+      ...this.options,
+    }).then(response => response?.data?.body);
+  };
+  async createActivationKeys(name: string): Promise<ActivationKeys | undefined> {
+    return createActivationKeys({
+      ...this.options,
+      body: {
+        name,
+        role: 'RHEL Server',
+        usage: 'Development/Test',
+        serviceLevel: 'Self-Support',
+      },
+    }).then(response => response?.data?.body);
+  }
+};
+
+class Organization extends ClientOptionsHolder {
+  async checkOrgScaCapability(): Promise<boolean> {
+    const response = await checkOrgScaCapability({
+      ...this.options,
+    });
+    return response.data?.body?.simpleContentAccess === 'enabled';
+  }
+}
+
+export class SubscriptionManagerClient {
+  #client:Client;
+  readonly activationKey: ActivationKey;
+  readonly organization: Organization;
+  constructor(options: {BASE: string, TOKEN: string}) {
+    this.#client = createClient({baseURL: options.BASE, auth: options.TOKEN,});
+    this.activationKey = new ActivationKey(this.#client)
+    this.organization = new Organization(this.#client);
+  }
 }

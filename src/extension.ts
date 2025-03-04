@@ -22,7 +22,7 @@ import path from 'node:path';
 import * as extensionApi from '@podman-desktop/api';
 import type { ServiceAccountV1 } from '@redhat-developer/rhcra-client';
 import { ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
-import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
+import { SubscriptionManagerClient } from './subscription';
 
 import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
@@ -147,12 +147,7 @@ async function createOrReuseActivationKey(connection: extensionApi.ProviderConta
   } catch (err) {
     // ignore and continue with activation key creation
     // TODO: add check that used role and usage exists in organization
-    await client.activationKey.createActivationKeys({
-      name: 'podman-desktop',
-      role: 'RHEL Server',
-      usage: 'Development/Test',
-      serviceLevel: 'Self-Support',
-    });
+    await client.activationKey.createActivationKeys('podman-desktop');
   }
 
   await runSubscriptionManagerRegister(connection, 'podman-desktop', accessTokenJson.organization.id);
@@ -164,8 +159,7 @@ async function isSimpleContentAccessEnabled(): Promise<boolean> {
     BASE: 'https://console.redhat.com/api/rhsm/v2',
     TOKEN: currentSession!.accessToken,
   });
-  const response = await client.organization.checkOrgScaCapability();
-  return !!response.body && response.body.simpleContentAccess === 'enabled';
+  return client.organization.checkOrgScaCapability();
 }
 
 async function isSubscriptionManagerInstalled(connection: extensionApi.ProviderContainerConnection): Promise<boolean> {
@@ -275,6 +269,8 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
                 'Enable SCA',
               );
               if (choice === 'Enable SCA') {
+                // workaround for https://github.com/podman-desktop/podman-desktop/issues/11476
+                await new Promise((resolve) => setTimeout(resolve));
                 await extensionApi.env.openExternal(extensionApi.Uri.parse('https://access.redhat.com/management'));
                 throw new Error('SCA is not enabled and subscription management page requested');
               }
