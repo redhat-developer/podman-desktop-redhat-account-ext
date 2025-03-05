@@ -16,14 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-
 import * as extensionApi from '@podman-desktop/api';
 import type { ServiceAccountV1 } from '@redhat-developer/rhcra-client';
 import { ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
 import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 
+import icon from '../icon.png';
 import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
 import {
@@ -53,14 +51,6 @@ let currentSession: extensionApi.AuthenticationSession | undefined;
 
 async function getAuthenticationService(): Promise<RedHatAuthenticationService> {
   return authenticationServicePromise;
-}
-
-// function to encode file data to base64 encoded string
-function fileToBase64(file: string): string {
-  // read binary data
-  const bitmap = readFileSync(file);
-  // convert binary data to base64 encoded string
-  return bitmap.toString('base64');
 }
 
 function parseJwt(token: string): JwtToken {
@@ -322,7 +312,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   context.subscriptions.push(
     extensionApi.registry.suggestRegistry({
       name: 'Red Hat Container Registry',
-      icon: fileToBase64(path.resolve(__dirname, '..', 'icon.png')),
+      icon,
       url: 'registry.redhat.io',
     }),
   );
