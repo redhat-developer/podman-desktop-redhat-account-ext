@@ -1,0 +1,2154 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "RHSM-API",
+    "description": "API for Red Hat Subscription Management",
+    "contact": {
+      "url": "https://access.redhat.com/support/cases/"
+    },
+    "version": "2"
+  },
+  "servers": [
+    {
+      "url": "https://api.access.redhat.com/management/v2"
+    }
+  ],
+  "paths": {
+    "/manifests/versions": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "List Satellite versions",
+        "description": "Returns list of Satellite version 6.0 and above",
+        "operationId": "listVersionsManifest",
+        "responses": {
+          "200": {
+            "description": "list of Satellite version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ManifestVersion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Get an Manifest by UUID",
+        "description": "System, RHUI, Hypervisor, SAM are unsupported manifest types",
+        "operationId": "showManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Show more details about a manifest",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "entitlements"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ManifestDetails"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Update a manifest",
+        "description": "Allows to update simpleContentAccess for Satellite of version 6.3 and\nabove\nPossible value for simpleContentAccess are:\n\n- enabled\n- disabled",
+        "operationId": "updateManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "simpleContentAccess"
+                ],
+                "type": "object",
+                "properties": {
+                  "simpleContentAccess": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContent"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-codegen-request-body-name": "manifest"
+      },
+      "delete": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Remove manifest profile",
+        "description": "The default success response will be 204\n\nSystem, RHUI, Hypervisor, SAM are unsupported manifet types",
+        "operationId": "removeManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "description": "Deleting a subscription manifest can have significant impacts on your hosts and activation keys.\nWe require a force parameter to make sure the delete operation is intentional.",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully removed",
+            "content": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/entitlements": {
+      "post": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Attach entitlement to Manifest",
+        "description": "Satellite 5.6 or higher versions are only supported.",
+        "operationId": "attachEntitlementManifest",
+        "parameters": [
+          {
+            "name": "pool",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "description": "quantity you want to attach",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ManifestDetails"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/entitlements/{EntitlementID}": {
+      "put": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Update attached entitlement to manifest",
+        "description": "The default success response will be 200.\n\nSystem, RHUI, Hypervisor, SAM are unsupported manifest types",
+        "operationId": "updateEntitlementManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EntitlementID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "description": "maxItem: quantity must be less than or equal to the maximum number of allowed entitlements in the entitlement pool\nminItem: 1",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ManifestDetails"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Remove entitlement from the manifest",
+        "description": "The default success response will be 204.",
+        "operationId": "removeManifestEntitlement",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "EntitlementID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "successfully removed",
+            "content": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "List all manifests for a user",
+        "description": "The default and max number of results in a response are 100.\nSatellite 6.0 or higher versions are only supported.",
+        "operationId": "listManifests",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "max number of results you want",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "index from which you want next items",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list of manifests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Manifest"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/APIPageParam"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Create Manifest",
+        "description": "Create Manifest by name and version(optional).\nCustomers can use any version listed in the `/v2/manifests/versions`\nendpoint (use attribute `value`).\nIf no version is specified, it will take the latest available version\n for Manifest.",
+        "operationId": "createManifest",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "description": "must be less than 100 characters and use only numbers, letters, underscores, hyphens, and periods",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ManifestSummary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/organization": {
+      "get": {
+        "tags": [
+          "organization"
+        ],
+        "summary": "Get details of the user's organization",
+        "description": "Show Simple Content Access details of user's organization",
+        "operationId": "checkOrgSCACapability",
+        "parameters": [
+          {
+            "name": "include",
+            "in": "query",
+            "description": "Request for system purpose attributes in response",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Organization details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/OrgSimpleContentAccess"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List all the products from user's subscription",
+        "description": "Get list of all the products of user's subscription. The products are from subscriptions that have not expired or expired within last 30 days.\n",
+        "operationId": "listProducts",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filters products based on subscription status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "expired",
+                "expiringSoon",
+                "active",
+                "futureDated"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductList"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products/export": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Export subscriptions",
+        "description": "Export a csv file of all subscriptions",
+        "responses": {
+          "200": {
+            "description": "Export",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "Name,SKU,Service level,Support type,Capacity name,Capacity quantity,Contract number,Quantity,Start date,End date,Status (Active, Expired, Future Dated)\nExample Name, Example SKU, Example Service level, Example Support type, Example Capacity name, Example Contract number, Example Quantity, Example Start date, Example End date, Example Status\n"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products/{SKU}": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Show product",
+        "description": "Get a single product by SKU",
+        "operationId": "showProduct",
+        "parameters": [
+          {
+            "name": "SKU",
+            "in": "path",
+            "description": "SKU of the product to show",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ProductList"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products/status": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "Get user's subscription quantities by status",
+        "description": "Get counts of user's subscriptions by status such as\n- active\n- expired\n- expiring soon\n- future dated ",
+        "operationId": "statusCounts",
+        "responses": {
+          "200": {
+            "description": "Status counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/StatusCount"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products/RHEL/extended-update-support-versions": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List RHEL EUS versions",
+        "description": "Returns the list of currently supported RHEL versions for Extended Update Support",
+        "responses": {
+          "200": {
+            "description": "Extended Update Support versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/products/RHEL/extended-update-support-products": {
+      "get": {
+        "tags": [
+          "products"
+        ],
+        "summary": "List RHEL EUS products",
+        "description": "Returns the list of currently supported RHEL product-repo mappings for Extended Update Support",
+        "responses": {
+          "200": {
+            "description": "Extended Update Support versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EusProductList"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/pools": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "List all pools for a manifest",
+        "description": "Satellite 5.6 or higher versions are only supported.",
+        "operationId": "listManifestPools",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "max number of results you want",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "index from which you want next items",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "future",
+            "in": "query",
+            "description": "include future dated pools for satellite 6.3 or higher",
+            "schema": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          },
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list of pools available for the manifest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/poolsListMock"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/export": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Trigger manifest export",
+        "description": "Starts job to generate export for a manifest. To check the status of the export job visit the href in the response.\n\nSatellite 6.0 or higher versions are only supported.",
+        "operationId": "exportManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ExportManifest200 is the success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/exportResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/exportJob/{ExportJobID}": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Check status of manifest export",
+        "description": "Returns export download link in response.",
+        "operationId": "exportJobManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ExportJobID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ExportJobManifest200 is the success response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/exportJobResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "AcceptedExportJob202 is a response for accepted and in progress job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ongoingExportJobResponse"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptable"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/manifests/{uuid}/export/{ExportID}": {
+      "get": {
+        "tags": [
+          "manifest"
+        ],
+        "summary": "Download manifest",
+        "description": "Success response contains a zip file. The link is one-time download and expires after one try. Trigger export job to get another download link.\n\nContent-Type: application/zip",
+        "operationId": "getExportManifest",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ExportID",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "GetExportManifest200 is the success response",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/activation_keys": {
+      "get": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "List activation keys",
+        "description": "Returns a list of activation keys on the account including service level, role, additionalRepositories, usage, and release version (if applicable). Additional Repositories and release version will be an empty set in case it is not set.",
+        "operationId": "listActivationKeys",
+        "responses": {
+          "200": {
+            "description": "Array of activation keys",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ActivationKeys"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Create activation key",
+        "description": "Creates an activation key by name, release version and system purpose attributes, that are service level, role and usage. In the request body, \"name\" should be present and unique and can only contain letters, numbers, underscores, or hyphens. The response will have name and additionalRepositories as fixed fields. AdditionalRepositories field will always be empty for a new activation key. Role, serviceLevel, usage and releaseVersion are conditional fields, will be present in response only when they have values.",
+        "operationId": "createActivationKeys",
+        "requestBody": {
+          "description": "Create an activation key",
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "name"
+                ],
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Name should be present, unique and can only contain letters, numbers, underscores, or hyphens"
+                  },
+                  "serviceLevel": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "usage": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  },
+                  "additionalRepositories": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "repositoryLabel": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Activation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ActivationKeys"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-codegen-request-body-name": "activationKey"
+      }
+    },
+    "/activation_keys/{name}": {
+      "get": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Get activation key",
+        "description": "Get activation key by name",
+        "operationId": "showActivationKey",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ActivationKeys"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Update activation key",
+        "description": "Updates an existing activation key with one or more fields as provided in request. It also returns additionalRepositories field which will be empty set when it is empty",
+        "operationId": "updateActivationKeys",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Update an activation key",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "serviceLevel": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "usage": {
+                    "type": "string"
+                  },
+                  "releaseVersion": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Activation key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "$ref": "#/components/schemas/ActivationKeys"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-codegen-request-body-name": "activationKey"
+      },
+      "delete": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Delete activation key",
+        "description": "Removes the activation key from the account based on activation key name",
+        "operationId": "removeActivationKeys",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "successfully removed",
+            "content": {}
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/activation_keys/{name}/additional_repositories": {
+      "post": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Add Additional Repositories",
+        "description": "Add additional repositories to an activation key by providing activation key name and repository labels. Customers can use any respositories listed in the `/v2/activation_keys/{name}/available_repositories` endpoint (use attribute `repositoryLabel`). Empty value is not supported and maximum length of repository label allowed is upto 255 characters.",
+        "operationId": "addAdditionalRepositories",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Add Additional repositories",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdditionalRepositories"
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "list of additional repositories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AdditionalRepositories"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-codegen-request-body-name": "activationKey"
+      },
+      "delete": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "Delete Additional Repositories",
+        "description": "Removes the additional repositories from an activation key by providing activation key name and repository labels",
+        "operationId": "removeActivationKeyAdditionalRepositories",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AdditionalRepositories"
+                }
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContent"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "x-codegen-request-body-name": "additionalRepositories"
+      }
+    },
+    "/activation_keys/{name}/available_repositories": {
+      "get": {
+        "tags": [
+          "activationKey"
+        ],
+        "summary": "List Available Repositories",
+        "description": "Returns the list of RPM repositories available to an activation key that can be added as an additional repository. Available repositories are calculated by negating the additional repositories from the set of total RPM repositories. It can be an empty set if there are no RPM repositories or all of the repositories are already added to an activation key.",
+        "operationId": "listAvailableRepositories",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "max number of results you want",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "index from which you want next items",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "default",
+            "in": "query",
+            "description": "Filters available repos based off default status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Disabled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "list of available repositories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AvailableRepositories"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/APIPageParam"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ManifestDetails": {
+        "type": "object",
+        "properties": {
+          "simpleContentAccess": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "entitlementsAttached": {
+            "$ref": "#/components/schemas/EntitlementsAttached"
+          },
+          "entitlementsAttachedQuantity": {
+            "type": "integer"
+          },
+          "lastModified": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "description": "details of a manifest"
+      },
+      "ManifestVersion": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "description": "List of satellite version"
+      },
+      "Manifest": {
+        "title": "Manifest is an entity that consumes entitlements. Also referred as a Distributor.",
+        "type": "object",
+        "properties": {
+          "entitlementQuantity": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "simpleContentAccess": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorDetails": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "description": "ErrorDetails details the Error in ErrorResponse"
+      },
+      "Date": {
+        "type": "string",
+        "description": "Date format used in API responses.",
+        "example": "2006-01-02T15:04:05.000Z"
+      },
+      "EntitlementsAttached": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntitlementsAttachedValue"
+            }
+          }
+        },
+        "description": "Details of all the entitlements attached and their status."
+      },
+      "EntitlementsAttachedValue": {
+        "type": "object",
+        "properties": {
+          "contractNumber": {
+            "type": "string"
+          },
+          "entitlementQuantity": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "subscriptionName": {
+            "type": "string"
+          },
+          "startDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "endDate": {
+            "$ref": "#/components/schemas/Date"
+          }
+        },
+        "description": "Detail of each entitlement attached"
+      },
+      "poolsListMock": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PoolDetail"
+            }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/APIPageParam"
+          }
+        }
+      },
+      "PoolDetail": {
+        "type": "object",
+        "properties": {
+          "contractNumber": {
+            "type": "string"
+          },
+          "endDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "entitlementsAvailable": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "serviceLevel": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "startDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "subscriptionName": {
+            "type": "string"
+          },
+          "subscriptionNumber": {
+            "type": "string"
+          }
+        },
+        "description": "PoolDetail is an entry in the system/allocation pools listing"
+      },
+      "APIPageParam": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "offset": {
+            "type": "integer"
+          }
+        },
+        "description": "APIPageParam details the pagination parameters in APIResponse"
+      },
+      "ManifestSummary": {
+        "type": "object",
+        "properties": {
+          "contentAccessMode": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdDate": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "entitlementsAttachedQuantity": {
+            "type": "integer"
+          },
+          "lastModified": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "description": "details of a manifest"
+      },
+      "OrgSimpleContentAccess": {
+        "title": "Organization Simple Content Access details.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "simpleContentAccessCapable": {
+            "type": "boolean"
+          },
+          "simpleContentAccess": {
+            "type": "string"
+          },
+          "systemPurposeAttributes": {
+            "$ref": "#/components/schemas/SystemPurposeAttributes"
+          }
+        }
+      },
+      "SystemPurposeAttributes": {
+        "type": "object",
+        "properties": {
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "usage": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "serviceLevel": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "System purpose settings available to an organization"
+      },
+      "exportResponse": {
+        "type": "object",
+        "properties": {
+          "exportJobID": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          }
+        }
+      },
+      "exportJobResponse": {
+        "type": "object",
+        "properties": {
+          "exportID": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          }
+        }
+      },
+      "ongoingExportJobResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ActivationKeys": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "serviceLevel": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "usage": {
+            "type": "string"
+          },
+          "additionalRepositories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalRepositories"
+            }
+          },
+          "releaseVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductList": {
+        "title": "List of products from subscriptions",
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "boolean"
+          },
+          "productLine": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "serviceType": {
+            "type": "string"
+          },
+          "serviceLevel": {
+            "type": "string"
+          },
+          "capacity": {
+            "$ref": "#/components/schemas/Capacity"
+          }
+        }
+      },
+      "EusProductList": {
+        "title": "List of RHEL EUS product-repo mappings",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "engID": {
+            "type": "integer"
+          },
+          "configurations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string"
+                },
+                "repositories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Capacity": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string"
+          }
+        }
+      },
+      "AdditionalRepositories": {
+        "type": "object",
+        "properties": {
+          "repositoryName": {
+            "type": "string"
+          },
+          "repositoryLabel": {
+            "type": "string"
+          }
+        }
+      },
+      "AvailableRepositories": {
+        "type": "object",
+        "properties": {
+          "repositoryLabel": {
+            "type": "string"
+          },
+          "repositoryName": {
+            "type": "string"
+          },
+          "architecture": {
+            "type": "string"
+          },
+          "default": {
+            "type": "string"
+          },
+          "engineeringProduct": {
+            "type": "string"
+          }
+        }
+      },
+      "StatusCount": {
+        "title": "Status counts of user's subscriptions",
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "integer"
+          },
+          "expired": {
+            "type": "integer"
+          },
+          "expiringSoon": {
+            "type": "integer"
+          },
+          "futureDated": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "BadRequest error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GatewayTimeout": {
+        "description": "GatewayTimeout error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "InternalServerError error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "NotFound error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Unauthorized error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NoContent": {
+        "description": "No Content",
+        "content": {}
+      },
+      "NotAcceptable": {
+        "description": "NotAcceptable error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "$ref": "#/components/schemas/ErrorDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-original-swagger-version": "2.0"
+}
