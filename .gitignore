@@ -7,4 +7,4 @@ redhat-authentication.cdix
 tests/**/output
 test-resources
 test-results
- 
+src/rh-api/gen 

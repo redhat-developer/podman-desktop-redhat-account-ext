@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024 Red Hat, Inc.
+ * Copyright (C) 2024-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,27 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import { accessSync, constants, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
-import * as extensionApi from '@podman-desktop/api';
+import createClient from 'openapi-fetch';
+
+import type { paths } from './gen/subscription';
+import { ClientHolder } from './utils';
 
 export const REGISTRY_REDHAT_IO = 'registry.redhat.io';
-
-export async function signIntoRedHatDeveloperAccount(
-  createIfNone = true,
-): Promise<extensionApi.AuthenticationSession | undefined> {
-  return extensionApi.authentication.getSession(
-    'redhat.authentication-provider',
-    [
-      'api.iam.registry_service_accounts', //scope that gives access to hydra service accounts API
-      'api.console',
-    ], // scope that gives access to console.redhat.com APIs
-    { createIfNone },
-  );
-}
 
 // TODO: add listRegistries to registry API to allow search by
 // registry URL
@@ -58,4 +49,36 @@ export function isRedHatRegistryConfigured(): boolean {
     // if file is not there, ignore and return default value
   }
   return configured;
+}
+
+export class ActivationKey extends ClientHolder<paths> {
+  async createActivationKeys(body: { name: string; role: string; usage: string; serviceLevel: string }) {
+    return this.client.POST('/activation_keys', { body });
+  }
+  showActivationKey(name: string) {
+    return this.client.GET('/activation_keys/{name}', {
+      params: {
+        path: {
+          name,
+        },
+      },
+    });
+  }
+}
+
+export class Organization extends ClientHolder<paths> {
+  async checkOrgScaCapability() {
+    const response = await this.client.GET('/organization');
+    return response.data;
+  }
+}
+
+export class SubscriptionManagerClient extends ClientHolder<paths> {
+  activationKey: ActivationKey;
+  organization: Organization;
+  constructor(options: { BASE: string; TOKEN: string }) {
+    super(createClient<paths>({ baseUrl: options.BASE }), options.TOKEN);
+    this.activationKey = new ActivationKey(this.client);
+    this.organization = new Organization(this.client);
+  }
 }
