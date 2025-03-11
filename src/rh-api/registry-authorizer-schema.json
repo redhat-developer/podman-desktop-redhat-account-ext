@@ -1,0 +1,1207 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Api Documentation",
+    "description": "Api Documentation",
+    "termsOfService": "urn:tos",
+    "contact": {},
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "//localhost:8443/"
+    }
+  ],
+  "tags": [
+    {
+      "name": "admin-api-v-1",
+      "description": "Admin Api V 1"
+    },
+    {
+      "name": "authorization-api-v-1",
+      "description": "Authorization Api V 1"
+    },
+    {
+      "name": "export-hold-api-v-1",
+      "description": "Export Hold Api V 1"
+    },
+    {
+      "name": "health-api-v-1",
+      "description": "Health Api V 1"
+    },
+    {
+      "name": "partner-service-accounts-api-v-1",
+      "description": "Partner Service Accounts Api V 1"
+    },
+    {
+      "name": "service-accounts-api-v-1",
+      "description": "Service Accounts Api V 1"
+    }
+  ],
+  "paths": {
+    "/v1/_admin/ensureDataIndexed": {
+      "post": {
+        "tags": [
+          "admin-api-v-1"
+        ],
+        "summary": "ensureDataIndexed",
+        "operationId": "ensureDataIndexedUsingPOST",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseEntity"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/_admin/environment/{property}": {
+      "get": {
+        "tags": [
+          "admin-api-v-1"
+        ],
+        "summary": "environment",
+        "operationId": "environmentUsingGET",
+        "parameters": [
+          {
+            "name": "property",
+            "in": "path",
+            "description": "property",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/authorization": {
+      "post": {
+        "tags": [
+          "authorization-api-v-1"
+        ],
+        "summary": "getAuthorization",
+        "operationId": "getAuthorizationUsingPOST",
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/GetAuthorizationV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/v1/diagnostics": {
+      "get": {
+        "tags": [
+          "health-api-v-1"
+        ],
+        "summary": "diagnostics",
+        "operationId": "diagnosticsUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceHealth"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/export-holds": {
+      "post": {
+        "tags": [
+          "export-hold-api-v-1"
+        ],
+        "summary": "setExportHold",
+        "operationId": "setExportHoldUsingPOST",
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/SetExportHoldV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportHoldReviewV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/v1/export-holds/{rhAccountId}": {
+      "get": {
+        "tags": [
+          "export-hold-api-v-1"
+        ],
+        "summary": "exportHoldStatusForAccount",
+        "operationId": "exportHoldStatusForAccountUsingGET",
+        "parameters": [
+          {
+            "name": "rhAccountId",
+            "in": "path",
+            "description": "rhAccountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportHoldReviewV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "health-api-v-1"
+        ],
+        "summary": "health",
+        "operationId": "healthUsingGET",
+        "parameters": [
+          {
+            "name": "includeBody",
+            "in": "query",
+            "description": "includeBody",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceHealth"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/liveness": {
+      "get": {
+        "tags": [
+          "health-api-v-1"
+        ],
+        "summary": "liveness",
+        "operationId": "livenessUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/partners/{partnerCode}/service-accounts": {
+      "post": {
+        "tags": [
+          "partner-service-accounts-api-v-1"
+        ],
+        "summary": "createServiceAccount",
+        "operationId": "createServiceAccountUsingPOST",
+        "parameters": [
+          {
+            "name": "partnerCode",
+            "in": "path",
+            "description": "partnerCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartnerServiceAccountV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerServiceAccountV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/v1/partners/{partnerCode}/service-accounts/{name}": {
+      "get": {
+        "tags": [
+          "partner-service-accounts-api-v-1"
+        ],
+        "summary": "serviceAccountByName",
+        "operationId": "serviceAccountByNameUsingGET",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partnerCode",
+            "in": "path",
+            "description": "partnerCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerServiceAccountV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "partner-service-accounts-api-v-1"
+        ],
+        "summary": "updateServiceAccount",
+        "operationId": "updateServiceAccountUsingPOST",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partnerCode",
+            "in": "path",
+            "description": "partnerCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceAccountV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerServiceAccountV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      },
+      "delete": {
+        "tags": [
+          "partner-service-accounts-api-v-1"
+        ],
+        "summary": "deleteServiceAccount",
+        "operationId": "deleteServiceAccountUsingDELETE",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "partnerCode",
+            "in": "path",
+            "description": "partnerCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "204": {
+            "description": "No Content",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/readiness": {
+      "get": {
+        "tags": [
+          "health-api-v-1"
+        ],
+        "summary": "readiness",
+        "operationId": "readinessUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/service-accounts": {
+      "post": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "createServiceAccount",
+        "operationId": "createServiceAccountUsingPOST_1",
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceAccountV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      }
+    },
+    "/v1/service-accounts/token-signing-key": {
+      "get": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "signingKey",
+        "operationId": "signingKeyUsingGET",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/service-accounts/{rhAccountId}": {
+      "get": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "listServicesForAccount",
+        "operationId": "listServicesForAccountUsingGET",
+        "parameters": [
+          {
+            "name": "maxResults",
+            "in": "query",
+            "description": "maxResults",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "offset",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "rhAccountId",
+            "in": "path",
+            "description": "rhAccountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummariesV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/v1/service-accounts/{rhAccountId}/{name}": {
+      "get": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "serviceAccountByName",
+        "operationId": "serviceAccountByNameUsingGET_1",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rhAccountId",
+            "in": "path",
+            "description": "rhAccountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountV1"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "updateServiceAccount",
+        "operationId": "updateServiceAccountUsingPOST_1",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rhAccountId",
+            "in": "path",
+            "description": "rhAccountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "request",
+          "content": {
+            "application/json;charset=UTF-8": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateServiceAccountV1"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountV1"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        },
+        "deprecated": false,
+        "x-codegen-request-body-name": "request"
+      },
+      "delete": {
+        "tags": [
+          "service-accounts-api-v-1"
+        ],
+        "summary": "deleteServiceAccount",
+        "operationId": "deleteServiceAccountUsingDELETE_1",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rhAccountId",
+            "in": "path",
+            "description": "rhAccountId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {}
+          },
+          "204": {
+            "description": "No Content",
+            "content": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {}
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {}
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthorizationV1": {
+        "title": "AuthorizationV1",
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreatePartnerServiceAccountV1": {
+        "title": "CreatePartnerServiceAccountV1",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateServiceAccountV1": {
+        "title": "CreateServiceAccountV1",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "redHatAccountId": {
+            "type": "string"
+          }
+        }
+      },
+      "CredentialsV1": {
+        "title": "CredentialsV1",
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "ExportHoldReviewV1": {
+        "title": "ExportHoldReviewV1",
+        "type": "object",
+        "properties": {
+          "lastUpdateDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastUpdatedBy": {
+            "type": "string"
+          },
+          "redHatAccountId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "GetAuthorizationV1": {
+        "title": "GetAuthorizationV1",
+        "type": "object",
+        "properties": {
+          "credentials": {
+            "$ref": "#/components/schemas/CredentialsV1"
+          }
+        }
+      },
+      "KeyV1": {
+        "title": "KeyV1",
+        "type": "object",
+        "properties": {
+          "algorithm": {
+            "type": "string"
+          },
+          "encoded": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          }
+        }
+      },
+      "PartnerServiceAccountV1": {
+        "title": "PartnerServiceAccountV1",
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "credentials": {
+            "$ref": "#/components/schemas/CredentialsV1"
+          },
+          "description": {
+            "type": "string"
+          },
+          "lastUpdatedBy": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "partnerCode": {
+            "type": "string"
+          },
+          "tokenDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResponseEntity": {
+        "title": "ResponseEntity",
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {}
+          },
+          "status": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "Result": {
+        "title": "Result",
+        "type": "object",
+        "properties": {
+          "healthy": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        }
+      },
+      "ServiceAccountV1": {
+        "title": "ServiceAccountV1",
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "credentials": {
+            "$ref": "#/components/schemas/CredentialsV1"
+          },
+          "description": {
+            "type": "string"
+          },
+          "lastUpdatedBy": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "redHatAccountId": {
+            "type": "string"
+          },
+          "tokenDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ServiceHealth": {
+        "title": "ServiceHealth",
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          },
+          "results": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Result"
+            }
+          }
+        }
+      },
+      "SetExportHoldV1": {
+        "title": "SetExportHoldV1",
+        "type": "object",
+        "properties": {
+          "redHatAccountId": {
+            "type": "string"
+          },
+          "setTo": {
+            "type": "string",
+            "enum": [
+              "on_hold",
+              "off_hold"
+            ]
+          }
+        }
+      },
+      "Stream«ServiceAccountV1»": {
+        "title": "Stream«ServiceAccountV1»",
+        "type": "object"
+      },
+      "SummariesV1": {
+        "title": "SummariesV1",
+        "type": "object",
+        "properties": {
+          "services": {
+            "$ref": "#/components/schemas/Stream«ServiceAccountV1»"
+          }
+        }
+      },
+      "UpdateServiceAccountV1": {
+        "title": "UpdateServiceAccountV1",
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "regenerateToken": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "x-original-swagger-version": "2.0"
+}
