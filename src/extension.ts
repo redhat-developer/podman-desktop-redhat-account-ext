@@ -139,7 +139,7 @@ async function createOrReuseActivationKey(connection: extensionApi.ProviderConta
     // TODO: add check that used role and usage exists in organization
     await client.activationKey.createActivationKeys({
       name: 'podman-desktop',
-      role: 'RHEL Server',
+      role: 'RHEl Workstation',
       usage: 'Development/Test',
       serviceLevel: 'Self-Support',
     });
