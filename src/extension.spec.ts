@@ -20,12 +20,12 @@
 
 import type { AuthenticationGetSessionOptions, AuthenticationSession, ExtensionContext } from '@podman-desktop/api';
 import { authentication, commands } from '@podman-desktop/api';
-import { OrganizationService } from '@redhat-developer/rhsm-client';
 import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
 
 import * as extension from './extension';
 import * as podmanCli from './podman-cli';
-import * as subscription from './subscription';
+import { Organization } from './rh-api/subscription';
+import * as subscription from './rh-api/subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
@@ -180,8 +180,18 @@ suite('signin command telemetry reports', () => {
       },
     );
     vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockReturnValue(true);
-    vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue('machine1');
-    vi.spyOn(OrganizationService.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
+    vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue({
+      providerId: '1',
+      connection: {
+        name: 'machine1',
+        type: 'podman',
+        endpoint: {
+          socketPath: '/path/to/the/socket',
+        },
+        status: () => 'started',
+      },
+    });
+    vi.spyOn(Organization.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();

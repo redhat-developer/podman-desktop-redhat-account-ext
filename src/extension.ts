@@ -17,9 +17,6 @@
  ***********************************************************************/
 
 import * as extensionApi from '@podman-desktop/api';
-import type { ServiceAccountV1 } from '@redhat-developer/rhcra-client';
-import { ContainerRegistryAuthorizerClient } from '@redhat-developer/rhcra-client';
-import { SubscriptionManagerClient } from '@redhat-developer/rhsm-client';
 
 import icon from '../icon.png';
 import { onDidChangeSessions, RedHatAuthenticationService } from './authentication-service';
@@ -35,10 +32,11 @@ import {
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
 } from './podman-cli';
+import { ContainerRegistryAuthorizerClient } from './rh-api/registry-authorizer';
+import { isRedHatRegistryConfigured, REGISTRY_REDHAT_IO, SubscriptionManagerClient } from './rh-api/subscription';
 import { SSOStatusBarItem } from './status-bar-item';
-import { isRedHatRegistryConfigured, REGISTRY_REDHAT_IO, signIntoRedHatDeveloperAccount } from './subscription';
 import { ExtensionTelemetryLogger as TelemetryLogger } from './telemetry';
-import { isLinux } from './util';
+import { isLinux, signIntoRedHatDeveloperAccount } from './util';
 
 interface JwtToken {
   organization: {
@@ -96,29 +94,32 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 async function createOrReuseRegistryServiceAccount(): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
   const accessTokenJson = parseJwt(currentSession!.accessToken);
-  const client = new ContainerRegistryAuthorizerClient({
+  const { serviceAccountsApiV1: saApiV1 } = new ContainerRegistryAuthorizerClient({
     BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
     TOKEN: currentSession!.accessToken,
   });
-  const saApiV1 = client.serviceAccountsApiV1;
-  let selectedServiceAccount: ServiceAccountV1 | undefined;
-  try {
-    selectedServiceAccount = await saApiV1.serviceAccountByNameUsingGet1(
-      'podman-desktop',
-      accessTokenJson.organization.id,
-    );
-  } catch (err) {
+  let { data: serviceAccount } = await saApiV1.serviceAccountByNameUsingGet1(
+    'podman-desktop',
+    accessTokenJson.organization.id,
+  );
+
+  if (!serviceAccount) {
     // ignore error when there is no podman-desktop service account yet
-    selectedServiceAccount = await saApiV1.createServiceAccountUsingPost1({
+    const { data: createdServiceAccount } = await saApiV1.createServiceAccountUsingPost1({
       name: 'podman-desktop',
       description: 'Service account to use from Podman Desktop',
       redHatAccountId: accessTokenJson.organization.id,
     });
+    if (createdServiceAccount) {
+      serviceAccount = createdServiceAccount;
+    } else {
+      throw new Error(`Can't create registry authorizer service account.`);
+    }
   }
 
   await createRegistry(
-    selectedServiceAccount!.credentials!.username!,
-    selectedServiceAccount!.credentials!.password!,
+    serviceAccount!.credentials!.username!,
+    serviceAccount!.credentials!.password!,
     currentSession.account.label,
   );
 }
@@ -131,20 +132,20 @@ async function createOrReuseActivationKey(connection: extensionApi.ProviderConta
     TOKEN: currentSession!.accessToken,
   });
 
-  try {
-    await client.activationKey.showActivationKey('podman-desktop');
-    // podman-desktop activation key exists
-  } catch (err) {
-    // ignore and continue with activation key creation
-    // TODO: add check that used role and usage exists in organization
-    await client.activationKey.createActivationKeys({
+  const { error: showKeyErr } = await client.activationKey.showActivationKey('podman-desktop');
+
+  if (showKeyErr) {
+    // error is undefined when activation key already exists
+    const { error: createKeyErr } = await client.activationKey.createActivationKeys({
       name: 'podman-desktop',
       role: 'RHEl Workstation',
       usage: 'Development/Test',
       serviceLevel: 'Self-Support',
     });
+    if (createKeyErr) {
+      throw new Error(createKeyErr.error?.message);
+    }
   }
-
   await runSubscriptionManagerRegister(connection, 'podman-desktop', accessTokenJson.organization.id);
 }
 
@@ -154,8 +155,8 @@ async function isSimpleContentAccessEnabled(): Promise<boolean> {
     BASE: 'https://console.redhat.com/api/rhsm/v2',
     TOKEN: currentSession!.accessToken,
   });
-  const response = await client.organization.checkOrgScaCapability();
-  return !!response.body && response.body.simpleContentAccess === 'enabled';
+  const data = await client.organization.checkOrgScaCapability();
+  return data?.body?.simpleContentAccess === 'enabled';
 }
 
 async function isSubscriptionManagerInstalled(connection: extensionApi.ProviderContainerConnection): Promise<boolean> {
