@@ -6,51 +6,47 @@ on:
       - main
   workflow_dispatch:
     inputs:
-      fork:
-        default: 'podman-desktop'
-        description: 'Podman Desktop repo fork'
-        type: string
-        required: true
-      branch:
-        default: 'main'
-        description: 'Podman Desktop repo branch'
-        type: string
-        required: true
-      ext_repo_options:
-        default: 'REPO=podman-desktop-redhat-account-ext,FORK=redhat-developer,BRANCH=main'
+      pd_repo_options:
+        default: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
         description: 'Podman Desktop Extension repo, fork and branch'
         type: string
         required: true
-      ext_tests:
-        default: '1'
-        description: 'Run E2E tests from extension'
+      ext_repo_options:
+        default: 'REPO=podman-desktop-redhat-account-ext,FORK=redhat-developer,BRANCH=main,TESTS=1'
+        description: 'Podman Desktop Extension repo, fork and branch'
         type: string
         required: true
       npm_target:
-        default: 'test:e2e'
+        default: 'test:e2e:run'
         description: 'npm target to run tests'
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.3.1/podman-5.3.1-setup.exe'
-        description: 'podman setup exe'
+        default: 'https://github.com/containers/podman/releases/download/v5.4.0/podman-5.4.0-setup.exe'
+        description: 'podman latest released version exe'
         type: string
         required: true
+      podman_desktop_url:
+        description: 'podman desktop testing-prerelease setup-exe url'
+        type: string
+        required: false
       podman_options:
         default: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         description: 'Podman machine configuration options, no spaces'
         type: 'string'
         required: true
+      podman_provider:
+        type: choice
+        description: 'Podman virtualization provider, default is wsl, alternative hyperv'
+        options:
+        - wsl
+        - hyperv
+        required: true
       env_vars:
-        default: 'TEST_PODMAN_MACHINE=true'
+        default: 'ELECTRON_ENABLE_INSPECT=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
         type: 'string'
-        required: true
-      podman_provider:
-        default: 'wsl'
-        description: 'Podman virtualization provider'
-        type: 'string'
-        required: true
+        required: false
       images_version:
         default: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
         description: 'Testing images versions, no spaces'
@@ -62,7 +58,7 @@ jobs:
     name: windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     runs-on: ubuntu-latest
     env:
-      MAPT_VERSION: v0.7.3
+      MAPT_VERSION: v0.8.0
       MAPT_IMAGE: quay.io/redhat-developer/mapt
     strategy:
       fail-fast: false
@@ -73,30 +69,55 @@ jobs:
     steps:
     - name: Get Podman version used by Desktop
       run: |
-        version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/packages/extension/src/podman5.json | jq -r '.version')
+        version=$(curl https://raw.githubusercontent.com/podman-desktop/podman-desktop/main/extensions/podman/packages/extension/src/podman5.json | jq -r '.version')
         echo "Default Podman Version from Podman Desktop: ${version}"
         echo "PD_PODMAN_VERSION=${version}" >> $GITHUB_ENV
+
+    - name: Get Latest Podman Desktop testing prerelease
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        tag=$(curl --request GET \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/podman-desktop/testing-prereleases/tags?pages=1" | jq -r '.[0].name')
+        echo "Tag: $tag"
+        # releaes id
+        id=$(curl --request GET \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/podman-desktop/testing-prereleases/releases/tags/$tag" | jq -r '.id')
+        echo "Release ID: $id"
+        # list assets with setup-x64.exe suffix
+        url=$(curl --request GET \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ env.GH_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "https://api.github.com/repos/podman-desktop/testing-prereleases/releases/$id/assets" | jq -r '.[] | select (.name | test("setup-x64.exe$"))' | jq -r '.browser_download_url')
+        echo "Podman Desktop testing prerelease url: ${url}"
+        echo "DEFAULT_PD_URL=${url}" >> $GITHUB_ENV
+        
     - name: Set the default env. variables
       env:
-        DEFAULT_FORK: 'podman-desktop'
-        DEFAULT_BRANCH: 'main'
-        DEFAULT_EXT_TESTS: '1'
-        DEFAULT_NPM_TARGET: 'test:e2e'
+        DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
+        DEFAULT_NPM_TARGET: 'test:e2e:run'
         DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_PODMAN_PROVIDER: 'wsl'
-        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.3.1' }}"
-        DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-redhat-account-ext,FORK=redhat-developer,BRANCH=main'
+        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.4.0' }}"
         DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_VERSION/podman-$DEFAULT_VERSION-setup.exe"
+        DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-redhat-account-ext,FORK=redhat-developer,BRANCH=main,TESTS=1'
         DEFAULT_IMAGES_VERSIONS: 'BUILDER="v0.0.3",PODMAN="v0.0.3",RUNNER="v0.0.3"'
       run: |
-        echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
-        echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
         echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
-        echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
         echo "PODMAN_PROVIDER=${{ github.event.inputs.podman_provider || env.DEFAULT_PODMAN_PROVIDER }}" >> $GITHUB_ENV
         echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
-        echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
+        echo "PD_URL=${{ github.event.inputs.podman_desktop_url || env.DEFAULT_PD_URL }}" >> $GITHUB_ENV
+        echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
+        echo "${{ github.event.inputs.pd_repo_options || env.DEFAULTPD_REPO_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PD_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
          '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
         echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
@@ -121,9 +142,9 @@ jobs:
             --windows-version '${{ matrix.windows-version }}' \
             --windows-featurepack '${{ matrix.windows-featurepack }}' \
             --nested-virt \
-            --cpus 8 \
+            --cpus 4 \
             --memory 16 \
-            --tags project=podman-desktop \
+            --tags project=podman-desktop,source=github,org=${{github.repository_owner}},run=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \
             --spot
         # Check logs 
         podman logs -f windows-create
@@ -192,8 +213,10 @@ jobs:
                 -targetFolder pd-e2e \
                 -resultsFolder results \
                 -podmanPath $(cat results/podman-location.log) \
-                -fork ${{ env.FORK }} \
-                -branch ${{ env.BRANCH }} \
+                -pdUrl ${{ env.PD_URL }} \
+                -fork ${{ env.PD_FORK }} \
+                -repo ${{ env.PD_REPO }} \
+                -branch ${{ env.PD_BRANCH }} \
                 -extRepo ${{ env.EXT_REPO }} \
                 -extFork ${{ env.EXT_FORK }} \
                 -extBranch ${{ env.EXT_BRANCH }} \
