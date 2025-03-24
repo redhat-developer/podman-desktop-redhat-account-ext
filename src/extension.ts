@@ -138,7 +138,7 @@ async function createOrReuseActivationKey(connection: extensionApi.ProviderConta
     // error is undefined when activation key already exists
     const { error: createKeyErr } = await client.activationKey.createActivationKeys({
       name: 'podman-desktop',
-      role: 'RHEl Workstation',
+      role: 'Red Hat Enterprise Linux Workstation',
       usage: 'Development/Test',
       serviceLevel: 'Self-Support',
     });
