@@ -35,13 +35,13 @@ importers:
         version: 1.51.1
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.18.0-202503261809-ff956201837
+        version: 1.18.0-202503271525-2e877d427e6
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
       '@types/node':
         specifier: ^20
-        version: 20.17.27
+        version: 20.17.28
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.28.0
         version: 8.28.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1)(typescript@5.8.2)
@@ -50,7 +50,7 @@ importers:
         version: 6.21.0(eslint@8.57.1)(typescript@5.8.2)
       '@vitest/coverage-v8':
         specifier: ^2.0.5
-        version: 2.0.5(vitest@2.0.5(@types/node@20.17.27)(terser@5.36.0))
+        version: 2.0.5(vitest@2.0.5(@types/node@20.17.28)(terser@5.36.0))
       byline:
         specifier: ^5.0.0
         version: 5.0.0
@@ -110,10 +110,10 @@ importers:
         version: 5.8.2
       vite:
         specifier: ^6.2.3
-        version: 6.2.3(@types/node@20.17.27)(terser@5.36.0)
+        version: 6.2.3(@types/node@20.17.28)(terser@5.36.0)
       vitest:
         specifier: ^2.0.5
-        version: 2.0.5(@types/node@20.17.27)(terser@5.36.0)
+        version: 2.0.5(@types/node@20.17.28)(terser@5.36.0)
       xvfb-maybe:
         specifier: ^0.2.1
         version: 0.2.1
@@ -574,8 +574,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.17.2':
     resolution: {integrity: sha512-AL5KiI1eH7+0oFeyhhuO6AExfMsFH5MU+mofapjatM8A8jN70hXsEQCwcsbTyJU7at2EBwe3B2EFAjQ91kWvvQ==}
 
-  '@podman-desktop/tests-playwright@1.18.0-202503261809-ff956201837':
-    resolution: {integrity: sha512-/lO0KiL78ytORMuOjbjPvFCLCtqiY7b5gIs5T2m6g6mzi3NbJ9jrmay+IEqWwIfqcsufnYfbpsLMm6rlsc7hUQ==}
+  '@podman-desktop/tests-playwright@1.18.0-202503271525-2e877d427e6':
+    resolution: {integrity: sha512-COLNjxgdhkY3stYAWFt05+3k2RZOqqoJHiK3AzSdeuIQHcN73QAOWJfnCiPQOkzQqSqK4Qgbhm5R1dEnMXLr8g==}
 
   '@rollup/rollup-android-arm-eabi@4.37.0':
     resolution: {integrity: sha512-l7StVw6WAa8l3vA1ov80jyetOAEo1FtHvZDbzXDO/02Sq/QVvqlHkYoFwDJPIMj0GKiistsBudfx5tGFnwYWDQ==}
@@ -715,11 +715,11 @@ packages:
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
 
-  '@types/node@20.17.27':
-    resolution: {integrity: sha512-U58sbKhDrthHlxHRJw7ZLiLDZGmAUOZUbpw0S6nL27sYUdhvgBLCRu/keSd6qcTsfArd1sRFCCBxzWATGr/0UA==}
+  '@types/node@20.17.28':
+    resolution: {integrity: sha512-DHlH/fNL6Mho38jTy7/JT7sn2wnXI+wULR6PV4gy4VHLVvnrV/d3pHAMQHhc4gjdLmK2ZiPoMxzp6B3yRajLSQ==}
 
-  '@types/node@22.13.13':
-    resolution: {integrity: sha512-ClsL5nMwKaBRwPcCvH8E7+nU4GxHVx1axNvMZTFHMEfNI7oahimt26P5zjVCRrjiIWj6YFXfE1v3dEp94wLcGQ==}
+  '@types/node@22.13.14':
+    resolution: {integrity: sha512-Zs/Ollc1SJ8nKUAgc7ivOEdIBM8JAKgrqqUYi2J997JuKO7/tpQC+WCetQ1sypiKCQWHdvdg9wBNpUPEWZae7w==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -3395,7 +3395,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.17.2
 
-  '@podman-desktop/tests-playwright@1.18.0-202503261809-ff956201837': {}
+  '@podman-desktop/tests-playwright@1.18.0-202503271525-2e877d427e6': {}
 
   '@rollup/rollup-android-arm-eabi@4.37.0':
     optional: true
@@ -3474,7 +3474,7 @@ snapshots:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
       '@types/responselike': 1.0.3
 
   '@types/estree@1.0.6': {}
@@ -3491,13 +3491,13 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
 
-  '@types/node@20.17.27':
+  '@types/node@20.17.28':
     dependencies:
       undici-types: 6.19.8
 
-  '@types/node@22.13.13':
+  '@types/node@22.13.14':
     dependencies:
       undici-types: 6.20.0
 
@@ -3505,7 +3505,7 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
 
   '@types/semver@7.5.8': {}
 
@@ -3517,7 +3517,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.28.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1)(typescript@5.8.2)':
@@ -3725,7 +3725,7 @@ snapshots:
   '@unrs/rspack-resolver-binding-win32-x64-msvc@1.2.2':
     optional: true
 
-  '@vitest/coverage-v8@2.0.5(vitest@2.0.5(@types/node@20.17.27)(terser@5.36.0))':
+  '@vitest/coverage-v8@2.0.5(vitest@2.0.5(@types/node@20.17.28)(terser@5.36.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -3739,7 +3739,7 @@ snapshots:
       std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.0.5(@types/node@20.17.27)(terser@5.36.0)
+      vitest: 2.0.5(@types/node@20.17.28)(terser@5.36.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -4141,7 +4141,7 @@ snapshots:
   electron@35.1.1:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 22.13.13
+      '@types/node': 22.13.14
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -6076,13 +6076,13 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vite-node@2.0.5(@types/node@20.17.27)(terser@5.36.0):
+  vite-node@2.0.5(@types/node@20.17.28)(terser@5.36.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0
       pathe: 1.1.2
       tinyrainbow: 1.2.0
-      vite: 5.4.15(@types/node@20.17.27)(terser@5.36.0)
+      vite: 5.4.15(@types/node@20.17.28)(terser@5.36.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6094,27 +6094,27 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.4.15(@types/node@20.17.27)(terser@5.36.0):
+  vite@5.4.15(@types/node@20.17.28)(terser@5.36.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.3
       rollup: 4.37.0
     optionalDependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
       fsevents: 2.3.3
       terser: 5.36.0
 
-  vite@6.2.3(@types/node@20.17.27)(terser@5.36.0):
+  vite@6.2.3(@types/node@20.17.28)(terser@5.36.0):
     dependencies:
       esbuild: 0.25.1
       postcss: 8.5.3
       rollup: 4.37.0
     optionalDependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
       fsevents: 2.3.3
       terser: 5.36.0
 
-  vitest@2.0.5(@types/node@20.17.27)(terser@5.36.0):
+  vitest@2.0.5(@types/node@20.17.28)(terser@5.36.0):
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@vitest/expect': 2.0.5
@@ -6132,11 +6132,11 @@ snapshots:
       tinybench: 2.9.0
       tinypool: 1.0.1
       tinyrainbow: 1.2.0
-      vite: 5.4.15(@types/node@20.17.27)(terser@5.36.0)
-      vite-node: 2.0.5(@types/node@20.17.27)(terser@5.36.0)
+      vite: 5.4.15(@types/node@20.17.28)(terser@5.36.0)
+      vite-node: 2.0.5(@types/node@20.17.28)(terser@5.36.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.17.27
+      '@types/node': 20.17.28
     transitivePeerDependencies:
       - less
       - lightningcss
