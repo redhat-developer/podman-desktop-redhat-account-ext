@@ -17,7 +17,7 @@ on:
         type: string
         required: true
       npm_target:
-        default: 'test:e2e:run'
+        default: 'test:e2e'
         description: 'npm target to run tests'
         type: string
         required: true
