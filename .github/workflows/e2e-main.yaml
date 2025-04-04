@@ -92,7 +92,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Update podman v. 5.x
         run: |
@@ -111,16 +111,19 @@ jobs:
             sudo apt-get update && \
             sudo apt-get -y install podman; }
           podman version
+
       - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build Podman Desktop for E2E tests Development Mode
         working-directory: ./podman-desktop
         if: ${{ env.MODE == 'development' }}
         run: |
           pnpm install
           pnpm test:e2e:build
+
       - name: Build Podman Desktop for E2E tests Production Mode
         working-directory: ./podman-desktop
         if: ${{ env.MODE == 'production' }} 
@@ -132,6 +135,7 @@ jobs:
           path=$(realpath ./dist/linux-unpacked/podman-desktop)
           echo "Podman Desktop built binary: $path"
           echo "PODMAN_DESKTOP_BINARY_PATH=$path" >> $GITHUB_ENV
+
       - name: Execute pnpm in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         run: |
@@ -140,19 +144,39 @@ jobs:
           echo "Version of @podman-desktop/tests-playwright to be used: $version"
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
           pnpm install --no-frozen-lockfile
+
+      - name: Set default browser
+        run: |
+          chromiumBrowser=$(which chromium-browser)
+          echo "Path to chromium: ${chromiumBrowser}"
+          # xdg-settings set default-web-browser chromium-browser.desktop
+          sudo update-alternatives --install /usr/bin/x-www-browser x-www-browser $chromiumBrowser 200
+          sudo update-alternatives --set x-www-browser $chromiumBrowser
+
       - name: Run All E2E tests in Red Hat Account Extension in Development Mode
-        working-directory: ${{ env.REPOSITORY }}
+        uses: GabrielBB/xvfb-action@v1.7
         if: ${{ env.MODE == 'development' }}
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
-        run: pnpm test:e2e
+          DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
+          DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
+        with: 
+          working-directory: ${{ env.REPOSITORY }}
+          run: pnpm test:e2e
 
       - name: Run All E2E tests in Red Hat Account Extension in Production mode
         working-directory: ${{ env.REPOSITORY }}
         if: ${{ env.MODE == 'production' }}
         env:
           PODMAN_DESKTOP_BINARY: ${{ env.PODMAN_DESKTOP_BINARY_PATH }}
+          DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
+          DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
         run: pnpm test:e2e
+
+      # - name: Setup tmate session
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
+      #   timeout-minutes: 25
 
       - uses: actions/upload-artifact@v4
         if: always()
