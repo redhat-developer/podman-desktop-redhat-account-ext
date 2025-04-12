@@ -57,7 +57,7 @@
     "openid-client": "^5.7.0"
   },
   "devDependencies": {
-    "7zip-min": "^2.0.0",
+    "7zip-min": "^2.1.0",
     "@playwright/test": "^1.51.1",
     "@podman-desktop/tests-playwright": "next",
     "@types/js-yaml": "^4.0.5",
