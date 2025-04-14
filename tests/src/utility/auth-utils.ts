@@ -82,7 +82,7 @@ export async function findPageWithTitleInBrowser(browser: Browser, expectedTitle
     // Connect to the same Chrome instance via CDP
     // possible option is to use chromium.connectOverCDP(`http://localhost:${port}`);
     if (!browserLaunch) {
-      throw Error('Browser object was not initialized properly');
+      throw new Error('Browser object was not initialized properly');
     } else {
       console.log(`Browser connected: ${browserLaunch.isConnected()}`);
     }
@@ -109,6 +109,3 @@ export async function findPageWithTitleInBrowser(browser: Browser, expectedTitle
     console.log(`Matched string: ${urlMatch}`);
     return urlMatch;
   }
-  
-
-  

@@ -69,7 +69,7 @@ test.afterAll(async ({ runner }) => {
     if (browser) {
       await browser.close();
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.log(`Something went wrong when closing browser: ${error}`);
   } finally {
     await terminateExternalBrowser();
@@ -276,7 +276,7 @@ export async function terminateExternalBrowser(): Promise<void> {
     try {
       // eslint-disable-next-line
       execSync('pkill -o firefox');
-    } catch (error) {
+    } catch (error: unknown) {
       console.log(`Error while killing the firefox: ${error}`);
     }
   }

@@ -145,11 +145,11 @@ jobs:
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
           pnpm install --no-frozen-lockfile
 
-      - name: Set default browser
+      - name: Set default browser to Chromium
         run: |
+          # TODO: Follow up issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/727
           chromiumBrowser=$(which chromium-browser)
           echo "Path to chromium: ${chromiumBrowser}"
-          # xdg-settings set default-web-browser chromium-browser.desktop
           sudo update-alternatives --install /usr/bin/x-www-browser x-www-browser $chromiumBrowser 500
           sudo update-alternatives --set x-www-browser $chromiumBrowser
 
