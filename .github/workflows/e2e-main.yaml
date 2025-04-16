@@ -92,7 +92,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Update podman v. 5.x
         run: |
@@ -111,16 +111,19 @@ jobs:
             sudo apt-get update && \
             sudo apt-get -y install podman; }
           podman version
+
       - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build Podman Desktop for E2E tests Development Mode
         working-directory: ./podman-desktop
         if: ${{ env.MODE == 'development' }}
         run: |
           pnpm install
           pnpm test:e2e:build
+
       - name: Build Podman Desktop for E2E tests Production Mode
         working-directory: ./podman-desktop
         if: ${{ env.MODE == 'production' }} 
@@ -132,6 +135,7 @@ jobs:
           path=$(realpath ./dist/linux-unpacked/podman-desktop)
           echo "Podman Desktop built binary: $path"
           echo "PODMAN_DESKTOP_BINARY_PATH=$path" >> $GITHUB_ENV
+
       - name: Execute pnpm in Red Hat Account Extension
         working-directory: ${{ env.REPOSITORY }}
         run: |
@@ -140,11 +144,23 @@ jobs:
           echo "Version of @podman-desktop/tests-playwright to be used: $version"
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
           pnpm install --no-frozen-lockfile
+
+      - name: Set default browser to Chromium
+        run: |
+          # TODO: Follow up issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/727
+          chromiumBrowser=$(which chromium-browser)
+          echo "Path to chromium: ${chromiumBrowser}"
+          sudo update-alternatives --install /usr/bin/x-www-browser x-www-browser $chromiumBrowser 500
+          sudo update-alternatives --set x-www-browser $chromiumBrowser
+
       - name: Run All E2E tests in Red Hat Account Extension in Development Mode
         working-directory: ${{ env.REPOSITORY }}
         if: ${{ env.MODE == 'development' }}
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+          DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
+          DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
+          AUTH_E2E_TESTS: true
         run: pnpm test:e2e
 
       - name: Run All E2E tests in Red Hat Account Extension in Production mode
@@ -152,9 +168,24 @@ jobs:
         if: ${{ env.MODE == 'production' }}
         env:
           PODMAN_DESKTOP_BINARY: ${{ env.PODMAN_DESKTOP_BINARY_PATH }}
+          DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
+          DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
+          AUTH_E2E_TESTS: true
         run: pnpm test:e2e
 
-      - uses: actions/upload-artifact@v4
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v5
+        if: always() # always run even if the previous step fails
+        with:
+          fail_on_failure: true
+          include_passed: true
+          annotate_only: true
+          detailed_summary: true
+          require_tests:  true
+          report_paths: '**/*results.xml'
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-tests
