@@ -26,7 +26,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-        target: [windows-2022, macos-14, ubuntu-20.04]
+        target: [windows-2022, macos-14, ubuntu-24.04]
       fail-fast: true
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with:
@@ -37,7 +37,7 @@ jobs:
     runs-on: ${{ matrix.target }}
     strategy:
       matrix:
-        target: [windows-2022, macos-14, ubuntu-22.04]
+        target: [windows-2022, macos-14, ubuntu-24.04]
       fail-fast: true
       
     steps:

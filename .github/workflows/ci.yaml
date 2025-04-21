@@ -26,7 +26,7 @@ jobs:
   CI:
     strategy:
       matrix:
-        target: [ubuntu-20.04]
+        target: [ubuntu-24.04]
     uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
     with: 
       runs-on: ${{ matrix.target }}
