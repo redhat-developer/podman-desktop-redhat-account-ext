@@ -22,105 +22,120 @@ import type { Browser, Page} from '@playwright/test';
 import { chromium, expect as playExpect } from '@playwright/test';
 import { StatusBar, TroubleshootingPage } from '@podman-desktop/tests-playwright';
 
+const enableDebug = process.env.BROWSER_DEBUG_ENABLED ?? false;
+
 export async function findPageWithTitleInBrowser(browser: Browser, expectedTitle: string): Promise<Page|undefined> {
-    let chromePage: Page | undefined;
-  
-    for (let i = 0; i < 10; i++) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const pages = browser.contexts().flatMap(context => context.pages());
-      const pagesTitles = await Promise.all(pages.map(async (page) => (
-        { page, title: await page.title() }
-      )));
-  
-      chromePage = pagesTitles.find(p => p.title.includes(expectedTitle))?.page;
-      if (chromePage) {
-        break;
-      }
+  let chromePage: Page | undefined;
+
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const pages = browser.contexts().flatMap(context => context.pages());
+    const pagesTitles = await Promise.all(pages.map(async (page) => (
+      { page, title: await page.title() }
+    )));
+
+    chromePage = pagesTitles.find(p => p.title.includes(expectedTitle))?.page;
+    if (chromePage) {
+      break;
     }
-  
-    if (!chromePage) {
-        console.error(`No page found with title: ${expectedTitle}`);
-    }
-    return chromePage;
   }
-  
-  export async function performBrowserLogin(page: Page, username: string, pass: string, path: string): Promise<void> {
-    console.log(`Performing browser login...`);
-    await playExpect(page).toHaveTitle(/Log In/);
-    await playExpect(page.getByRole('heading', { name: 'Log in to your Red Hat' })).toBeVisible();
-    console.log(`We are on the login RH Login page...`);
-    await page.screenshot({ path: join(path, 'screenshots', 'before_username_fill.png'), type: 'png', fullPage: true });
-    const input = page.getByRole('textbox', { name: 'Red Hat login or email' });
-    await playExpect(input).toBeVisible();
-    await input.fill(username);
-    const nextButton = page.getByRole('button', { name: 'Next' });
-    await nextButton.click();
-    // after next is clicked, a wait is necessary
-    // we might get a page with providers to choose from
-    // button - Log in with company single sign-on OR
-    // button - Log in with Red Hat account
-    const buttonRHAccount = page.getByRole('button', { name: 'Log in with Red Hat account' });
-    // we might get to the password immediately 
-    try {
-      await page.screenshot({ path: join(path, 'screenshots', 'after_username_and_next.png'), type: 'png', fullPage: true });
-      await playExpect(buttonRHAccount).toBeVisible({ timeout: 5000 });
-      await buttonRHAccount.click();
-    } catch (error: unknown) {
-      console.log(`Error: ${error}, while evaluating Log in with RH acc. button, continue...`);
-    }
-    await page.screenshot({ path: join(path, 'screenshots', 'before_password_fill.png'), type: 'png', fullPage: true });
-    const passInput = page.getByRole('textbox', { name: 'Password' });
-    await playExpect(passInput).toBeVisible();
-    await passInput.fill(pass);
-    const loginButton = page.getByRole('button', { name: 'Log in' });
-    await playExpect(loginButton).toBeEnabled();
-    await loginButton.click();
-    const backButton = page.getByRole('button', { name: 'Go back to Podman Desktop' });
-    await playExpect(backButton).toBeEnabled();
-    await page.screenshot({ path: join(path, 'screenshots', 'after_login_in_browser.png'), type: 'png', fullPage: true });
-    console.log(`Logged in, go back...`);
-    await backButton.click();
-    await page.screenshot({ path: join(path, 'screenshots', 'after_clck_go_back.png'), type: 'png', fullPage: true });
+
+  if (!chromePage) {
+      console.error(`No page found with title: ${expectedTitle}`);
   }
+  return chromePage;
+}
   
-  export async function startChromium(port: string, tracesPath: string): Promise<Browser> {
-    console.log('Starting a web server on port 9222');
-    const browserLaunch = await chromium.launch({
-      headless: false,
-      args: [`--remote-debugging-port=${port}`],
-      tracesDir: tracesPath,
-      slowMo: 200,
-    });
-  
-    // hard wait
-    await new Promise(resolve => setTimeout(resolve, 5_000));
-    // Connect to the same Chrome instance via CDP
-    // possible option is to use chromium.connectOverCDP(`http://localhost:${port}`);
-    if (!browserLaunch) {
-      throw new Error('Browser object was not initialized properly');
-    } else {
-      console.log(`Browser connected: ${browserLaunch.isConnected()}`);
-    }
-    return browserLaunch;
+export async function performBrowserLogin(page: Page, username: string, pass: string, path: string): Promise<void> {
+  console.log(`Performing browser login...`);
+  await playExpect(page).toHaveTitle(/Log In/);
+  await playExpect(page.getByRole('heading', { name: 'Log in to your Red Hat' })).toBeVisible();
+  console.log(`We are on the login RH Login page...`);
+  await enableDebugCall( async () => 
+    await page.screenshot({ path: join(path, 'screenshots', 'before_username_fill.png'), type: 'png', fullPage: true }
+  ));
+  const input = page.getByRole('textbox', { name: 'Red Hat login or email' });
+  await playExpect(input).toBeVisible();
+  await input.fill(username);
+  const nextButton = page.getByRole('button', { name: 'Next' });
+  await nextButton.click();
+  // after next is clicked, a wait is necessary
+  // we might get a page with providers to choose from
+  // button - Log in with company single sign-on OR
+  // button - Log in with Red Hat account
+  const buttonRHAccount = page.getByRole('button', { name: 'Log in with Red Hat account' });
+  // we might get to the password immediately 
+  try {
+    await enableDebugCall( async () =>
+      await page.screenshot({ path: join(path, 'screenshots', 'after_username_and_next.png'), type: 'png', fullPage: true }
+    ));
+    await playExpect(buttonRHAccount).toBeVisible({ timeout: 5000 });
+    await buttonRHAccount.click();
+  } catch (error: unknown) {
+    console.log(`Error: ${error}, while evaluating Log in with RH acc. button, continue...`);
   }
-  
-  export async function getSSOUrlFromLogs(page: Page, regex: RegExp): Promise<string | undefined> {
-    await new StatusBar(page).troubleshootingButton.click();
-    const troublePage = new TroubleshootingPage(page);
-    await playExpect(troublePage.heading).toBeVisible();
-    // open logs
-    await troublePage.openLogs();
-    const logList = troublePage.tabContent.getByRole('list');
-    await playExpect(logList).toBeVisible();
-    const ssoLine = logList.getByRole('listitem').filter( { hasText: /\[redhat-authentication\].*openid-connect.*/ });
-    await playExpect(ssoLine).toBeVisible();
-    await ssoLine.scrollIntoViewIfNeeded();
-    await playExpect(ssoLine).toContainText('sso.redhat.com');
-    const logText = await ssoLine.innerText();
-    console.log(`The whole log line with url to openid: ${logText}`);
-    // parse the url:
-    const parsedString = regex.exec(logText);
-    const urlMatch = parsedString ? parsedString[1] : undefined;
-    console.log(`Matched string: ${urlMatch}`);
-    return urlMatch;
+  await enableDebugCall( 
+    async () => await page.screenshot({ path: join(path, 'screenshots', 'before_password_fill.png'), type: 'png', fullPage: true }
+  ));
+  const passInput = page.getByRole('textbox', { name: 'Password' });
+  await playExpect(passInput).toBeVisible();
+  await passInput.fill(pass);
+  const loginButton = page.getByRole('button', { name: 'Log inx' });
+  await playExpect(loginButton).toBeEnabled();
+  await loginButton.click();
+  const backButton = page.getByRole('button', { name: 'Go back to Podman Desktop' });
+  await playExpect(backButton).toBeEnabled();
+  await enableDebugCall( 
+    async () => await page.screenshot({ path: join(path, 'screenshots', 'after_login_in_browser.png'), type: 'png', fullPage: true }
+  ));
+  console.log(`Logged in, go back...`);
+  await backButton.click();
+}
+
+export async function startChromium(port: string, tracesPath: string): Promise<Browser> {
+  console.log('Starting a web server on port 9222');
+  const browserLaunch = await chromium.launch({
+    headless: false,
+    args: [`--remote-debugging-port=${port}`],
+    tracesDir: tracesPath,
+    slowMo: 200,
+  });
+
+  // hard wait
+  await new Promise(resolve => setTimeout(resolve, 5_000));
+  // Connect to the same Chrome instance via CDP
+  // possible option is to use chromium.connectOverCDP(`http://localhost:${port}`);
+  if (!browserLaunch) {
+    throw new Error('Browser object was not initialized properly');
+  } else {
+    console.log(`Browser connected: ${browserLaunch.isConnected()}`);
   }
+  return browserLaunch;
+}
+
+export async function getSSOUrlFromLogs(page: Page, regex: RegExp): Promise<string | undefined> {
+  await new StatusBar(page).troubleshootingButton.click();
+  const troublePage = new TroubleshootingPage(page);
+  await playExpect(troublePage.heading).toBeVisible();
+  // open logs
+  await troublePage.openLogs();
+  const logList = troublePage.tabContent.getByRole('list');
+  await playExpect(logList).toBeVisible();
+  const ssoLine = logList.getByRole('listitem').filter( { hasText: /\[redhat-authentication\].*openid-connect.*/ });
+  await playExpect(ssoLine).toBeVisible();
+  await ssoLine.scrollIntoViewIfNeeded();
+  await playExpect(ssoLine).toContainText('sso.redhat.com');
+  const logText = await ssoLine.innerText();
+  console.log(`The whole log line with url to openid: ${logText}`);
+  // parse the url:
+  const parsedString = regex.exec(logText);
+  const urlMatch = parsedString ? parsedString[1] : undefined;
+  console.log(`Matched string: ${urlMatch}`);
+  return urlMatch;
+}
+
+export async function enableDebugCall(callback: () => void): Promise<void> {
+  if (enableDebug) {
+    callback();
+  }
+}
