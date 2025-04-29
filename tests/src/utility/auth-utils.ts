@@ -49,11 +49,26 @@ export async function findPageWithTitleInBrowser(browser: Browser, expectedTitle
     await playExpect(page).toHaveTitle(/Log In/);
     await playExpect(page.getByRole('heading', { name: 'Log in to your Red Hat' })).toBeVisible();
     console.log(`We are on the login RH Login page...`);
+    await page.screenshot({ path: join(path, 'screenshots', 'before_username_fill.png'), type: 'png', fullPage: true });
     const input = page.getByRole('textbox', { name: 'Red Hat login or email' });
     await playExpect(input).toBeVisible();
     await input.fill(username);
     const nextButton = page.getByRole('button', { name: 'Next' });
     await nextButton.click();
+    // after next is clicked, a wait is necessary
+    // we might get a page with providers to choose from
+    // button - Log in with company single sign-on OR
+    // button - Log in with Red Hat account
+    const buttonRHAccount = page.getByRole('button', { name: 'Log in with Red Hat account' });
+    // we might get to the password immediately 
+    try {
+      await page.screenshot({ path: join(path, 'screenshots', 'after_username_and_next.png'), type: 'png', fullPage: true });
+      await playExpect(buttonRHAccount).toBeVisible({ timeout: 5000 });
+      await buttonRHAccount.click();
+    } catch (error: unknown) {
+      console.log(`Error: ${error}, while evaluating Log in with RH acc. button, continue...`);
+    }
+    await page.screenshot({ path: join(path, 'screenshots', 'before_password_fill.png'), type: 'png', fullPage: true });
     const passInput = page.getByRole('textbox', { name: 'Password' });
     await playExpect(passInput).toBeVisible();
     await passInput.fill(pass);

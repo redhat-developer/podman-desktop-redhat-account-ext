@@ -232,9 +232,10 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await chromiumPage.close();
     });
 
-    test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar }) => {
+    test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar, runner }) => {
       // activate Podman Desktop again
       await page.bringToFront();
+      await runner.screenshot('back-in-pd.png');
       // verify the Signed in user
       const settingsBar = await navigationBar.openSettings();
       await settingsBar.openTabPage(AuthenticationPage);
