@@ -22,7 +22,7 @@ on:
         type: string
         required: true
       podman_remote_url:
-        default: 'https://github.com/containers/podman/releases/download/v5.4.0/podman-5.4.0-setup.exe'
+        default: 'https://github.com/containers/podman/releases/download/v5.4.2/podman-5.4.2-setup.exe'
         description: 'podman latest released version exe'
         type: string
         required: true
@@ -43,7 +43,7 @@ on:
         - hyperv
         required: true
       env_vars:
-        default: 'ELECTRON_ENABLE_INSPECT=true'
+        default: 'ELECTRON_ENABLE_INSPECT=true,AUTH_E2E_TESTS=true'
         description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
         type: 'string'
         required: false
@@ -103,7 +103,7 @@ jobs:
       env:
         DEFAULT_PD_REPO_OPTIONS: 'REPO=podman-desktop,FORK=podman-desktop,BRANCH=main'
         DEFAULT_NPM_TARGET: 'test:e2e'
-        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
+        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true,AUTH_E2E_TESTS=true'
         DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
         DEFAULT_PODMAN_PROVIDER: 'wsl'
         DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.4.2' }}"
@@ -197,7 +197,12 @@ jobs:
         podman logs -f pde2e-podman-run
 
     - name: Run Podman Desktop Playwright E2E tests
+      env:
+        DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
+        DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
       run: |
+        echo "DVLPR_USERNAME=${DVLPR_USERNAME}" >> secrets.txt
+        echo "DVLPR_PASSWORD=${DVLPR_PASSWORD}" >> secrets.txt
         podman run -d --name pde2e-runner-run \
           -e TARGET_HOST=$(cat host) \
           -e TARGET_HOST_USERNAME=$(cat username) \
@@ -208,6 +213,7 @@ jobs:
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
+          -v $PWD/secrets.txt:/opt/pde2e-runner/secrets.txt:z \
           quay.io/odockal/pde2e-runner:${{ env.PDE2E_RUNNER }}-windows \
               pd-e2e/runner.ps1 \
                 -targetFolder pd-e2e \
@@ -227,6 +233,7 @@ jobs:
                 -start ${{ env.PODMAN_START }} \
                 -userNetworking ${{ env.PODMAN_NETWORKING }} \
                 -podmanProvider ${{ env.PODMAN_PROVIDER }} \
+                -secretFile secrets.txt \
                 -envVars ${{ env.ENV_VARS }}
         # check logs
         podman logs -f pde2e-runner-run
