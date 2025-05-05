@@ -21,8 +21,8 @@ importers:
         specifier: 3.0.0
         version: 3.0.0
       openapi-fetch:
-        specifier: ^0.13.5
-        version: 0.13.5
+        specifier: ^0.13.7
+        version: 0.13.7
       openid-client:
         specifier: ^5.7.0
         version: 5.7.0
@@ -35,7 +35,7 @@ importers:
         version: 1.52.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.19.0-202505020653-7937553a096
+        version: 1.19.0-202505051410-317f90ffc49
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -574,8 +574,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.18.0':
     resolution: {integrity: sha512-CjRv0LDSmYZzPEtdOasPsRe8kzBYQOdK7+jjK9qhoy8l6NlOLjYPRKUIjZ/kZzNCKv1jd0D5mPxNmk0XtsBSTQ==}
 
-  '@podman-desktop/tests-playwright@1.19.0-202505020653-7937553a096':
-    resolution: {integrity: sha512-ww9BYqKkurEPgZJWdPRLjLQnsSX57vqBgy/J8eLb4A7hAapzSf3sYDIa99hFAiAPQ1Eyars18mpqkA3H2I4ygw==}
+  '@podman-desktop/tests-playwright@1.19.0-202505051410-317f90ffc49':
+    resolution: {integrity: sha512-EXLKTbWK9IlnW6hpS7zdHBE712FB8a9k0tV2VPfc9VFb0NLmF/l9MmLKIejys+Po+1JfwRwaAEQ0uQiMMR9Cmw==}
 
   '@rollup/rollup-android-arm-eabi@4.40.1':
     resolution: {integrity: sha512-kxz0YeeCrRUHz3zyqvd7n+TVRlNyTifBsmnmNPtk3hQURUyG9eAB+usz6DAwagMusjx/zb3AjvDUvhFGDAexGw==}
@@ -2257,8 +2257,8 @@ packages:
     resolution: {integrity: sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==}
     engines: {node: '>=12'}
 
-  openapi-fetch@0.13.5:
-    resolution: {integrity: sha512-AQK8T9GSKFREFlN1DBXTYsLjs7YV2tZcJ7zUWxbjMoQmj8dDSFRrzhLCbHPZWA1TMV3vACqfCxLEZcwf2wxV6Q==}
+  openapi-fetch@0.13.7:
+    resolution: {integrity: sha512-3QdcAgvLFZ4j9Rcja7/Tq1j0qyv/LPqnHzwtMz5gKj6iddTdP48r+FZd8rmb+6xL9CdnJ5OmgdM0CpgGBi6Fgg==}
 
   openapi-typescript-helpers@0.0.15:
     resolution: {integrity: sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw==}
@@ -3422,7 +3422,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.18.0
 
-  '@podman-desktop/tests-playwright@1.19.0-202505020653-7937553a096': {}
+  '@podman-desktop/tests-playwright@1.19.0-202505051410-317f90ffc49': {}
 
   '@rollup/rollup-android-arm-eabi@4.40.1':
     optional: true
@@ -5398,7 +5398,7 @@ snapshots:
     dependencies:
       mimic-fn: 4.0.0
 
-  openapi-fetch@0.13.5:
+  openapi-fetch@0.13.7:
     dependencies:
       openapi-typescript-helpers: 0.0.15
 
