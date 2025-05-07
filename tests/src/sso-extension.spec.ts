@@ -26,7 +26,7 @@ import { AuthenticationPage, expect as playExpect, ExtensionCardPage, isLinux,po
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
-import { findPageWithTitleInBrowser, getSSOUrlFromLogs, performBrowserLogin, startChromium } from './utility/auth-utils';
+import { enableDebugCall, findPageWithTitleInBrowser, getSSOUrlFromLogs, performBrowserLogin, startChromium } from './utility/auth-utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -232,7 +232,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await chromiumPage.close();
     });
 
-    test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar }) => {
+    test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar, runner }) => {
       // activate Podman Desktop again
       await page.bringToFront();
       // verify the Signed in user
@@ -241,7 +241,9 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(authPage.heading).toHaveText('Authentication');
       // on linux we need to avoid issue with auth. providers store
       // in case of need, refresh auth. providers store in troubleshooting
-      await page.screenshot({ path: join(...browserOutputPath, 'screenshots', 'back_pd_after_authentication.png'), type: 'png' });
+      await enableDebugCall( 
+        async () => await page.screenshot({ path: join(...browserOutputPath, 'screenshots', 'back_pd_after_authentication.png'), type: 'png' }
+      ));
       if (await ssoProvider.signinButton.count() >= 0) {
         console.log('SignIn Button still visible, we are hitting issue with linux');
         const status = new StatusBar(page);
