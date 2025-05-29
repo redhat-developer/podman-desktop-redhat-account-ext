@@ -16,13 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
 import path, { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { Browser, Page } from '@playwright/test';
 import type { NavigationBar} from '@podman-desktop/tests-playwright';
-import { AuthenticationPage, expect as playExpect, ExtensionCardPage, isLinux,podmanExtension, RunnerOptions, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, expect as playExpect, ExtensionCardPage, isWindows, podmanExtension, RunnerOptions, StatusBar, test, TroubleshootingPage, isMac, isCI  } from '@podman-desktop/tests-playwright';
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
@@ -272,12 +272,18 @@ async function removeExtension(navBar: NavigationBar): Promise<void> {
 }
 
 export async function terminateExternalBrowser(): Promise<void> {
-  if (isGHActions && isLinux) { 
+  let command = 'pkill -o firefox';
+  if (isMac) {
+    command = 'pkill Safari';
+  } else if (isWindows) {
+    command = 'TaskKill /im msedge.exe /f /t';
+  }
+  if (isCI) { 
     try {
       // eslint-disable-next-line
-      execSync('pkill -o firefox');
+      exec(command);
     } catch (error: unknown) {
-      console.log(`Error while killing the firefox: ${error}`);
+      console.log(`Error while terminating the browser using '${command}': ${error}`);
     }
   }
 }
