@@ -77,10 +77,11 @@ jobs:
             repository=${{ env.REPO }}
           fi
           echo "REPOSITORY=$repository" >> $GITHUB_ENV
+
       # Checkout podman desktop
       - uses: actions/checkout@v4
         with:
-          repository: containers/podman-desktop
+          repository: podman-desktop/podman-desktop
           ref: main
           path: podman-desktop
 
@@ -88,7 +89,7 @@ jobs:
         name: Install pnpm
         with:
           run_install: false
-          package_json_file: ./${{ env.REPO }}/package.json
+          package_json_file: ./podman-desktop/package.json
 
       - uses: actions/setup-node@v4
         with:
