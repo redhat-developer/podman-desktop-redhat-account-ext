@@ -97,7 +97,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       const extensions = await navigationBar.openExtensions();
       await extensions.openInstalledTab();
       await playExpect.poll(
-        async () => await extensions.extensionIsInstalled(podmanExtension.extensionLabel),
+        async () => await extensions.extensionIsInstalled(podmanExtension.extensionFullLabel),
         { timeout: 15_000}).toBeTruthy();
       const podmanExtensionCard = new ExtensionCardPage(page, podmanExtension.extensionName, podmanExtension.extensionFullLabel);
       await playExpect(podmanExtensionCard.card).toBeVisible({ timeout: 20_000 });
