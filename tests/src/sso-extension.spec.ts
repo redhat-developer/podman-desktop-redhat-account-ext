@@ -16,13 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
 import path, { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { Browser, Page } from '@playwright/test';
 import type { ConfirmInputValue, NavigationBar} from '@podman-desktop/tests-playwright';
-import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromLogs, handleConfirmationDialog,isLinux,performBrowserLogin,podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromLogs, handleConfirmationDialog,isCI,isLinux,isMac, isWindows, performBrowserLogin,podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
@@ -45,7 +45,6 @@ const chromePort = '9222';
 const urlRegex = new RegExp(/((http|https):\/\/.*$)/);
 const browserOutputPath = [__dirname, '..', 'playwright', 'output', 'browser'];
 const expectedAuthPageTitle = 'Log In';
-const isGHActions = process.env.GITHUB_ACTIONS === 'true';
 const AUTH_E2E_TESTS = process.env.AUTH_E2E_TESTS === 'true';
 
 test.use({ 
@@ -70,7 +69,9 @@ test.afterAll(async ({ runner }) => {
   } catch (error: unknown) {
     console.log(`Something went wrong when closing browser: ${error}`);
   } finally {
-    await terminateExternalBrowser();
+    if (isCI && AUTH_E2E_TESTS) {
+      await terminateExternalBrowser();
+    }
     await runner.close();
   }
 });
@@ -290,12 +291,16 @@ async function removeExtension(navBar: NavigationBar): Promise<void> {
 }
 
 export async function terminateExternalBrowser(): Promise<void> {
-  if (isGHActions && isLinux) { 
-    try {
-      // eslint-disable-next-line
-      execSync('pkill -o firefox');
-    } catch (error: unknown) {
-      console.log(`Error while killing the firefox: ${error}`);
-    }
+  let command = 'pkill -o firefox';
+  if (isMac) {
+    command = 'pkill Safari';
+  } else if (isWindows) {
+    command = 'TaskKill /im msedge.exe /f /t';
+  }
+  try {
+    // eslint-disable-next-line
+    exec(command);
+  } catch (error: unknown) {
+    console.log(`Error while terminating the browser using '${command}': ${error}`);
   }
 }
