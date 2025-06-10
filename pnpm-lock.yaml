@@ -35,7 +35,7 @@ importers:
         version: 1.52.0
       '@podman-desktop/tests-playwright':
         specifier: next
-        version: 1.20.0-202506061249-b60ecdc25ca
+        version: 1.20.0-202506090707-3710421455f
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -567,8 +567,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.19.1':
     resolution: {integrity: sha512-qBLT23v6DhfNXUgqLfhfBtX9rgoEn0sV+dBg+9MFCGAhUU6K2zZUtVU38U4Hz45HGBVhWRWGtsZLJo+FuviTTw==}
 
-  '@podman-desktop/tests-playwright@1.20.0-202506061249-b60ecdc25ca':
-    resolution: {integrity: sha512-FAjqZ0c7Mb5m/ZKPTJR6Lx82mCf0BvK1kjnDYssRBAOJwvKbuPnzD4ILhr920WxElCJb7Nc21NCyqDztzFkdIQ==}
+  '@podman-desktop/tests-playwright@1.20.0-202506090707-3710421455f':
+    resolution: {integrity: sha512-CTjvRvX2KPEtFuM1NVpVpa9sKDe/1zNuxYKfftRikG3InUJrF4rr+ClbfWBvzoBhoqCLncvH42JjOkDpjHtNMw==}
 
   '@rollup/rollup-android-arm-eabi@4.40.1':
     resolution: {integrity: sha512-kxz0YeeCrRUHz3zyqvd7n+TVRlNyTifBsmnmNPtk3hQURUyG9eAB+usz6DAwagMusjx/zb3AjvDUvhFGDAexGw==}
@@ -946,8 +946,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.14.1:
-    resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
+  acorn@8.15.0:
+    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -3266,7 +3266,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.19.1
 
-  '@podman-desktop/tests-playwright@1.20.0-202506061249-b60ecdc25ca': {}
+  '@podman-desktop/tests-playwright@1.20.0-202506090707-3710421455f': {}
 
   '@rollup/rollup-android-arm-eabi@4.40.1':
     optional: true
@@ -3652,7 +3652,7 @@ snapshots:
 
   acorn@8.12.1: {}
 
-  acorn@8.14.1:
+  acorn@8.15.0:
     optional: true
 
   ajv@6.12.6:
@@ -5595,7 +5595,7 @@ snapshots:
   terser@5.36.0:
     dependencies:
       '@jridgewell/source-map': 0.3.6
-      acorn: 8.14.1
+      acorn: 8.15.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true
