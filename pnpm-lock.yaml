@@ -34,7 +34,7 @@ importers:
         specifier: ^1.53.0
         version: 1.53.0
       '@podman-desktop/tests-playwright':
-        specifier: next
+        specifier: 1.20.0-202506171458-48e408b6da4
         version: 1.20.0-202506171458-48e408b6da4
       '@types/js-yaml':
         specifier: ^4.0.5
