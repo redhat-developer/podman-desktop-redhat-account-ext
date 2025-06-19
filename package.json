@@ -59,7 +59,7 @@
   "devDependencies": {
     "7zip-min": "^2.1.0",
     "@playwright/test": "^1.53.1",
-    "@podman-desktop/tests-playwright": "1.20.0-202506182008-f13e05a3483",
+    "@podman-desktop/tests-playwright": "1.20.0-202506191501-183b36b4d43",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^22",
     "@typescript-eslint/eslint-plugin": "^8.34.1",
