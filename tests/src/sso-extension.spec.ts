@@ -22,7 +22,26 @@ import { fileURLToPath } from 'node:url';
 
 import type { Browser, Page } from '@playwright/test';
 import type { ConfirmInputValue, NavigationBar} from '@podman-desktop/tests-playwright';
-import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromLogs, handleConfirmationDialog,isCI,isLinux,isMac, isWindows, performBrowserLogin,podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
+import { 
+  AuthenticationPage, 
+  expect as playExpect, 
+  ExtensionCardPage, 
+  findPageWithTitleInBrowser, 
+  getEntryFromLogs, 
+  handleConfirmationDialog,
+  isCI,
+  isLinux,
+  isMac, 
+  isWindows, 
+  performBrowserLogin,
+  podmanExtension, 
+  RegistriesPage,
+  RunnerOptions, 
+  startChromium, 
+  StatusBar, 
+  test, 
+  TroubleshootingPage, 
+  ArchitectureType  } from '@podman-desktop/tests-playwright';
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
@@ -46,6 +65,10 @@ const urlRegex = new RegExp(/((http|https):\/\/.*$)/);
 const browserOutputPath = [__dirname, '..', 'playwright', 'output', 'browser'];
 const expectedAuthPageTitle = 'Log In';
 const AUTH_E2E_TESTS = process.env.AUTH_E2E_TESTS === 'true';
+const toolboxImage = 'registry.redhat.io/rhel9/toolbox:latest';
+const containerfilePath = path.resolve(__dirname, '..', 'resources', 'toolbox.containerfile');
+const contextDirectory = path.resolve(__dirname, '..', 'resources');
+const builtImageName = 'quay.io/podman-desktop-redhat-account-ext/toolbox';
 
 test.use({ 
   runnerOptions: new RunnerOptions({ customFolder: 'sso-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
@@ -272,9 +295,89 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       }
       await playExpect(ssoProvider.signinButton).not.toBeVisible();
       await ssoProvider.checkUserIsLoggedIn(true);
-
-      // TODO continue with the tests
     });
+
+    test('Tasks Configuring Red Hat Registry and Activating Red Hat Subscription are completed', async ({ page }) => {
+      test.setTimeout(360_000);
+      console.log('Finding Tasks in status Bar');
+      const statusBar = new StatusBar(page);
+      await statusBar.tasksButton.click();
+      console.log('Opened Tasks in status Bar');
+      const tasksManager = page.getByTitle('Tasks Manager');
+      await playExpect(tasksManager).toBeVisible();
+      const successImgRegistry = tasksManager.getByRole('img', { name: 'success icon of task Configuring Red Hat Registry' });
+      await playExpect(successImgRegistry).toBeVisible({ timeout: 20_000 });
+      const successImgSubscription = tasksManager.getByRole('img', { name: 'success icon of task Activating Red Hat Subscription' });
+      await playExpect(successImgSubscription).toBeVisible({ timeout: 300_000 });
+      // close tasks manager
+      const hideButton = tasksManager.getByRole('button').and(tasksManager.getByTitle('Hide'));
+      await playExpect(hideButton).toBeVisible();
+      await hideButton.click();
+    });
+
+    test('Red Hat Registry is configured in the Registries Page', async ({ navigationBar }) => {
+      const settingsBar = await navigationBar.openSettings();
+      const registryPage = await settingsBar.openTabPage(RegistriesPage);
+  
+      await playExpect(registryPage.heading).toBeVisible({ timeout: 5_000 });
+      const registryBox = registryPage.registriesTable.getByLabel('Red Hat Container Registry');
+      await playExpect(registryBox).toBeVisible({ timeout: 5_000 });
+      const configureButton = registryBox.getByRole('button', { name: 'Configure' });
+      await playExpect(configureButton).not.toBeVisible({ timeout: 5_000 });
+    });
+
+    test('Can pull from Red Hat Registry', async ({ navigationBar }) => {
+      test.setTimeout(120_000);
+      const imagesPage = await navigationBar.openImages();
+      const imageUrl = toolboxImage.substring(0, toolboxImage.indexOf(':'));
+      console.log(`Pulling image from Red Hat Registry without Tag: ${imageUrl}`);
+
+      const pullImagePage = await imagesPage.openPullImage();
+      const updatedImages = await pullImagePage.pullImage(toolboxImage);
+
+      await playExpect.poll(async () => 
+        await updatedImages.waitForImageExists(toolboxImage.substring(0, toolboxImage.indexOf(':'))), 
+      { timeout: 90_000 }).toBeTruthy();
+    });
+
+    test('Can build Rhel Toolbox image from containerfile', async ({ navigationBar }) => {
+      test.setTimeout(360_000);
+      let imagesPage = await navigationBar.openImages();
+      await playExpect(imagesPage.heading).toBeVisible();
+      const buildImagePage = await imagesPage.openBuildImage();
+      await playExpect(buildImagePage.heading).toBeVisible();
+
+      try {
+        imagesPage = await buildImagePage.buildImage(
+          builtImageName,
+          containerfilePath,
+          contextDirectory,
+          [ArchitectureType.Default],
+          300_000);
+        await playExpect.poll(async () => 
+          await imagesPage.waitForImageExists(builtImageName, 30_000), 
+        { timeout: 60_000 }).toBeTruthy();
+      } catch (error: unknown) {
+        if (isLinux) {
+          console.log(`Expected failure on Linux as there is no Podman Machine available: ${error}`);
+        } else {
+          console.log(`Unexpected error while building the image...`);
+          throw error;
+        }
+      }
+    });
+
+    test('Can log out from SSO', async ({ page, navigationBar }) => {
+      const settingsBar = await navigationBar.openSettings();
+      await settingsBar.openTabPage(AuthenticationPage);
+      await playExpect(ssoProvider.parent).toBeVisible();
+      await ssoProvider.checkUserIsLoggedIn(true);
+      await ssoProvider.logout();
+      await handleConfirmationDialog(page, 'Sign Out Request', true, 'Sign Out', '', 10_000);
+      await playExpect(ssoProvider.signinButton).toBeVisible();
+      await ssoProvider.checkUserIsLoggedIn(false);
+    });
+
   });
 
   test('SSO extension can be removed', async ({ navigationBar }) => {
