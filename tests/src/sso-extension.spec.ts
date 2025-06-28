@@ -20,9 +20,29 @@ import { exec } from 'node:child_process';
 import path, { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { Browser, Page } from '@playwright/test';
+import { chromium, type Browser, type Page } from '@playwright/test';
 import type { ConfirmInputValue, NavigationBar} from '@podman-desktop/tests-playwright';
-import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromLogs, handleConfirmationDialog,isCI,isLinux,isMac, isWindows, performBrowserLogin,podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
+import { 
+  AuthenticationPage, 
+  expect as playExpect, 
+  ExtensionCardPage, 
+  findPageWithTitleInBrowser, 
+  getEntryFromLogs, 
+  handleConfirmationDialog,
+  isCI,
+  isLinux,
+  isMac, 
+  isWindows, 
+  performBrowserLogin,
+  podmanExtension, 
+  RegistriesPage,
+  RunnerOptions, 
+  startChromium, 
+  StatusBar, 
+  test, 
+  TroubleshootingPage, 
+  ArchitectureType,  
+  waitUntil} from '@podman-desktop/tests-playwright';
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
@@ -43,9 +63,14 @@ const disabledExtensionStatus = 'DISABLED';
 const skipInstallation = process.env.SKIP_INSTALLATION ? process.env.SKIP_INSTALLATION : false;
 const chromePort = '9222';
 const urlRegex = new RegExp(/((http|https):\/\/.*$)/);
-const browserOutputPath = [__dirname, '..', 'playwright', 'output', 'browser'];
+// const browserOutputPath = [__dirname, '..', 'playwright', 'output', 'browser'];
+let browserOutputPath: string;
 const expectedAuthPageTitle = 'Log In';
 const AUTH_E2E_TESTS = process.env.AUTH_E2E_TESTS === 'true';
+const toolboxImage = 'registry.redhat.io/rhel9/toolbox:latest';
+const containerfilePath = path.resolve(__dirname, '..', 'resources', 'toolbox.containerfile');
+const contextDirectory = path.resolve(__dirname, '..', 'resources');
+const builtImageName = 'quay.io/podman-desktop-redhat-account-ext/toolbox';
 
 test.use({ 
   runnerOptions: new RunnerOptions({ customFolder: 'sso-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
@@ -57,6 +82,7 @@ test.beforeAll(async ({ runner, page, welcomePage }) => {
   extensionCard = new ExtensionCardPage(page, extensionLabelName, extensionLabel);
   authPage = new AuthenticationPage(page);
   ssoProvider = new SSOAuthenticationProviderCardPage(page);
+  browserOutputPath = test.info().project.outputDir;
 });
 
 test.afterAll(async ({ runner }) => {
@@ -194,7 +220,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(ssoProvider.parent).toBeVisible();
 
       // start up chrome instance and return browser object
-      browser = await startChromium(chromePort, path.join(...browserOutputPath));
+      browser = await startChromium(chromePort, browserOutputPath);
 
       // open the link from PD
       await page.bringToFront();
@@ -225,27 +251,35 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       if (!chromiumPage) {
         throw new Error('Chromium browser page was not initialized');
       }
-      await chromiumPage.bringToFront();
-      console.log(`Switched to Chrome tab with title: ${await chromiumPage.title()}`);
-      const usernameAction: ConfirmInputValue = {
-        inputLocator: chromiumPage.getByRole('textbox', { name: 'Red Hat login or email' }),
-        inputValue: process.env.DVLPR_USERNAME ?? 'unknown',
-        confirmLocator: chromiumPage.getByRole('button', { name: 'Next' }),
-      };
-      const passwordAction: ConfirmInputValue = {
-        inputLocator: chromiumPage.getByRole('textbox', { name: 'Password' }),
-        inputValue: process.env.DVLPR_PASSWORD ?? 'unknown',
-        confirmLocator: chromiumPage.getByRole('button', { name: 'Log in' }),
-      };
-      await performBrowserLogin(chromiumPage, /Log In/, usernameAction, passwordAction, async (chromiumPage) => {
-        const backButton = chromiumPage.getByRole('button', { name: 'Go back to Podman Desktop' });
-        await playExpect(backButton).toBeEnabled();
-        await chromiumPage.screenshot({ path: join(path.join(...browserOutputPath), 'screenshots', 'after_login_in_browser.png'), type: 'png', fullPage: true });
-        console.log(`Logged in, go back...`);
-        await backButton.click();
-        await chromiumPage.screenshot({ path: join(path.join(...browserOutputPath), 'screenshots', 'after_clck_go_back.png'), type: 'png', fullPage: true });
-      });
-      await chromiumPage.close();
+      chromiumPage.context().tracing.start({ screenshots: true });
+      try {
+        await chromiumPage.bringToFront();
+        console.log(`Switched to Chrome tab with title: ${await chromiumPage.title()}`);
+        const usernameAction: ConfirmInputValue = {
+          inputLocator: chromiumPage.getByRole('textbox', { name: 'Red Hat login or email' }),
+          inputValue: process.env.DVLPR_USERNAME ?? 'unknown',
+          confirmLocator: chromiumPage.getByRole('button', { name: 'Next' }),
+        };
+        const passwordAction: ConfirmInputValue = {
+          inputLocator: chromiumPage.getByRole('textbox', { name: 'Password' }),
+          inputValue: process.env.DVLPR_PASSWORD ?? 'unknown',
+          confirmLocator: chromiumPage.getByRole('button', { name: 'Log in' }),
+        };
+        await performBrowserLogin(chromiumPage, /Log In/, usernameAction, passwordAction, async (chromiumPage) => {
+          const backButton = chromiumPage.getByRole('button', { name: 'Go back to Podman Desktop' });
+          await playExpect(backButton).toBeEnabled();
+          await chromiumPage.screenshot({ path: join(path.join(browserOutputPath), 'screenshots', 'after_login_in_browser.png'), type: 'png', fullPage: true });
+          console.log(`Logged in, go back...`);
+          await backButton.click();
+          await chromiumPage.screenshot({ path: join(path.join(browserOutputPath), 'screenshots', 'after_clck_go_back.png'), type: 'png', fullPage: true });
+        });
+      } catch (error: unknown) {
+        console.error(`Error during authentication in browser... ${error}`);
+        await chromiumPage.context().tracing.stop({ path: join(browserOutputPath, 'traces', 'sso-authentication.zip') });
+        throw error;
+      } finally {
+        await chromiumPage.close();
+      }
     });
 
     test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar }) => {
@@ -260,7 +294,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(authPage.heading).toHaveText('Authentication');
       // on linux we need to avoid issue with auth. providers store
       // in case of need, refresh auth. providers store in troubleshooting
-      await page.screenshot({ path: join(...browserOutputPath, 'screenshots', 'back_pd_after_authentication.png'), type: 'png' });
+      await page.screenshot({ path: join(browserOutputPath, 'screenshots', 'back_pd_after_authentication.png'), type: 'png' });
       if (await ssoProvider.signinButton.count() >= 0) {
         console.log('SignIn Button still visible, we are hitting issue with linux');
         const status = new StatusBar(page);
@@ -272,9 +306,111 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       }
       await playExpect(ssoProvider.signinButton).not.toBeVisible();
       await ssoProvider.checkUserIsLoggedIn(true);
-
-      // TODO continue with the tests
     });
+
+    test('Tasks Configuring Red Hat Registry and Activating Red Hat Subscription are completed', async ({ page }) => {
+      test.setTimeout(120_000);
+      console.log('Finding Tasks in status Bar');
+      const statusBar = new StatusBar(page);
+      await statusBar.tasksButton.click();
+      console.log('Opened Tasks in status Bar');
+      const tasksManager = page.getByTitle('Tasks Manager');
+      await playExpect(tasksManager).toBeVisible();
+      // tasks are present in the Tasks Manager
+      const taskRegistry = tasksManager.getByTitle('Configuring Red Hat Registry');
+      await playExpect(taskRegistry).toBeVisible();
+      const taskSubscription = tasksManager.getByTitle('Activating Red Hat Subscription');
+      await playExpect(taskSubscription).toBeVisible();
+      // Registry is added
+      const successImgRegistry = tasksManager.getByRole('img', { name: 'success icon of task Configuring Red Hat Registry' });
+      await playExpect(successImgRegistry).toBeVisible({ timeout: 20_000 });
+      // subscription activation is finished
+      // this runs endless on CI windows
+      console.log(`Debug: isCI='${isCI}', isWindows='${isWindows}'`);
+      if (isWindows) {
+        console.log('Skipping waiting for subscription activation on Windows CI');
+      } else {
+        const successImgSubscription = tasksManager.getByRole('img', { name: 'success icon of task Activating Red Hat Subscription' });
+        await playExpect(successImgSubscription).toBeVisible({ timeout: 60_000 });
+      }
+      // close tasks manager
+      const hideButton = tasksManager.getByRole('button').and(tasksManager.getByTitle('Hide'));
+      await playExpect(hideButton).toBeVisible();
+      await hideButton.click();
+    });
+
+    test.fail('Logged in state in authentication page persists for at least 30 seconds', async ({ page, navigationBar }) => {
+      const settingsBar = await navigationBar.openSettings();
+      await settingsBar.openTabPage(AuthenticationPage);
+      await playExpect(ssoProvider.parent).toBeVisible();
+      playExpect.poll(async () => {
+        await ssoProvider.checkUserIsLoggedIn(false);
+      }, { timeout: 35_000 }).toBeTruthy();
+    });
+
+    test('Red Hat Registry is configured in the Registries Page', async ({ navigationBar }) => {
+      const settingsBar = await navigationBar.openSettings();
+      const registryPage = await settingsBar.openTabPage(RegistriesPage);
+  
+      await playExpect(registryPage.heading).toBeVisible({ timeout: 5_000 });
+      const registryBox = registryPage.registriesTable.getByLabel('Red Hat Container Registry');
+      await playExpect(registryBox).toBeVisible({ timeout: 5_000 });
+      const configureButton = registryBox.getByRole('button', { name: 'Configure' });
+      await playExpect(configureButton).not.toBeVisible({ timeout: 5_000 });
+    });
+
+    test('Can pull from Red Hat Registry', async ({ navigationBar }) => {
+      test.setTimeout(120_000);
+      const imagesPage = await navigationBar.openImages();
+      const imageUrl = toolboxImage.substring(0, toolboxImage.indexOf(':'));
+      console.log(`Pulling image from Red Hat Registry without Tag: ${imageUrl}`);
+
+      const pullImagePage = await imagesPage.openPullImage();
+      const updatedImages = await pullImagePage.pullImage(toolboxImage);
+
+      await playExpect.poll(async () => 
+        await updatedImages.waitForImageExists(toolboxImage.substring(0, toolboxImage.indexOf(':'))), 
+      { timeout: 90_000 }).toBeTruthy();
+    });
+
+    test('Can build Rhel Toolbox image from containerfile', async ({ navigationBar }) => {
+      test.setTimeout(360_000);
+      let imagesPage = await navigationBar.openImages();
+      await playExpect(imagesPage.heading).toBeVisible();
+      const buildImagePage = await imagesPage.openBuildImage();
+      await playExpect(buildImagePage.heading).toBeVisible();
+
+      try {
+        imagesPage = await buildImagePage.buildImage(
+          builtImageName,
+          containerfilePath,
+          contextDirectory,
+          [ArchitectureType.Default],
+          300_000);
+        await playExpect.poll(async () => 
+          await imagesPage.waitForImageExists(builtImageName, 30_000), 
+        { timeout: 60_000 }).toBeTruthy();
+      } catch (error: unknown) {
+        if (isLinux) {
+          console.log(`Expected failure on Linux as there is no Podman Machine available: ${error}`);
+        } else {
+          console.log(`Unexpected error while building the image...`);
+          throw error;
+        }
+      }
+    });
+
+    test('Can log out from SSO', async ({ page, navigationBar }) => {
+      const settingsBar = await navigationBar.openSettings();
+      await settingsBar.openTabPage(AuthenticationPage);
+      await playExpect(ssoProvider.parent).toBeVisible();
+      await ssoProvider.checkUserIsLoggedIn(true);
+      await ssoProvider.logout();
+      await handleConfirmationDialog(page, 'Sign Out Request', true, 'Sign Out', '', 10_000);
+      await playExpect(ssoProvider.signinButton).toBeVisible();
+      await ssoProvider.checkUserIsLoggedIn(false);
+    });
+
   });
 
   test('SSO extension can be removed', async ({ navigationBar }) => {
