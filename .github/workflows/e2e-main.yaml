@@ -113,10 +113,28 @@ jobs:
             sudo apt-get -y install podman; }
           podman version
 
+      - name: Set default browser desktop app and handlers
+        run: |
+          xdg-settings set default-web-browser firefox.desktop
+          xdg-mime default firefox.desktop x-scheme-handler/https
+          xdg-mime default firefox.desktop x-scheme-handler/http
+          xvfb-run xdg-open 'https://developers.redhat.com/articles/faqs-no-cost-red-hat-enterprise-linux#general' & sleep 5; pkill Xvfb
+
+      # Install dbus-x11 package to allow dbus session for user for particular display (xvfb-maybe used in e2e test)
+      # for reference, similar issue: https://github.com/actions/runner-images/issues/12127
+      - name: Install dbus-x11 package
+        run: sudo apt-get install dbus-x11
+
       - name: Revert unprivileged user namespace restrictions in Ubuntu 24.04
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Set Chromium policy for Podman Desktop app redirection from browser
+        run: |
+          echo '{"URLAllowlist": ["podman-desktop:*"]}' > url_allow_list.json
+          sudo mkdir -p /etc/chromium/policies/managed
+          sudo cp url_allow_list.json /etc/chromium/policies/managed/url_allow_list.json
 
       - name: Build Podman Desktop for E2E tests Development Mode
         working-directory: ./podman-desktop
@@ -154,7 +172,9 @@ jobs:
           DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
           DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
           AUTH_E2E_TESTS: true
-        run: pnpm test:e2e
+        run: |
+          export $(dbus-launch)
+          pnpm test:e2e
 
       - name: Run All E2E tests in Red Hat Account Extension in Production mode
         working-directory: ${{ env.REPOSITORY }}
@@ -164,7 +184,9 @@ jobs:
           DVLPR_USERNAME: ${{ secrets.DVLPR_USERNAME }}
           DVLPR_PASSWORD: ${{ secrets.DVLPR_PASSWORD }}
           AUTH_E2E_TESTS: true
-        run: pnpm test:e2e
+        run: |
+          export $(dbus-launch)
+          pnpm test:e2e
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5

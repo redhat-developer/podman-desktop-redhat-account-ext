@@ -20,9 +20,9 @@ import { exec } from 'node:child_process';
 import path, { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { Browser, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Page } from '@playwright/test';
 import type { ConfirmInputValue, NavigationBar} from '@podman-desktop/tests-playwright';
-import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromLogs, handleConfirmationDialog,isCI,isLinux,isMac, isWindows, performBrowserLogin,podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
+import { AuthenticationPage, expect as playExpect, ExtensionCardPage, findPageWithTitleInBrowser, getEntryFromConsoleLogs, handleConfirmationDialog,handleCookies,isCI,isLinux,isMac, isWindows, performBrowserLogin, podmanExtension, RunnerOptions, startChromium, StatusBar, test, TroubleshootingPage  } from '@podman-desktop/tests-playwright';
 
 import { SSOAuthenticationProviderCardPage } from './model/pages/sso-authentication-page';
 import { SSOExtensionPage } from './model/pages/sso-extension-page';
@@ -33,7 +33,6 @@ let extensionInstalled = false;
 let extensionCard: ExtensionCardPage;
 let ssoProvider: SSOAuthenticationProviderCardPage;
 let authPage: AuthenticationPage;
-let browser: Browser;
 const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest';
 const extensionLabel = 'redhat.redhat-authentication';
 const extensionLabelName = 'redhat-authentication';
@@ -60,20 +59,10 @@ test.beforeAll(async ({ runner, page, welcomePage }) => {
 });
 
 test.afterAll(async ({ runner }) => {
-  test.setTimeout(90_000);
-  // handle the browser closure, might be not triggered if there was a test failure/error
-  try {
-    if (browser) {
-      await browser.close();
-    }
-  } catch (error: unknown) {
-    console.log(`Something went wrong when closing browser: ${error}`);
-  } finally {
-    if (isCI && AUTH_E2E_TESTS) {
-      await terminateExternalBrowser();
-    }
-    await runner.close();
+  if (isCI && AUTH_E2E_TESTS) {
+    await terminateExternalBrowser();
   }
+  await runner.close();
 });
 
 test.describe.serial('Red Hat Authentication extension verification', () => {
@@ -186,36 +175,48 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
 
     test.skip(!AUTH_E2E_TESTS, 'Authentication E2E tests are being skipped');
     let chromiumPage: Page | undefined;
+    let browser: Browser | undefined;
+    let context: BrowserContext | undefined;
+
+    test.afterAll(async () => {
+      if (browser) {
+        console.log('Stopping tracing and closing browser...');
+        await context?.tracing.stop({ path: join(path.join(...browserOutputPath), 'traces', 'browser-authentication-trace.zip') });
+        if (chromiumPage) {
+          await chromiumPage.close();
+        }
+        await browser.close();
+      }
+    });
 
     test('Can open authentication page in browser', async ({ navigationBar, page }) => {
       test.setTimeout(120_000);
       const settingsBar = await navigationBar.openSettings();
       await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(ssoProvider.parent).toBeVisible();
-
-      // start up chrome instance and return browser object
-      browser = await startChromium(chromePort, path.join(...browserOutputPath));
-
       // open the link from PD
       await page.bringToFront();
       await ssoProvider.signIn();
-      await page.waitForTimeout(5000);
-      if (!chromiumPage) {
-        console.log(`Did not find a page in default browser, trying to open new page with proper url...`);
-        // try to open custom url to perform a login
-        // get url from podman-desktop logs
-        const urlMatch = await getEntryFromLogs(page, /\[redhat-authentication\].*openid-connect.*/, urlRegex, 'sso.redhat.com');
-        if (urlMatch) {
-          const context = await browser.newContext();
-          const newPage = await context.newPage();
-          await newPage.goto(urlMatch);
-          await newPage.waitForURL(/sso.redhat.com/);
-          chromiumPage = newPage;
-          const page = await findPageWithTitleInBrowser(browser, expectedAuthPageTitle);
-          console.log(`Found page with title: ${await page?.title()}`);
-        } else {
-          throw new Error('Did not find Initial SSO Login Page');
+      const urlMatch = await getEntryFromConsoleLogs(page, /\[redhat-authentication\].*openid-connect.*/, urlRegex, 'sso.redhat.com', 25_000);
+      // start up chrome instance and return browser object
+      if (urlMatch) {
+        browser = await startChromium(chromePort, path.join(...browserOutputPath), ['--deny-permission-prompts']);
+        context = await browser.newContext();
+        await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+        const newPage = await context.newPage();
+        await newPage.goto(urlMatch);
+        await newPage.waitForURL(/sso.redhat.com/);
+        chromiumPage = newPage;
+
+        // Handle Cookies in the popup iframe
+        const cookiesManager = 'TrustArc Cookie Consent Manager';
+        await handleCookies(chromiumPage, cookiesManager, 'Accept default', 10_000);
+        if (browser) {
+          await findPageWithTitleInBrowser(browser, expectedAuthPageTitle);
         }
+        console.log(`Found page with title: ${await chromiumPage?.title()}`);
+      } else {
+        throw new Error('Did not find Initial SSO Login Page');
       }
     });
 
@@ -237,14 +238,13 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
         inputValue: process.env.DVLPR_PASSWORD ?? 'unknown',
         confirmLocator: chromiumPage.getByRole('button', { name: 'Log in' }),
       };
+      await playExpect(usernameAction.confirmLocator).toBeEnabled();
       await performBrowserLogin(chromiumPage, /Log In/, usernameAction, passwordAction, async (chromiumPage) => {
         const backButton = chromiumPage.getByRole('button', { name: 'Go back to Podman Desktop' });
         await playExpect(backButton).toBeEnabled();
-        await chromiumPage.screenshot({ path: join(path.join(...browserOutputPath), 'screenshots', 'after_login_in_browser.png'), type: 'png', fullPage: true });
         console.log(`Logged in, go back...`);
         await backButton.click();
-        await chromiumPage.screenshot({ path: join(path.join(...browserOutputPath), 'screenshots', 'after_clck_go_back.png'), type: 'png', fullPage: true });
-      });
+      }, { screenshotsPath: join(...browserOutputPath, 'screenshots') });
       await chromiumPage.close();
     });
 
@@ -252,7 +252,11 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       // activate Podman Desktop again
       await page.bringToFront();
       if (isLinux) {
+        try {
         await handleConfirmationDialog(page, 'Red Hat Authentication', true, 'OK', '', 10_000);
+        } catch (error: unknown) {
+          console.log('Podman Machine dialog did not appear.');
+        }
       }
       // verify the Signed in user
       const settingsBar = await navigationBar.openSettings();
