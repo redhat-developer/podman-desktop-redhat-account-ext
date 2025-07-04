@@ -34,8 +34,8 @@ importers:
         specifier: ^1.53.2
         version: 1.53.2
       '@podman-desktop/tests-playwright':
-        specifier: ^1.20.0-202507031741-482d6fb14de
-        version: 1.20.0-202507031741-482d6fb14de
+        specifier: ^1.20.0-202507041540-6de72741a8f
+        version: 1.20.0-202507041540-6de72741a8f
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -572,8 +572,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.19.2':
     resolution: {integrity: sha512-nxeRhLTmYEDPvBX0oSa2RA+89sdyDD/dQEcVTw2FksvDFessk6izhnQfzpzbtAC/Yygrucq8Uczer7EFQzaFHw==}
 
-  '@podman-desktop/tests-playwright@1.20.0-202507031741-482d6fb14de':
-    resolution: {integrity: sha512-Bn9mipvogt04/8jAdC+qY+NwLjYXkAv5IZKN0OFD10Q0jnsGG1fJR2sosDtuI496+T1j4543AE7Jk71viLPCtw==}
+  '@podman-desktop/tests-playwright@1.20.0-202507041540-6de72741a8f':
+    resolution: {integrity: sha512-86tTT4NPj1Nms2ZKYw+iK3ltZTDLw3DKblPHUJaiIrYSLG+HwotrWcOH4Tw2TX2InGUACWw1rqoIgkLYxedEXA==}
 
   '@rollup/rollup-android-arm-eabi@4.44.1':
     resolution: {integrity: sha512-JAcBr1+fgqx20m7Fwe1DxPUl/hPkee6jA6Pl7n1v2EFiktAHenTaXl5aIFjUIEsfn9w3HE4gK1lEgNGMzBDs1w==}
@@ -3094,7 +3094,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.19.2
 
-  '@podman-desktop/tests-playwright@1.20.0-202507031741-482d6fb14de': {}
+  '@podman-desktop/tests-playwright@1.20.0-202507041540-6de72741a8f': {}
 
   '@rollup/rollup-android-arm-eabi@4.44.1':
     optional: true
