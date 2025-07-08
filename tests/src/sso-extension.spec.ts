@@ -256,7 +256,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await chromiumPage.bringToFront();
       console.log(`Switched to Chrome tab with title: ${await chromiumPage.title()}`);
       const usernameAction: ConfirmInputValue = {
-        inputLocator: chromiumPage.getByRole('textbox', { name: 'Red Hat login or email' }),
+        inputLocator: chromiumPage.getByRole('textbox', { name: 'Red Hat login' }),
         inputValue: process.env.DVLPR_USERNAME ?? 'unknown',
         confirmLocator: chromiumPage.getByRole('button', { name: 'Next' }),
       };
