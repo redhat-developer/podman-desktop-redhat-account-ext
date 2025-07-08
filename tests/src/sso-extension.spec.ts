@@ -222,10 +222,11 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       // open the link from PD
       await page.bringToFront();
       await ssoProvider.signIn();
+      await page.bringToFront();
       const urlMatch = await getEntryFromConsoleLogs(page, /\[redhat-authentication\].*openid-connect.*/, urlRegex, 'sso.redhat.com', 25_000);
       // start up chrome instance and return browser object
       if (urlMatch) {
-        browser = await startChromium(chromePort, path.join(browserOutputPath), ['--deny-permission-prompts']);
+        browser = await startChromium(chromePort, path.join(browserOutputPath));
         context = await browser.newContext();
         await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
         const newPage = await context.newPage();
@@ -265,6 +266,9 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
         inputValue: process.env.DVLPR_PASSWORD ?? 'unknown',
         confirmLocator: chromiumPage.getByRole('button', { name: 'Log in' }),
       };
+      const usernameBox = chromiumPage.getByRole('textbox', { name: 'Red Hat login' });
+      await playExpect(usernameBox).toBeVisible({ timeout: 5_000 });
+      await usernameBox.focus();
       await performBrowserLogin(chromiumPage, /Log In/, usernameAction, passwordAction, async (chromiumPage) => {
         const backButton = chromiumPage.getByRole('button', { name: 'Go back to Podman Desktop' });
         await playExpect(backButton).toBeEnabled();
@@ -307,7 +311,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
 
     test('Tasks Configuring Red Hat Registry and Activating Red Hat Subscription are completed', async ({ page }) => {
       test.setTimeout(120_000);
-      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isCI && (isMac || isLinux), 'Mac/Linux issue on CI: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       console.log('Finding Tasks in status Bar');
       const statusBar = new StatusBar(page);
       await statusBar.tasksButton.click();
@@ -324,8 +328,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
       await playExpect(successImgRegistry).toBeVisible({ timeout: 20_000 });
       // subscription activation is finished
       // this runs endless on CI windows
-      console.log(`Debug: isCI='${isCI}', isWindows='${isWindows}'`);
-      if (isWindows) {
+      if (isWindows && isCI) {
         console.log('Skipping waiting for subscription activation on Windows CI');
       } else {
         const successImgSubscription = tasksManager.getByRole('img', { name: 'success icon of task Activating Red Hat Subscription' });
@@ -338,7 +341,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test.fail('Logged in state in authentication page persists for at least 30 seconds', async ({ navigationBar }) => {
-      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isCI && isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       const settingsBar = await navigationBar.openSettings();
       await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(ssoProvider.parent).toBeVisible();
@@ -348,7 +351,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Red Hat Registry is configured in the Registries Page', async ({ navigationBar }) => {
-      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isCI && (isMac || isLinux), 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       const settingsBar = await navigationBar.openSettings();
       const registryPage = await settingsBar.openTabPage(RegistriesPage);
   
@@ -360,7 +363,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Can pull from Red Hat Registry', async ({ navigationBar }) => {
-      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isCI && (isMac || isLinux), 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       test.setTimeout(120_000);
       const imagesPage = await navigationBar.openImages();
       const imageUrl = toolboxImage.substring(0, toolboxImage.indexOf(':'));
@@ -375,8 +378,8 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Can build Rhel Toolbox image from containerfile', async ({ navigationBar }) => {
-      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
-      test.skip(isWindows, 'Skipping on Windows due to: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/864');
+      test.skip(isCI && isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isCI && isWindows, 'Skipping on Windows due to: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/864');
       test.skip(isLinux, 'Linux not supported yet: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/71');
       test.setTimeout(360_000);
       let imagesPage = await navigationBar.openImages();
@@ -396,6 +399,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Can log out from SSO', async ({ page, navigationBar }) => {
+      test.skip(isCI && isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       const settingsBar = await navigationBar.openSettings();
       await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(ssoProvider.parent).toBeVisible();
