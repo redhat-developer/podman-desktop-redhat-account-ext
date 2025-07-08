@@ -307,6 +307,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
 
     test('Tasks Configuring Red Hat Registry and Activating Red Hat Subscription are completed', async ({ page }) => {
       test.setTimeout(120_000);
+      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       console.log('Finding Tasks in status Bar');
       const statusBar = new StatusBar(page);
       await statusBar.tasksButton.click();
@@ -337,6 +338,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test.fail('Logged in state in authentication page persists for at least 30 seconds', async ({ navigationBar }) => {
+      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       const settingsBar = await navigationBar.openSettings();
       await settingsBar.openTabPage(AuthenticationPage);
       await playExpect(ssoProvider.parent).toBeVisible();
@@ -346,6 +348,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Red Hat Registry is configured in the Registries Page', async ({ navigationBar }) => {
+      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       const settingsBar = await navigationBar.openSettings();
       const registryPage = await settingsBar.openTabPage(RegistriesPage);
   
@@ -357,6 +360,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Can pull from Red Hat Registry', async ({ navigationBar }) => {
+      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
       test.setTimeout(120_000);
       const imagesPage = await navigationBar.openImages();
       const imageUrl = toolboxImage.substring(0, toolboxImage.indexOf(':'));
@@ -371,30 +375,24 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     });
 
     test('Can build Rhel Toolbox image from containerfile', async ({ navigationBar }) => {
+      test.skip(isMac, 'Mac needs to solve issue: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
+      test.skip(isWindows, 'Skipping on Windows due to: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/864');
+      test.skip(isLinux, 'Linux not supported yet: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/71');
       test.setTimeout(360_000);
       let imagesPage = await navigationBar.openImages();
       await playExpect(imagesPage.heading).toBeVisible();
       const buildImagePage = await imagesPage.openBuildImage();
       await playExpect(buildImagePage.heading).toBeVisible();
 
-      try {
-        imagesPage = await buildImagePage.buildImage(
-          builtImageName,
-          containerfilePath,
-          contextDirectory,
-          [ArchitectureType.Default],
-          300_000);
-        await playExpect.poll(async () => 
-          await imagesPage.waitForImageExists(builtImageName, 30_000), 
-        { timeout: 60_000 }).toBeTruthy();
-      } catch (error: unknown) {
-        if (isLinux) {
-          console.log(`Expected failure on Linux as there is no Podman Machine available: ${error}`);
-        } else {
-          console.log(`Unexpected error while building the image...`);
-          throw error;
-        }
-      }
+      imagesPage = await buildImagePage.buildImage(
+        builtImageName,
+        containerfilePath,
+        contextDirectory,
+        [ArchitectureType.Default],
+        300_000);
+      await playExpect.poll(async () => 
+        await imagesPage.waitForImageExists(builtImageName, 30_000), 
+      { timeout: 60_000 }).toBeTruthy();
     });
 
     test('Can log out from SSO', async ({ page, navigationBar }) => {
