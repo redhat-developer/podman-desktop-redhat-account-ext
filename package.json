@@ -45,7 +45,7 @@
     "lint:check": "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache . --cache-strategy content --ext js,ts",
     "test": "vitest run --coverage",
     "test:all": "pnpm test && pnpm test:e2e",
-    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
+    "test:e2e:setup": "playwright install chromium && xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
     "test:e2e": "cross-env E2E_TESTS=true DEBUG=pw:channel:response,pw:channel:event npm run test:e2e:setup npx playwright test tests/src"
   },
   "dependencies": {
