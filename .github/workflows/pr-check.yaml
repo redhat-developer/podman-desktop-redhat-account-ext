@@ -41,7 +41,7 @@ jobs:
       fail-fast: true
       
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
@@ -72,12 +72,12 @@ jobs:
     env:
       SKIP_INSTALLATION: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: 
           path: podman-desktop-redhat-account-ext
 
       # Checkout podman desktop
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: podman-desktop/podman-desktop
           ref: main
@@ -167,12 +167,12 @@ jobs:
     env:
       SKIP_INSTALLATION: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with: 
           path: podman-desktop-redhat-account-ext
 
       # Checkout podman desktop
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: containers/podman-desktop
           ref: main
