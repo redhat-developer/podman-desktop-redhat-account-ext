@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "7zip-min": "^2.1.0",
-    "@playwright/test": "^1.55.1",
+    "@playwright/test": "^1.56.0",
     "@podman-desktop/tests-playwright": "^1.22.0",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^22",
