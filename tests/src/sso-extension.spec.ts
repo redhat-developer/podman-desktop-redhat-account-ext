@@ -30,7 +30,7 @@ import {
   findPageWithTitleInBrowser,
   getEntryFromConsoleLogs,
   handleConfirmationDialog,
-  handleCookies,  isCI,
+  isCI,
   isLinux,
   isMac, 
   isWindows, 
@@ -235,10 +235,9 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
         chromiumPage = newPage;
 
         // Handle Cookies in the popup iframe
-        const cookiesManager = 'TrustArc Cookie Consent Manager';
-        const consentManager = 'TrustArc Consent Manager Frame';
-        await handleCookies(chromiumPage, consentManager, 'Proceed with Required Cookies only', 10_000);
-        await handleCookies(chromiumPage, cookiesManager, 'Accept default', 10_000);
+        await handleCookies(chromiumPage, 'Required Cookies only', 10_000);
+        await chromiumPage.waitForTimeout(1_000);
+        await handleCookies(chromiumPage, 'Accept Default', 10_000);
         if (browser) {
           await findPageWithTitleInBrowser(browser, expectedAuthPageTitle);
         }
@@ -437,5 +436,18 @@ export async function terminateExternalBrowser(): Promise<void> {
     exec(command);
   } catch (error: unknown) {
     console.log(`Error while terminating the browser using '${command}': ${error}`);
+  }
+}
+
+export async function handleCookies(page: Page, buttonName: string, timeout: number): Promise<void> {
+  const iframe = page.frameLocator('iframe:visible');
+  const button = iframe.getByRole('button', { name: buttonName });
+
+  try {
+    await playExpect(button).toBeVisible({ timeout: timeout });
+    await button.scrollIntoViewIfNeeded();
+    await button.click();
+  } catch (error) {
+    console.log(`Error handling cookies: ${error}`);
   }
 }
