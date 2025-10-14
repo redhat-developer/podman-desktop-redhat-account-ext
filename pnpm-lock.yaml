@@ -106,8 +106,8 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vite:
-        specifier: ^7.1.9
-        version: 7.1.9(@types/node@22.18.10)(terser@5.36.0)
+        specifier: ^7.1.10
+        version: 7.1.10(@types/node@22.18.10)(terser@5.36.0)
       vitest:
         specifier: ^2.0.5
         version: 2.0.5(@types/node@22.18.10)(terser@5.36.0)
@@ -2661,8 +2661,8 @@ packages:
       terser:
         optional: true
 
-  vite@7.1.9:
-    resolution: {integrity: sha512-4nVGliEpxmhCL8DslSAUdxlB6+SMrhB0a1v5ijlh1xB1nEPuy1mxaHxysVucLHuWryAxLWg6a5ei+U4TLn/rFg==}
+  vite@7.1.10:
+    resolution: {integrity: sha512-CmuvUBzVJ/e3HGxhg6cYk88NGgTnBoOo7ogtfJJ0fefUWAxN/WDSUa50o+oVBxuIhO8FoEZW0j2eW7sfjs5EtA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -5446,7 +5446,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.36.0
 
-  vite@7.1.9(@types/node@22.18.10)(terser@5.36.0):
+  vite@7.1.10(@types/node@22.18.10)(terser@5.36.0):
     dependencies:
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
