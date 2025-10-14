@@ -48,7 +48,7 @@ jobs:
         with:
           run_install: false
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -90,7 +90,7 @@ jobs:
           package_json_file: ./podman-desktop/package.json
 
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       
@@ -184,7 +184,7 @@ jobs:
           run_install: false
           package_json_file: ./podman-desktop/package.json
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       
