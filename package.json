@@ -88,6 +88,12 @@
     "xvfb-maybe": "^0.2.1",
     "zip-local": "^0.3.5"
   },
+  "pnpm": {
+    "overrides": {
+      "copyfiles>glob": "^10.5.0",
+      "rimraf>glob": "^10.5.0"
+    }
+  },
   "extensionDependencies": [
     "podman-desktop.podman"
   ]
