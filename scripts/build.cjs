@@ -23,17 +23,18 @@ const package = require('../package.json');
 const { mkdirp } = require('mkdirp');
 const fs = require('fs');
 const byline = require('byline');
-const cp = require('copyfiles');
+const { globSync } = require('glob');
 const cproc = require('node:child_process');
 
+const extensionRoot = path.resolve(__dirname, '..');
 const destFile = path.resolve(__dirname, `../${package.name}.cdix`);
 const builtinDirectory = path.resolve(__dirname, '../builtin');
 const zipDirectory = path.resolve(builtinDirectory, `${package.name}.cdix`);
 const extFiles = path.resolve(__dirname, '../.extfiles');
 const fileStream = fs.createReadStream(extFiles, { encoding: 'utf8' });
 
-const includedFiles = [];
 const excludedFiles = [];
+const includedFiles = [];
 
 // remove the .cdix file before zipping
 if (fs.existsSync(destFile)) {
@@ -58,7 +59,6 @@ cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
       console.log(stderr);
       throw error;
     }
-    
     byline(fileStream)
       .on('data', line => {
         line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
@@ -67,16 +67,20 @@ cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
         throw new Error('Error reading .extfiles');
       })
       .on('end', () => {
-        includedFiles.push(zipDirectory); // add destination dir
         mkdirp.sync(zipDirectory);
         console.log(`Copying files to ${zipDirectory}`);
-        cp(includedFiles, { exclude: excludedFiles }, error => {
-          if (error) {
-            throw new Error('Error copying files', error);
+        const extensionFiles = globSync(includedFiles, {ignore: excludedFiles, withFileTypes: true});
+        extensionFiles.forEach(entry => {
+          const source = path.join(entry.parentPath, entry.name);
+          const destination = path.join(zipDirectory, path.relative(extensionRoot,source));
+          if(entry.isDirectory()) {
+            fs.mkdirSync(destination);
+          } else {
+            fs.copyFileSync(source, destination);
           }
-          console.log(`Zipping files to ${destFile}`);
-          zipper.sync.zip(zipDirectory).compress().save(destFile);
         });
+        console.log(`Zipping files to ${destFile}`);
+        zipper.sync.zip(zipDirectory).compress().save(destFile);
       });
   });
 });
