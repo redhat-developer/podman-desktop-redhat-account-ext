@@ -141,6 +141,7 @@ jobs:
       - name: Build SSO extension from container file
         working-directory: ./podman-desktop-redhat-account-ext
         run: |
+          pnpm build
           podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:latest . -f ./build/Containerfile.builder
           podman build -t local_sso_image ./ -f ./build/Containerfile
           CONTAINER_ID=$(podman create localhost/local_sso_image --entrypoint "")
