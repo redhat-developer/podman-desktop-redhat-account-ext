@@ -42,25 +42,26 @@ jobs:
         run: pnpm build
 
       - name: Login to quay.io
-        if: ${{ inputs.registry == 'quay' }} && ${{ runner.os == 'linux' }}
+        if: inputs.registry == 'quay' && runner.os == 'Linux'
         run: podman login --username ${{ secrets.QUAY_ROBOT_NAME }} --password ${{ secrets.QUAY_ROBOT_TOKEN }} quay.io
 
       - name: Login to ghcr.io
-        if: ${{ inputs.registry == 'ghcr' }} && ${{ runner.os == 'linux' }}
+        if: inputs.registry == 'ghcr' && runner.os == 'Linux'
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
       - name: Build builder-image
+        if: runner.os == 'Linux'
         run: podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
 
       - name: Build and Push Image (quay.io)
-        if: ${{ inputs.registry == 'quay' }} && ${{ runner.os == 'linux' }}
+        if: inputs.registry == 'quay' && runner.os == 'Linux'
         id: build-image-quay
         run: |
           podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} . -f ./build/Containerfile
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
       - name: Build and Push Image (ghcr.io)
-        if: ${{ inputs.registry == 'ghcr' }} && ${{ runner.os == 'linux' }}
+        if: inputs.registry == 'ghcr' && runner.os == 'Linux'
         id: build-image-ghcr
         run: |
           podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:next . -f ./build/Containerfile
