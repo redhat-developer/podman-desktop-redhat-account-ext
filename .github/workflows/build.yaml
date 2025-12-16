@@ -19,8 +19,7 @@ jobs:
     name: Build
     runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 60
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
     steps:
       - uses: actions/checkout@v6
 
@@ -54,12 +53,13 @@ jobs:
         if: ${{ inputs.registry == 'quay' }}
         id: build-image-quay
         run: |
-          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} .
+          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} . -f ./build/Containerfile
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
       - name: Build and Push Image (ghcr.io)
         if: ${{ inputs.registry == 'ghcr' }}
         id: build-image-ghcr
         run: |
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest .
+          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:latest . -f ./build/Containerfile.builder
+          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest . -f ./build/Containerfile
           podman push ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:latest
