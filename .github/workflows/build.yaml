@@ -50,11 +50,6 @@ jobs:
         run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
       - name: Build builder-image
-        if: ${{ inputs.registry == 'quay' }}
-        run: podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:latest . -f ./build/Containerfile.builder
-
-      - name: Build builder-image
-        if: ${{ inputs.registry == 'ghcr' }}
         run: podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
 
       - name: Build and Push Image (quay.io)
