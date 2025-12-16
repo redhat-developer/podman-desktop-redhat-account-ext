@@ -28,7 +28,7 @@ jobs:
       matrix:
         target: [windows-2022, macos-14, ubuntu-24.04]
       fail-fast: true
-    uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
+    uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml
     with:
       runs-on: ${{ matrix.target }}
   
