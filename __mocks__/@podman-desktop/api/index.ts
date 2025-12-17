@@ -26,64 +26,66 @@ import { vi } from "vitest";
  */
 
 export const registry = {
-    suggestRegistry: vi.fn(),
-    unregisterRegistry: vi.fn(),
-  };
-export const commands = {
-    registerCommand: vi.fn(),
-    executeCommand: vi.fn(),
-  };
-export const window = {
-    createStatusBarItem: () => {
-      return {
-        show: vi.fn(),
-        iconClass: '',
-      };
-    },
-    withProgress: (_options: ProgressOptions, callback: (option: any) => void) => {
-      return callback({
-        report: () => {},
-      });
-    },
-    showInformationMessage: vi.fn(),
-  };
-  
-export const StatusBarAlignLeft = 'LEFT';
-export const ProgressLocation = {
-    TASK_WIDGET: 2,
-  };
-export const process = {
-    exec: vi.fn(),
-  };
-
-export const configuration = {
-    getConfiguration: () => {
-      return {
-        get: vi.fn(),
-      };
-    },
-  };
-
-export const extensions = {
-    getExtension: vi.fn(),
-  };
-
-export const env = {
-    createTelemetryLogger: vi.fn().mockImplementation(() => ({
-      logUsage: vi.fn(),
-      logError: vi.fn(),
-    })),
-  };
-
-export const authentication = {
-    registerAuthenticationProvider: vi.fn(),
-    getSession: vi.fn(),
-    onDidChangeSessions: vi.fn(),
-  };
-
-export class EventEmitter {
-  constructor() {};
-  fire = vi.fn();
+  suggestRegistry: vi.fn(),
+  unregisterRegistry: vi.fn(),
 };
 
+export const commands = {
+  registerCommand: vi.fn(),
+  executeCommand: vi.fn(),
+};
 
+export const window = {
+  createStatusBarItem: () => {
+    return {
+      show: vi.fn(),
+      iconClass: '',
+    };
+  },
+  withProgress: (_options: ProgressOptions, callback: (option: any) => void) => {
+    return callback({
+      report: () => { },
+    });
+  },
+  showInformationMessage: vi.fn(),
+};
+
+export const StatusBarAlignLeft = 'LEFT';
+
+export const ProgressLocation = {
+  TASK_WIDGET: 2,
+};
+
+export const process = {
+  exec: vi.fn(),
+};
+
+export const configuration = {
+  getConfiguration: () => {
+    return {
+      get: vi.fn(),
+    };
+  },
+};
+
+export const extensions = {
+  getExtension: vi.fn(),
+};
+
+export const env = {
+  createTelemetryLogger: vi.fn().mockImplementation(() => ({
+    logUsage: vi.fn(),
+    logError: vi.fn(),
+  })),
+};
+
+export const authentication = {
+  registerAuthenticationProvider: vi.fn(),
+  getSession: vi.fn(),
+  onDidChangeSessions: vi.fn(),
+};
+
+export class EventEmitter {
+  constructor() { };
+  fire = vi.fn();
+};
