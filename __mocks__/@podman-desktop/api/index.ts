@@ -15,65 +15,75 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+/* eslint-disable @typescript-eslint/no-implicit-any */
+
+import { ProgressOptions } from "@podman-desktop/api";
+import { vi } from "vitest";
 
 /**
  * Mock the extension API for vitest.
  * This file is referenced from vitest.config.js file.
  */
-const plugin = {
-  EventEmitter: vi.fn().mockImplementation(() => {
-    return {
-      fire: vi.fn(),
-    };
-  }),
-  registry: {
+
+export const registry = {
     suggestRegistry: vi.fn(),
     unregisterRegistry: vi.fn(),
-  },
-  authentication: {
-    registerAuthenticationProvider: vi.fn(),
-    getSession: vi.fn(),
-    onDidChangeSessions: vi.fn(),
-  },
-  commands: {
+  };
+export const commands = {
     registerCommand: vi.fn(),
     executeCommand: vi.fn(),
-  },
-  window: {
-    createStatusBarItem: () => ({
-      show: vi.fn(),
-      iconClass: '',
-    }),
-    withProgress: (_options, callback) => {
+  };
+export const window = {
+    createStatusBarItem: () => {
+      return {
+        show: vi.fn(),
+        iconClass: '',
+      };
+    },
+    withProgress: (_options: ProgressOptions, callback: (option: any) => void) => {
       return callback({
         report: () => {},
       });
     },
     showInformationMessage: vi.fn(),
-  },
-  env: {
-    createTelemetryLogger: vi.fn().mockImplementation(() => ({
-      logUsage: vi.fn(),
-      logError: vi.fn(),
-    })),
-  },
-  StatusBarAlignLeft: 'LEFT',
-  ProgressLocation: {
+  };
+  
+export const StatusBarAlignLeft = 'LEFT';
+export const ProgressLocation = {
     TASK_WIDGET: 2,
-  },
-  process: {
+  };
+export const process = {
     exec: vi.fn(),
-  },
-  configuration: {
+  };
+
+export const configuration = {
     getConfiguration: () => {
       return {
         get: vi.fn(),
       };
     },
-  },
-  extensions: {
+  };
+
+export const extensions = {
     getExtension: vi.fn(),
-  }
+  };
+
+export const env = {
+    createTelemetryLogger: vi.fn().mockImplementation(() => ({
+      logUsage: vi.fn(),
+      logError: vi.fn(),
+    })),
+  };
+
+export const authentication = {
+    registerAuthenticationProvider: vi.fn(),
+    getSession: vi.fn(),
+    onDidChangeSessions: vi.fn(),
+  };
+
+export class EventEmitter {
+  constructor() {};
+  fire = vi.fn();
 };
 
-module.exports = plugin;
+
