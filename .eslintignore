@@ -6,3 +6,4 @@ www
 *.config.ts
 types/**/*.ts
 __mocks__
+src/rh-api/gen
