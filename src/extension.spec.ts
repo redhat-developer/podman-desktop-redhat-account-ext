@@ -29,8 +29,6 @@ import * as subscription from './rh-api/subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
-vi.mock('@podman-desktop/api');
-
 function createExtContext(): ExtensionContext {
   return {
     subscriptions: [],
