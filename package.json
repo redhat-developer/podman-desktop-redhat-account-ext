@@ -53,7 +53,7 @@
     "@podman-desktop/podman-extension-api": "^1.25.1",
     "js-yaml": "^4.1.1",
     "object-hash": "3.0.0",
-    "openapi-fetch": "^0.16.0",
+    "openapi-fetch": "^0.17.0",
     "openid-client": "^5.7.0"
   },
   "devDependencies": {
