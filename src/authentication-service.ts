@@ -155,7 +155,34 @@ export class RedHatAuthenticationService {
   }
 
   public async initialize(): Promise<void> {
-    const storedData = await this.context.secrets.get(this.config.serviceId);
+    let storedData: string | undefined;
+
+    // Try to get stored session data - may throw if decryption fails
+    try {
+      storedData = await this.context.secrets.get(this.config.serviceId);
+    } catch (error) {
+      // Decryption failed - encryption key likely changed after system update
+      Logger.error(`Failed to decrypt stored sessions: ${error}`);
+
+      // Notify user about the issue
+      await window.showWarningMessage(
+        'Your saved Red Hat SSO sessions could not be restored. ' +
+          'This can happen after a system update changes the encryption key. ' +
+          'Please sign in again.',
+        'OK',
+      );
+
+      // Delete the corrupted data from storage
+      try {
+        await this.context.secrets.delete(this.config.serviceId);
+      } catch {
+        // Ignore delete errors
+      }
+
+      // Don't return - still need to register the onDidChange listener below
+      storedData = undefined;
+    }
+
     if (storedData) {
       try {
         const sessions = this.parseStoredData(storedData);
@@ -197,13 +224,14 @@ export class RedHatAuthenticationService {
         Logger.info('Failed to initialize stored data');
         await this.clearSessions();
       }
-
-      this._disposables.push(
-        this.context.secrets.onDidChange(() => {
-          this.checkForUpdates().catch(console.error);
-        }),
-      );
     }
+
+    // Always register the listener to detect session changes
+    this._disposables.push(
+      this.context.secrets.onDidChange(() => {
+        this.checkForUpdates().catch(console.error);
+      }),
+    );
   }
 
   private parseStoredData(data: string): IStoredSession[] {

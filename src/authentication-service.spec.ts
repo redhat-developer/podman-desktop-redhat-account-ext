@@ -18,7 +18,7 @@
 /* eslint-disable sonarjs/no-nested-functions */
 
 import type { ExtensionContext } from '@podman-desktop/api';
-import { authentication } from '@podman-desktop/api';
+import { authentication, window } from '@podman-desktop/api';
 import type { BaseClient, TokenSet } from 'openid-client';
 import { Issuer } from 'openid-client';
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -109,4 +109,101 @@ test('Authentication service loads tokens form secret storage during initializat
   await service.initialize();
   expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
   expect((await service.getSessions(['scope1', 'scope3', 'scope4'])).length).toBe(0);
+});
+
+test('Authentication service handles decryption errors gracefully', async () => {
+  const decryptionError = new Error('Error while decrypting the ciphertext provided to safeStorage.decryptString');
+
+  vi.mocked(window.showWarningMessage).mockResolvedValue('OK');
+
+  const onDidChangeCallback = vi.fn();
+  const extensionContext: ExtensionContext = {
+    secrets: {
+      get: vi.fn().mockRejectedValue(decryptionError),
+      store: vi.fn(),
+      delete: vi.fn().mockResolvedValue(undefined),
+      onDidChange: onDidChangeCallback,
+    },
+    subscriptions: [],
+  } as unknown as ExtensionContext;
+
+  const service = await RedHatAuthenticationService.build(extensionContext, getAuthConfig());
+  await service.initialize();
+
+  // Verify secrets.get was called
+  expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
+
+  // Verify warning message was shown to user
+  expect(window.showWarningMessage).toHaveBeenCalledWith(
+    expect.stringContaining('could not be restored'),
+    'OK',
+  );
+
+  // Verify corrupted data was deleted
+  expect(extensionContext.secrets.delete).toHaveBeenCalledOnce();
+
+  // Verify onDidChange listener was still registered
+  expect(onDidChangeCallback).toHaveBeenCalledOnce();
+
+  // Verify no sessions exist after error
+  expect((await service.getSessions()).length).toBe(0);
+});
+
+test('Authentication service registers onDidChange listener even when no stored data exists', async () => {
+  const onDidChangeCallback = vi.fn();
+  const extensionContext: ExtensionContext = {
+    secrets: {
+      get: vi.fn().mockResolvedValue(undefined),
+      store: vi.fn(),
+      delete: vi.fn(),
+      onDidChange: onDidChangeCallback,
+    },
+    subscriptions: [],
+  } as unknown as ExtensionContext;
+
+  const service = await RedHatAuthenticationService.build(extensionContext, getAuthConfig());
+  await service.initialize();
+
+  // Verify secrets.get was called
+  expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
+
+  // Verify onDidChange listener was registered even with no stored data
+  expect(onDidChangeCallback).toHaveBeenCalledOnce();
+
+  // Verify no sessions exist
+  expect((await service.getSessions()).length).toBe(0);
+});
+
+test('Authentication service handles delete error during decryption error recovery', async () => {
+  const decryptionError = new Error('Error while decrypting the ciphertext');
+  const deleteError = new Error('Failed to delete');
+
+  // Clear mock from previous tests
+  vi.mocked(window.showWarningMessage).mockClear();
+  vi.mocked(window.showWarningMessage).mockResolvedValue('OK');
+
+  const onDidChangeCallback = vi.fn();
+  const extensionContext: ExtensionContext = {
+    secrets: {
+      get: vi.fn().mockRejectedValue(decryptionError),
+      store: vi.fn(),
+      delete: vi.fn().mockRejectedValue(deleteError),
+      onDidChange: onDidChangeCallback,
+    },
+    subscriptions: [],
+  } as unknown as ExtensionContext;
+
+  const service = await RedHatAuthenticationService.build(extensionContext, getAuthConfig());
+
+  // Should not throw even if delete fails
+  await expect(service.initialize()).resolves.not.toThrow();
+
+  // Verify warning was still shown
+  expect(window.showWarningMessage).toHaveBeenCalledOnce();
+
+  // Verify delete was attempted
+  expect(extensionContext.secrets.delete).toHaveBeenCalledOnce();
+
+  // Verify onDidChange listener was still registered
+  expect(onDidChangeCallback).toHaveBeenCalledOnce();
 });
