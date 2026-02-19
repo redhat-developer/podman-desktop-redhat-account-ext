@@ -50,6 +50,7 @@ const plugin = {
       });
     },
     showInformationMessage: vi.fn(),
+    showWarningMessage: vi.fn(),
   },
   env: {
     createTelemetryLogger: vi.fn().mockImplementation(() => ({
