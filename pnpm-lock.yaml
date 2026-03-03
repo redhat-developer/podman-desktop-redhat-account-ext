@@ -33,8 +33,8 @@ importers:
         version: 5.7.0
     devDependencies:
       7zip-min:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^3.0.1
+        version: 3.0.1
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -128,8 +128,8 @@ packages:
   7zip-bin@5.1.1:
     resolution: {integrity: sha512-sAP4LldeWNz0lNzmTird3uWfFDWWTeg6V/MsmyyLR9X1idwKBWIgt/ZvinqQldJm3LecKEs1emkbquO6PCiLVQ==}
 
-  7zip-min@2.1.0:
-    resolution: {integrity: sha512-6uoMmPaasBQOyEuMIuNnASA6mF6ZfNmhsKdxJiEbtkHt9DkrJ0w1cZwyNdkDeOKjR2c5gOQAEkvMN3gyZ9MEBw==}
+  7zip-min@3.0.1:
+    resolution: {integrity: sha512-WB4VCA/KSKzxhj+BAp8fI3ZYMMAftclkXlUTckuiDacsqyubQxxG3lGcpBcgzWWuJqnfQncEq1xrJpPLSxqsxw==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -2596,7 +2596,7 @@ snapshots:
 
   7zip-bin@5.1.1: {}
 
-  7zip-min@2.1.0:
+  7zip-min@3.0.1:
     dependencies:
       7zip-bin: 5.1.1
 
