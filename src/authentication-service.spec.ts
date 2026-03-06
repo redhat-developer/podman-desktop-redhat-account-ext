@@ -134,10 +134,7 @@ test('Authentication service handles decryption errors gracefully', async () => 
   expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
 
   // Verify warning message was shown to user
-  expect(window.showWarningMessage).toHaveBeenCalledWith(
-    expect.stringContaining('could not be restored'),
-    'OK',
-  );
+  expect(window.showWarningMessage).toHaveBeenCalledWith(expect.stringContaining('could not be restored'), 'OK');
 
   // Verify corrupted data was deleted
   expect(extensionContext.secrets.delete).toHaveBeenCalledOnce();
