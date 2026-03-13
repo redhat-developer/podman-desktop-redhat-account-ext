@@ -281,6 +281,7 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     test('User signed in status is propagated into Podman Desktop', async ({ page, navigationBar }) => {
       // activate Podman Desktop again
       await page.bringToFront();
+      await handleConfirmationDialog(page, 'Allow Access', true, 'Allow', 'Deny', 10_000);
       if (isLinux) {
         try {
         await handleConfirmationDialog(page, 'Red Hat Authentication', true, 'OK', '', 10_000);
@@ -311,32 +312,26 @@ test.describe.serial('Red Hat Authentication extension verification', () => {
     test('Tasks Configuring Red Hat Registry and Activating Red Hat Subscription are completed', async ({ page }) => {
       test.setTimeout(120_000);
       test.skip(isCI && (isMac || isLinux), 'Mac/Linux issue on CI: https://github.com/redhat-developer/podman-desktop-redhat-account-ext/issues/898');
-      console.log('Finding Tasks in status Bar');
       const statusBar = new StatusBar(page);
-      await statusBar.tasksButton.click();
-      console.log('Opened Tasks in status Bar');
-      const tasksManager = page.getByTitle('Tasks Manager');
-      await playExpect(tasksManager).toBeVisible();
+      const tasks = await statusBar.openTasksPage();
+      await playExpect(tasks.heading).toBeVisible();
       // tasks are present in the Tasks Manager
-      const taskRegistry = tasksManager.getByTitle('Configuring Red Hat Registry');
+      const taskRegistry = tasks.taskList.getByRole('row', { name: 'Configuring Red Hat Registry' });
       await playExpect(taskRegistry).toBeVisible();
-      const taskSubscription = tasksManager.getByTitle('Activating Red Hat Subscription');
+      const taskSubscription = tasks.taskList.getByRole('row', { name: 'Activating Red Hat Subscription' });
       await playExpect(taskSubscription).toBeVisible();
       // Registry is added
-      const successImgRegistry = tasksManager.getByRole('img', { name: 'success icon of task Configuring Red Hat Registry' });
-      await playExpect(successImgRegistry).toBeVisible({ timeout: 20_000 });
+      await playExpect(taskRegistry.getByRole('status', { name: 'completed status for' })).toHaveText('success', { timeout: 20_000});
       // subscription activation is finished
       // this runs endless on CI windows
       if (isWindows && isCI) {
         console.log('Skipping waiting for subscription activation on Windows CI');
       } else {
-        const successImgSubscription = tasksManager.getByRole('img', { name: 'success icon of task Activating Red Hat Subscription' });
-        await playExpect(successImgSubscription).toBeVisible({ timeout: 60_000 });
+        await playExpect(taskSubscription.getByRole('status', { name: 'completed status for' })).toHaveText('success', { timeout: 60_000});
       }
       // close tasks manager
-      const hideButton = tasksManager.getByRole('button').and(tasksManager.getByTitle('Hide'));
-      await playExpect(hideButton).toBeVisible();
-      await hideButton.click();
+      await playExpect(tasks.closeButton).toBeVisible();
+      await tasks.closeButton.click();
     });
 
     test.fail('Logged in state in authentication page persists for at least 30 seconds', async ({ navigationBar }) => {
