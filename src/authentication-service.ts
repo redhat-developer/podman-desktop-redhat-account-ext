@@ -38,6 +38,8 @@ import { createServer, startServer } from './authentication-server';
 import type { AuthConfig } from './configuration';
 import Logger from './logger';
 
+const urlProtocol = (env as { urlProtocol?: string }).urlProtocol ?? 'podman-desktop';
+
 interface IToken {
   accessToken?: string; // When unable to refresh due to network problems, the access token becomes undefined
   idToken?: string; // depending on the scopes can be either supplied or empty
@@ -377,7 +379,7 @@ export class RedHatAuthenticationService {
       if ('err' in redirectReq) {
         const { err, res } = redirectReq;
         res.writeHead(302, {
-          Location: `/?service=${this.config.serviceId}&error=${encodeURIComponent((err as Error)?.message || 'Unknown error')}`,
+          Location: `/?service=${this.config.serviceId}&error=${encodeURIComponent((err as Error)?.message || 'Unknown error')}&protocol=${urlProtocol}`,
         });
         res.end();
         throw err;
@@ -437,7 +439,7 @@ export class RedHatAuthenticationService {
       const token = this.convertToken(tokenSet!, scope);
 
       callbackResult.res.writeHead(302, {
-        Location: `/?service=${this.config.serviceId}&login=${encodeURIComponent(token.account.label)}`,
+        Location: `/?service=${this.config.serviceId}&login=${encodeURIComponent(token.account.label)}&protocol=${urlProtocol}`,
       });
       callbackResult.res.end();
 
@@ -453,7 +455,7 @@ export class RedHatAuthenticationService {
 
   public error(response: ServerResponse, error: unknown): void {
     response.writeHead(302, {
-      Location: `/?error=${encodeURIComponent((error as Error)?.message || 'Unknown error')}`,
+      Location: `/?error=${encodeURIComponent((error as Error)?.message || 'Unknown error')}&protocol=${urlProtocol}`,
     });
     response.end();
   }
