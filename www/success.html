@@ -12,7 +12,8 @@
     />
     <script lang="javascript">
       function onLoad() {
-        window.location.href = 'podman-desktop://'
+        var protocol = (/[?&]protocol=([^&]+)/.exec(window.location.search) || [])[1];
+        window.location.href = (protocol || 'podman-desktop') + '://';
       };
       window.onload = onLoad;
     </script>

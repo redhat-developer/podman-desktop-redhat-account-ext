@@ -15,11 +15,11 @@ importers:
   .:
     dependencies:
       '@podman-desktop/api':
-        specifier: ^1.14.1
-        version: 1.14.1
+        specifier: 1.27.0-next.202604210820-677f704
+        version: 1.27.0-next.202604210820-677f704
       '@podman-desktop/podman-extension-api':
-        specifier: ^1.26.2
-        version: 1.26.2
+        specifier: 1.27.0-next.202604210820-677f704
+        version: 1.27.0-next.202604210820-677f704
       js-yaml:
         specifier: ^4.1.1
         version: 4.1.1
@@ -434,14 +434,11 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@podman-desktop/api@1.14.1':
-    resolution: {integrity: sha512-mOX5XWAomOXgXt/S5o13t9LXSHylg8xvAzWYwIrHkXYQL6fy6QqChroezx6MlSotJ6bj1peHh0ToFfxVHTa79w==}
+  '@podman-desktop/api@1.27.0-next.202604210820-677f704':
+    resolution: {integrity: sha512-+c0/RX+37zd5O1BGomXCJFWkli1roQOfyyFbbw385fRagXXBLH9GK/6EbKg7a/T1Scsz/brztbPNMkFeXA+Rxw==}
 
-  '@podman-desktop/api@1.26.2':
-    resolution: {integrity: sha512-LE8uo8PsyUG7gfrg0IW/Eib6SeZn717usJSwiuzpDMTSZJCTwlaXDeEADxMXLfsu6V9OKjZtgwJ7SAVzaeTV7A==}
-
-  '@podman-desktop/podman-extension-api@1.26.2':
-    resolution: {integrity: sha512-WTs0NGjNRtpXQk3QElosyuWYv3sNh4AyZ5+BK6nJ5vCoaEcswcU7YeRJLwLV+vZqELM5f6arr+Gc+zr7cvYNNQ==}
+  '@podman-desktop/podman-extension-api@1.27.0-next.202604210820-677f704':
+    resolution: {integrity: sha512-nWsWU99ZU1AB7pYK/MYeM6CzEGc3ve3FvUDGMF0EDFNyCEyeMixNuf/VASyCm4jJn+R+KU3qgTILv5KqucOVrA==}
 
   '@podman-desktop/tests-playwright@1.26.2':
     resolution: {integrity: sha512-ojFIMT6XraFxp1+cIjVP+mwDAWMZM5HsJrPiq6WQEqMj5elt94NRGqaAYHxKEl/JaXI6CTFHIHYnzaQPgSdcmw==}
@@ -3069,13 +3066,11 @@ snapshots:
     dependencies:
       playwright: 1.59.1
 
-  '@podman-desktop/api@1.14.1': {}
+  '@podman-desktop/api@1.27.0-next.202604210820-677f704': {}
 
-  '@podman-desktop/api@1.26.2': {}
-
-  '@podman-desktop/podman-extension-api@1.26.2':
+  '@podman-desktop/podman-extension-api@1.27.0-next.202604210820-677f704':
     dependencies:
-      '@podman-desktop/api': 1.26.2
+      '@podman-desktop/api': 1.27.0-next.202604210820-677f704
 
   '@podman-desktop/tests-playwright@1.26.2': {}
 

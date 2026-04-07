@@ -9,7 +9,7 @@
   "publisher": "redhat",
   "license": "Apache-2.0",
   "engines": {
-    "podman-desktop": "^1.10.0"
+    "podman-desktop": "^1.27.0"
   },
   "main": "./dist/extension.cjs",
   "contributes": {
@@ -50,8 +50,8 @@
     "test:e2e": "cross-env E2E_TESTS=true DEBUG=pw:channel:response,pw:channel:event npm run test:e2e:setup npx playwright test tests/src"
   },
   "dependencies": {
-    "@podman-desktop/api": "^1.14.1",
-    "@podman-desktop/podman-extension-api": "^1.26.2",
+    "@podman-desktop/api": "1.27.0-next.202604210820-677f704",
+    "@podman-desktop/podman-extension-api": "1.27.0-next.202604210820-677f704",
     "js-yaml": "^4.1.1",
     "object-hash": "3.0.0",
     "openapi-fetch": "^0.17.0",
