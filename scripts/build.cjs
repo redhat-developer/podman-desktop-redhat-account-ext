@@ -32,8 +32,35 @@ const zipDirectory = path.resolve(builtinDirectory, `${package.name}.cdix`);
 const extFiles = path.resolve(__dirname, '../.extfiles');
 const fileStream = fs.createReadStream(extFiles, { encoding: 'utf8' });
 
+/** @type {string | undefined} */
+let urlProtocol;
+const argv = process.argv.slice(2);
+for (let i = 0; i < argv.length; i++) {
+  if (argv[i] === '--url-protocol') {
+    const next = argv[i + 1];
+    if (next !== undefined && !next.startsWith('--')) {
+      urlProtocol = next;
+      i++;
+    }
+  }
+}
+
 const includedFiles = [];
 const excludedFiles = [];
+
+function applyUrlProtocolToSuccessHtml() {
+  if (urlProtocol === undefined || urlProtocol === '') {
+    return;
+  }
+  const successHtmlPath = path.join(zipDirectory, 'www/success.html');
+  if (!fs.existsSync(successHtmlPath)) {
+    console.error(`Error: file not found: ${successHtmlPath}`);
+    process.exit(1);
+  }
+  const content = fs.readFileSync(successHtmlPath, 'utf8');
+  const updated = content.replaceAll('podman-desktop', urlProtocol);
+  fs.writeFileSync(successHtmlPath, updated, 'utf8');
+}
 
 // remove the .cdix file before zipping
 if (fs.existsSync(destFile)) {
@@ -74,6 +101,7 @@ cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
           if (error) {
             throw new Error('Error copying files', error);
           }
+          applyUrlProtocolToSuccessHtml();
           console.log(`Zipping files to ${destFile}`);
           const zip = new AdmZip();
           zip.addLocalFolder(zipDirectory);
