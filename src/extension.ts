@@ -93,10 +93,13 @@ function removeRegistry(serverUrl: string = REGISTRY_REDHAT_IO): void {
 
 async function createOrReuseRegistryServiceAccount(): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
-  const accessTokenJson = parseJwt(currentSession!.accessToken);
+  if (!currentSession) {
+    throw new Error('Red Hat sign-in is required to configure the container registry.');
+  }
+  const accessTokenJson = parseJwt(currentSession.accessToken);
   const { serviceAccountsApiV1: saApiV1 } = new ContainerRegistryAuthorizerClient({
     BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
-    TOKEN: currentSession!.accessToken,
+    TOKEN: currentSession.accessToken,
   });
   let { data: serviceAccount } = await saApiV1.serviceAccountByNameUsingGet1(
     'podman-desktop',
@@ -116,20 +119,22 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
       throw new Error(`Can't create registry authorizer service account.`);
     }
   }
-
   await createRegistry(
-    serviceAccount!.credentials!.username!,
-    serviceAccount!.credentials!.password!,
+    serviceAccount.credentials!.username!,
+    serviceAccount.credentials!.password!,
     currentSession.account.label,
   );
 }
 
 async function createOrReuseActivationKey(connection: extensionApi.ProviderContainerConnection): Promise<void> {
   const currentSession = await signIntoRedHatDeveloperAccount();
-  const accessTokenJson = parseJwt(currentSession!.accessToken);
+  if (!currentSession) {
+    throw new Error('Red Hat sign-in is required to configure the subscription activation key.');
+  }
+  const accessTokenJson = parseJwt(currentSession.accessToken);
   const client = new SubscriptionManagerClient({
     BASE: 'https://console.redhat.com/api/rhsm/v2',
-    TOKEN: currentSession!.accessToken,
+    TOKEN: currentSession.accessToken,
   });
 
   const { error: showKeyErr } = await client.activationKey.showActivationKey('podman-desktop');
