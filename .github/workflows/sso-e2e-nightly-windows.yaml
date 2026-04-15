@@ -142,7 +142,7 @@ jobs:
 
 
     - name: Create instance
-      uses: podman-desktop/e2e/.github/actions/create-instance@213a276952d746324895f63cea0b23083013990f
+      uses: podman-desktop/e2e/.github/actions/create-instance@2450b5d31b76aa87f4588abc86c36f73d7df2b16
       with:
         mapt-image: ${{ env.MAPT_IMAGE || '' }}
         mapt-version: ${{ env.MAPT_VERSION_TAG || '' }}
@@ -157,13 +157,13 @@ jobs:
         arm-client-secret: ${{ secrets.ARM_CLIENT_SECRET }}
 
     - name: Check instance system info
-      uses: podman-desktop/e2e/.github/actions/instance-system-info@3548105f45def129d5e3aaa5a3d922e09ac892d9
+      uses: podman-desktop/e2e/.github/actions/instance-system-info@2450b5d31b76aa87f4588abc86c36f73d7df2b16
 
     - name: Emulate X session
-      uses: podman-desktop/e2e/.github/actions/emulate-x-session@3548105f45def129d5e3aaa5a3d922e09ac892d9
+      uses: podman-desktop/e2e/.github/actions/emulate-x-session@2450b5d31b76aa87f4588abc86c36f73d7df2b16
 
     - name: Download Podman, do not initialize
-      uses: podman-desktop/e2e/.github/actions/download-podman-nightly@952cafee20ca82b1ce48b29c848bac1c31062245
+      uses: podman-desktop/e2e/.github/actions/download-podman-nightly@2450b5d31b76aa87f4588abc86c36f73d7df2b16
       with:
         podman-image-tag: ${{ env.PDE2E_PODMAN }}
         podman-download-url: ${{ env.PODMAN_URL }}
@@ -177,10 +177,9 @@ jobs:
         echo "DVLPR_PASSWORD=${DVLPR_PASSWORD}" >> secrets.txt
 
     - name: Run Podman Desktop Playwright E2E tests
-      uses: podman-desktop/e2e/.github/actions/run-playwright-test@db37fcfe19c2265b4840460fa5fed1f130d9a634
+      uses: podman-desktop/e2e/.github/actions/run-playwright-test@2450b5d31b76aa87f4588abc86c36f73d7df2b16
       with:
         pde2e-runner-tag: ${{ env.PDE2E_RUNNER }}
-        podman-desktop-path: true
         fork-repo: ${{ env.PD_FORK }}
         branch-name: ${{ env.PD_BRANCH }}
         ext-repo: ${{ env.EXT_REPO }}
@@ -188,6 +187,7 @@ jobs:
         ext-branch: ${{ env.EXT_BRANCH }}
         ext-tests: ${{ env.EXT_TESTS }}
         npm-target: ${{ env.NPM_TARGET }}
+        podman-path: true
         podman-init: ${{ env.PODMAN_INIT }}
         podman-start: ${{ env.PODMAN_START }}
         rootful: ${{ env.PODMAN_ROOTFUL }}
@@ -199,7 +199,7 @@ jobs:
 
     - name: Destroy instance
       if: always()
-      uses: podman-desktop/e2e/.github/actions/destroy-instance@36e440f2ac18193214f4ffa8f7f1c4c0cb8c9446
+      uses: podman-desktop/e2e/.github/actions/destroy-instance@2450b5d31b76aa87f4588abc86c36f73d7df2b16
       with:
         mapt-image: ${{ env.MAPT_IMAGE }}
         mapt-version: ${{ env.MAPT_VERSION_TAG }}
