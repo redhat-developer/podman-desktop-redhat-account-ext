@@ -92,7 +92,8 @@
     "overrides": {
       "test-exclude>glob":"^13.0.0",
       "cross-env>cross-spawn": "^7.0.6",
-      "eslint>cross-spawn": "^7.0.6"
+      "eslint>cross-spawn": "^7.0.6",
+      "rollup": "^4.59.0"
     }
   },
   "extensionDependencies": [
