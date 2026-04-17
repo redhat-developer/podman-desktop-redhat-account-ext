@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@podman-desktop/api": "^1.14.1",
-    "@podman-desktop/podman-extension-api": "^1.26.1",
+    "@podman-desktop/podman-extension-api": "^1.26.2",
     "js-yaml": "^4.1.1",
     "object-hash": "3.0.0",
     "openapi-fetch": "^0.17.0",
