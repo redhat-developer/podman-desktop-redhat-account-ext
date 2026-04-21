@@ -30,8 +30,17 @@ import type {
   ExtensionContext,
 } from '@podman-desktop/api';
 import { env, EventEmitter, Uri, window } from '@podman-desktop/api';
-import type { Client, TokenSet } from 'openid-client';
-import { generators, Issuer } from 'openid-client';
+import type { Configuration, TokenEndpointResponse, TokenEndpointResponseHelpers } from 'openid-client';
+import {
+  authorizationCodeGrant,
+  buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
+  discovery,
+  None,
+  randomNonce,
+  randomPKCECodeVerifier,
+  refreshTokenGrant,
+} from 'openid-client';
 
 import type { RedirectResult } from './authentication-server';
 import { createServer, startServer } from './authentication-server';
@@ -100,37 +109,41 @@ export interface RedHatAuthenticationSession extends AuthenticationSession {
 }
 
 class ClientHolder {
-  private client: Client | undefined;
-  private clientPromise: Promise<Client> | undefined;
+  private oidcConfig: Configuration | undefined;
+  private configPromise: Promise<Configuration> | undefined;
   private config: AuthConfig;
 
   constructor(config: AuthConfig) {
     this.config = config;
   }
 
-  async getClient(): Promise<Client> {
-    if (this.clientPromise !== undefined) {
-      return this.clientPromise;
+  async getConfig(): Promise<Configuration> {
+    if (this.oidcConfig !== undefined) {
+      return this.oidcConfig;
+    }
+    if (this.configPromise !== undefined) {
+      return this.configPromise;
     }
 
     Logger.info(`Configuring ${this.config.serviceId} {auth: ${this.config.authUrl}, api: ${this.config.apiUrl}}`);
 
-    this.clientPromise = Issuer.discover(this.config.authUrl)
-      .then(issuer => {
-        this.clientPromise = undefined;
-        this.client = new issuer.Client({
-          client_id: this.config.clientId,
-          response_types: ['code'],
-          token_endpoint_auth_method: 'none',
-        });
-        return this.client;
+    // openid-client v6 strictly validates that the URL passed here matches the
+    // `issuer` field in the discovery document. Keycloak / Red Hat SSO returns
+    // the issuer without a trailing slash, so we must strip it before discovery.
+    const issuerUrl = new URL(this.config.authUrl.replace(/\/$/, ''));
+
+    this.configPromise = discovery(issuerUrl, this.config.clientId, undefined, None())
+      .then(config => {
+        this.configPromise = undefined;
+        this.oidcConfig = config;
+        return this.oidcConfig;
       })
       .catch((error: unknown) => {
-        this.clientPromise = undefined;
+        this.configPromise = undefined;
         throw error;
       });
 
-    return this.clientPromise;
+    return this.configPromise;
   }
 }
 
@@ -366,13 +379,15 @@ export class RedHatAuthenticationService {
   public async createSession(scopes: string): Promise<RedHatAuthenticationSession> {
     Logger.info(`Logging in ${this.config.authUrl}...`);
 
-    const nonce = generators.nonce();
+    const nonce = randomNonce();
+    const serverBase = this.config.serverConfig.externalUrl;
+
     const { server, redirectPromise, callbackPromise } = createServer(this.config, nonce);
 
     try {
-      const serverBase = this.config.serverConfig.externalUrl;
       const port = await startServer(this.config.serverConfig, server);
       await env.openExternal(Uri.parse(`${serverBase}:${port}/signin?nonce=${encodeURIComponent(nonce)}`));
+
       const redirectReq = await redirectPromise;
       if ('err' in redirectReq) {
         const { err, res } = redirectReq;
@@ -383,29 +398,26 @@ export class RedHatAuthenticationService {
         throw err;
       }
 
-      const host = redirectReq.req.headers.host ?? '';
-      const updatedPortStr = (/^[^:]+:(\d+)$/.exec(Array.isArray(host) ? host[0] : host) || [])[1];
-      const updatedPort = updatedPortStr ? parseInt(updatedPortStr, 10) : port;
+      const redirect_uri = `${serverBase}:${port}/${this.config.serverConfig.callbackPath}`;
 
-      const redirect_uri = `${serverBase}:${updatedPort}/${this.config.serverConfig.callbackPath}`;
-      const code_verifier = generators.codeVerifier();
-      const code_challenge = generators.codeChallenge(code_verifier);
+      const oidcConfig = await this.clientHolder.getConfig();
+      const code_verifier = randomPKCECodeVerifier();
+      const code_challenge = await calculatePKCECodeChallenge(code_verifier);
 
       // email and id.username scopes required to render user name on Authentication Settings page
       const defaultScopes = 'openid id.username email';
       const scope = scopes;
 
-      const client = await this.clientHolder.getClient();
-      const authUrl = client.authorizationUrl({
+      const authUrl = buildAuthorizationUrl(oidcConfig, {
         scope: `${defaultScopes} ${scope}`,
         resource: this.config.apiUrl,
         code_challenge,
         code_challenge_method: 'S256',
-        redirect_uri: redirect_uri,
-        nonce: nonce,
+        redirect_uri,
+        nonce,
       });
-      console.log(authUrl);
-      redirectReq.res.writeHead(302, { Location: authUrl });
+      console.log(authUrl.toString());
+      redirectReq.res.writeHead(302, { Location: authUrl.toString() });
       redirectReq.res.end();
 
       // wait 10 minutes for call back and then close the server to free local port
@@ -423,12 +435,15 @@ export class RedHatAuthenticationService {
         this.error(callbackResult.res, callbackResult.err);
         throw callbackResult.err;
       }
-      let tokenSet: TokenSet;
+      let tokenSet: TokenEndpointResponse & TokenEndpointResponseHelpers;
       try {
-        tokenSet = await client.callback(redirect_uri, client.callbackParams(callbackResult.req), {
-          code_verifier,
-          nonce,
-        });
+        const callbackUrl = new URL(`${serverBase}:${port}${callbackResult.req.url!}`);
+        tokenSet = await authorizationCodeGrant(
+          oidcConfig,
+          callbackUrl,
+          { pkceCodeVerifier: code_verifier, expectedNonce: nonce },
+          { redirect_uri },
+        );
       } catch (error) {
         this.error(callbackResult.res, error);
         throw error;
@@ -506,7 +521,11 @@ export class RedHatAuthenticationService {
     await this.storeTokenData();
   }
 
-  private convertToken(tokenSet: TokenSet, scope: string, existingId?: string): IToken {
+  private convertToken(
+    tokenSet: TokenEndpointResponse & TokenEndpointResponseHelpers,
+    scope: string,
+    existingId?: string,
+  ): IToken {
     const claims = tokenSet.claims();
     return {
       expiresIn: tokenSet.expires_in,
@@ -514,13 +533,16 @@ export class RedHatAuthenticationService {
       idToken: tokenSet.id_token,
       accessToken: tokenSet.access_token,
       refreshToken: tokenSet.refresh_token!,
-      sessionId: existingId ?? tokenSet.session_state!,
+      sessionId: existingId ?? (tokenSet['session_state'] as string | undefined) ?? '',
       scope: scope,
       account: {
-        id: claims.sub,
+        id: claims?.sub ?? '',
         // not sure if claim can't be an empty string in some specific use cases
         // eslint-disable-next-line
-        label: claims.preferred_username || claims.email || 'email not found',
+        label:
+          (claims?.preferred_username as string | undefined) ||
+          (claims?.email as string | undefined) ||
+          'email not found',
       },
     };
   }
@@ -528,8 +550,8 @@ export class RedHatAuthenticationService {
   private async refreshToken(refreshToken: string, scope: string, sessionId: string): Promise<IToken> {
     Logger.info(`Refreshing token from ${this.config.authUrl}`);
     try {
-      const client = await this.clientHolder.getClient();
-      const refreshedToken = await client.refresh(refreshToken);
+      const oidcConfig = await this.clientHolder.getConfig();
+      const refreshedToken = await refreshTokenGrant(oidcConfig, refreshToken);
       const token = this.convertToken(refreshedToken, scope, sessionId);
       await this.setToken(token, scope);
       Logger.info('Token refresh success');

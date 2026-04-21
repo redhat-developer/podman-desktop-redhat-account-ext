@@ -19,17 +19,18 @@
 
 import type { ExtensionContext } from '@podman-desktop/api';
 import { authentication, window } from '@podman-desktop/api';
-import type { BaseClient, TokenSet } from 'openid-client';
-import { Issuer } from 'openid-client';
+import type { Configuration, TokenEndpointResponse, TokenEndpointResponseHelpers } from 'openid-client';
+import { discovery, refreshTokenGrant } from 'openid-client';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import { convertToSession, RedHatAuthenticationService } from './authentication-service';
 import { getAuthConfig } from './configuration';
 
-vi.mock('@podman-desktop/api');
+vi.mock(import('@podman-desktop/api'));
+vi.mock(import('openid-client'));
 
 beforeEach(() => {
-  vi.restoreAllMocks();
+  vi.resetAllMocks();
 });
 
 test('An authentication token is converted to a session', () => {
@@ -55,33 +56,21 @@ test('An authentication token is converted to a session', () => {
 });
 
 test('Authentication service loads tokens form secret storage during initialization', async () => {
-  vi.spyOn(Issuer, 'discover').mockImplementation(async () => {
-    return {
-      Client: vi.fn().mockImplementation(() => {
-        return {
-          refresh: vi.fn().mockImplementation((): TokenSet => {
-            return {
-              claims: vi.fn().mockImplementation(() => {
-                return {
-                  sub: 'subscriptionId',
-                  preferred_username: 'username',
-                };
-              }),
-              expired: vi.fn().mockImplementation(() => false),
-              expires_in: 15 * 60, // in seconds
-              id_token: 'id_token_string',
-              access_token: 'access_token_string',
-              refresh_token: 'refresh_token_string',
-              session_state: 'session_state_string',
-            };
-          }),
-          authorizationUrl: vi.fn().mockImplementation(() => {}),
-          callback: vi.fn(),
-          callbackParams: vi.fn(),
-        };
-      }),
-    } as unknown as Issuer<BaseClient>;
-  });
+  const mockTokenResponse = {
+    claims: vi.fn().mockReturnValue({
+      sub: 'subscriptionId',
+      preferred_username: 'username',
+    }),
+    expires_in: 15 * 60, // in seconds
+    id_token: 'id_token_string',
+    access_token: 'access_token_string',
+    refresh_token: 'refresh_token_string',
+    session_state: 'session_state_string',
+    token_type: 'bearer',
+  } as unknown as TokenEndpointResponse & TokenEndpointResponseHelpers;
+
+  vi.mocked(discovery).mockResolvedValue({} as unknown as Configuration);
+  vi.mocked(refreshTokenGrant).mockResolvedValue(mockTokenResponse);
 
   vi.mocked(authentication.registerAuthenticationProvider).mockImplementation((_id, _label, _ssoProvider) => {
     return {
