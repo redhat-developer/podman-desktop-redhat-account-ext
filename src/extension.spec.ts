@@ -24,8 +24,8 @@ import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
 
 import * as extension from './extension';
 import * as podmanCli from './podman-cli';
-import { Organization } from './rh-api/subscription';
 import * as subscription from './rh-api/subscription';
+import { Organization } from './rh-api/subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
