@@ -1,5 +1,7 @@
 {
   "name": "redhat-authentication",
+  "repository": "https://github.com/redhat-developer/podman-desktop-redhat-account-ext",
+  "homepage": "https://github.com/redhat-developer/podman-desktop-redhat-account-ext#readme",
   "displayName": "Red Hat Authentication",
   "description": "Login to Red Hat Developers",
   "version": "1.2.0-next",
