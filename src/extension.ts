@@ -154,16 +154,6 @@ async function createOrReuseActivationKey(connection: extensionApi.ProviderConta
   await runSubscriptionManagerRegister(connection, 'podman-desktop', accessTokenJson.organization.id);
 }
 
-async function isSimpleContentAccessEnabled(): Promise<boolean> {
-  const currentSession = await signIntoRedHatDeveloperAccount();
-  const client = new SubscriptionManagerClient({
-    BASE: 'https://console.redhat.com/api/rhsm/v2',
-    TOKEN: currentSession!.accessToken,
-  });
-  const data = await client.organization.checkOrgScaCapability();
-  return data?.body?.simpleContentAccess === 'enabled';
-}
-
 async function isSubscriptionManagerInstalled(connection: extensionApi.ProviderContainerConnection): Promise<boolean> {
   const exitCode = await runSubscriptionManager(connection);
   return exitCode === 0;
@@ -264,18 +254,6 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
               throw new Error('No running podman');
             }
           } else {
-            if (!(await isSimpleContentAccessEnabled())) {
-              const choice = await extensionApi.window.showInformationMessage(
-                'Simple Content Access (SCA) is not enabled for your Red Hat account. Please enable it and try again.',
-                'Close',
-                'Enable SCA',
-              );
-              if (choice === 'Enable SCA') {
-                await extensionApi.env.openExternal(extensionApi.Uri.parse('https://access.redhat.com/management'));
-                throw new Error('SCA is not enabled and subscription management page requested');
-              }
-              throw new Error('SCA is not enabled and message closed');
-            }
             if (!(await isSubscriptionManagerInstalled(runningConnection))) {
               await installSubscriptionManger(runningConnection);
               await runStopPodmanMachine(runningConnection);
