@@ -66,19 +66,10 @@ export class ActivationKey extends ClientHolder<paths> {
   }
 }
 
-export class Organization extends ClientHolder<paths> {
-  async checkOrgScaCapability() {
-    const response = await this.client.GET('/organization');
-    return response.data;
-  }
-}
-
 export class SubscriptionManagerClient extends ClientHolder<paths> {
   activationKey: ActivationKey;
-  organization: Organization;
   constructor(options: { BASE: string; TOKEN: string }) {
     super(createClient<paths>({ baseUrl: options.BASE }), options.TOKEN);
     this.activationKey = new ActivationKey(this.client);
-    this.organization = new Organization(this.client);
   }
 }
