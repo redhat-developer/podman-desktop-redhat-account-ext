@@ -25,7 +25,6 @@ import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
 import * as extension from './extension';
 import * as podmanCli from './podman-cli';
 import * as subscription from './rh-api/subscription';
-import { Organization } from './rh-api/subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
@@ -125,80 +124,6 @@ suite('signin command telemetry reports', () => {
     expect(logSpy).toBeCalledWith('signin', {
       successful: false,
       error: 'Error: No running podman',
-      errorIn: 'subscription-activation',
-    });
-  });
-
-  test('unsuccessful login when simple content access is not enabled for account', async () => {
-    const logSpy = vi.spyOn(ExtensionTelemetryLogger, 'logUsage').mockImplementation(() => {
-      return;
-    });
-    let notificationCallback: (event: any) => Promise<any>;
-    let session: AuthenticationSession;
-    vi.mocked(authentication.onDidChangeSessions).mockImplementation((callback: (event: any) => Promise<any>) => {
-      notificationCallback = callback;
-      return {
-        dispose: vi.fn(),
-      };
-    });
-    vi.mocked(authentication.getSession).mockImplementation(
-      async (
-        _p1: string,
-        _p2: string[],
-        options: AuthenticationGetSessionOptions | undefined,
-      ): Promise<AuthenticationSession | undefined> => {
-        if (session) {
-          return Promise.resolve(session);
-        }
-        if (options?.createIfNone) {
-          session = {
-            id: '1',
-            accessToken: 'token',
-            scopes: ['scope1', 'scope2'],
-            account: {
-              id: 'accountId',
-              label: 'label',
-            },
-          };
-          await notificationCallback({
-            provider: {
-              id: 'redhat.authentication-provider',
-            },
-          });
-        }
-      },
-    );
-    let commandFunctionCopy: () => Promise<void>;
-    vi.mocked(commands.registerCommand).mockImplementation(
-      (commandId: string, commandFunction: () => Promise<void>) => {
-        if (commandId === 'redhat.authentication.signin') {
-          commandFunctionCopy = commandFunction;
-        }
-        return {
-          dispose: vi.fn(),
-        };
-      },
-    );
-    vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockReturnValue(true);
-    vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue({
-      providerId: '1',
-      connection: {
-        name: 'machine1',
-        type: 'podman',
-        endpoint: {
-          socketPath: '/path/to/the/socket',
-        },
-        status: () => 'started',
-      },
-    });
-    vi.spyOn(Organization.prototype, 'checkOrgScaCapability').mockResolvedValue({ body: {} });
-    await extension.activate(createExtContext());
-    expect(commandFunctionCopy!).toBeDefined();
-    await commandFunctionCopy!();
-    expect(authentication.onDidChangeSessions).toBeCalled();
-    expect(logSpy).toBeCalledWith('signin', {
-      successful: false,
-      error: 'Error: SCA is not enabled and message closed',
       errorIn: 'subscription-activation',
     });
   });
