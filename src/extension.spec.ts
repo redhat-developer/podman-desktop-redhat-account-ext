@@ -24,7 +24,6 @@ import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
 
 import * as extension from './extension';
 import * as podmanCli from './podman-cli';
-import * as subscription from './rh-api/subscription';
 import { ExtensionTelemetryLogger } from './telemetry';
 import * as util from './util';
 
@@ -115,7 +114,7 @@ suite('signin command telemetry reports', () => {
         };
       },
     );
-    vi.spyOn(subscription, 'isRedHatRegistryConfigured').mockResolvedValue(true);
+    vi.spyOn(util, 'isRedHatRegistryConfigured').mockResolvedValue(true);
     vi.spyOn(podmanCli, 'getConnectionForRunningPodmanMachine').mockReturnValue(undefined);
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
