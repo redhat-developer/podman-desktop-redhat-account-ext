@@ -33,10 +33,10 @@ import {
   runSubscriptionManagerUnregister,
 } from './podman-cli';
 import { ContainerRegistryAuthorizerClient } from './rh-api/registry-authorizer';
-import { isRedHatRegistryConfigured, REGISTRY_REDHAT_IO, SubscriptionManagerClient } from './rh-api/subscription';
+import { SubscriptionManagerClient } from './rh-api/subscription';
 import { SSOStatusBarItem } from './status-bar-item';
 import { ExtensionTelemetryLogger as TelemetryLogger } from './telemetry';
-import { isLinux, signIntoRedHatDeveloperAccount } from './util';
+import { isLinux, isRedHatRegistryConfigured, REGISTRY_REDHAT_IO, signIntoRedHatDeveloperAccount } from './util';
 
 interface JwtToken {
   organization: {
