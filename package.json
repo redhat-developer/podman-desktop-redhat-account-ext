@@ -99,7 +99,8 @@
       "rollup": "^4.59.0",
       "flatted": "^3.4.2",
       "picomatch": "^4.0.4",
-      "ajv": "^6.14.0"
+      "ajv": "^6.14.0",
+      "minimatch@^3": "^3.1.5"
     }
   },
   "extensionDependencies": [
