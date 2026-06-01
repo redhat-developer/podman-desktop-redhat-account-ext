@@ -25,7 +25,7 @@ import type { ConfirmInputValue, NavigationBar} from '@podman-desktop/tests-play
 import { 
   ArchitectureType,
   AuthenticationPage, 
-  expect as playExpect, 
+  checkLocatorExistence,  expect as playExpect, 
   ExtensionCardPage, 
   findPageWithTitleInBrowser,
   getEntryFromConsoleLogs,
@@ -436,8 +436,16 @@ export async function terminateExternalBrowser(): Promise<void> {
 
 export async function handleCookies(page: Page, buttonName: string, timeout: number): Promise<void> {
   const iframe = page.frameLocator('iframe:visible');
-  const button = iframe.getByRole('button', { name: buttonName });
+  let cookiesContainer = undefined;
+  if (await checkLocatorExistence(iframe.owner())) {
+    cookiesContainer = iframe.owner();
+  }
+  else if (await checkLocatorExistence(page.getByRole('dialog'))) {
+    cookiesContainer = page.getByRole('dialog');
+  }
 
+  const regexp = new RegExp(buttonName);
+  const button = cookiesContainer ? cookiesContainer.getByRole('button', { name: regexp }) : page.getByRole('button', { name: regexp });
   try {
     await playExpect(button).toBeVisible({ timeout: timeout });
     await button.scrollIntoViewIfNeeded();
