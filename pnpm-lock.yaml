@@ -62,7 +62,7 @@ importers:
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: ^3.2.4
-        version: 3.2.4(vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0))
+        version: 3.2.4(vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0))
       adm-zip:
         specifier: ^0.5.18
         version: 0.5.18
@@ -103,8 +103,8 @@ importers:
         specifier: ^13.0.0
         version: 13.0.0(eslint@8.57.1)
       eslint-plugin-sonarjs:
-        specifier: ^4.0.3
-        version: 4.0.3(eslint@8.57.1)
+        specifier: ^4.1.0
+        version: 4.1.0(eslint@8.57.1)
       eslint-plugin-unicorn:
         specifier: ^56.0.1
         version: 56.0.1(eslint@8.57.1)
@@ -122,10 +122,10 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^8.1.2
-        version: 8.1.2(@types/node@24.13.2)(esbuild@0.28.1)(terser@5.36.0)
+        version: 8.1.2(@types/node@24.13.2)(esbuild@0.28.1)(terser@5.36.0)(yaml@2.9.0)
       vitest:
         specifier: ^3.2.6
-        version: 3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
+        version: 3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
       xvfb-maybe:
         specifier: ^0.2.1
         version: 0.2.1
@@ -1053,8 +1053,8 @@ packages:
   brace-expansion@2.1.1:
     resolution: {integrity: sha512-WR1cURNjuvBLMZBMbqM0UoE+WAfdUcEV1ccD8PVBVOI+Z3ND4+SZbN8RsfT2bMuG1qwz5RFvPukSZm5fF2D5eA==}
 
-  brace-expansion@5.0.6:
-    resolution: {integrity: sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g==}
+  brace-expansion@5.0.7:
+    resolution: {integrity: sha512-7oFy703dxfY3/NLxC1fh2SUCQ0H9rmAY+5EpDVfXjUTTs+HEwR2nYaqLv+GWcTsumwxPfiz6CzCNkwXwBUwqCA==}
     engines: {node: 18 || 20 || >=22}
 
   braces@3.0.3:
@@ -1397,8 +1397,8 @@ packages:
     peerDependencies:
       eslint: '>=5.0.0'
 
-  eslint-plugin-sonarjs@4.0.3:
-    resolution: {integrity: sha512-5drkJKLC9qQddIiaATV0e8+ygbUc7b0Ti6VB7M2d3jmKNh3X0RaiIJYTs3dr9xnlhlrxo+/s1FoO3Jgv6O/c7g==}
+  eslint-plugin-sonarjs@4.1.0:
+    resolution: {integrity: sha512-rh+FlVz0yfd2RNIb6WqSkuGh0addX/Qi5scwQ5FphXDFrM6fZKcxP1+attJ78yUKcyYfiu6MTaISPpAFPzqRJw==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
 
@@ -1582,8 +1582,8 @@ packages:
     resolution: {integrity: sha512-SmSKyLLKFbSr6rptvP8izbyxJL4ILwqO9Jg23UA0sDlGlu58V59D1//I3vlc0KJphVdUR7vMjHIplYnzBxorQA==}
     engines: {node: '>=18'}
 
-  globals@17.5.0:
-    resolution: {integrity: sha512-qoV+HK2yFl/366t2/Cb3+xxPUo5BuMynomoDmiaZBIdbs+0pYbjfZU+twLhGKp4uCZ/+NbtpVepH5bGCxRyy2g==}
+  globals@17.7.0:
+    resolution: {integrity: sha512-Czmyns5dUsq4seFBR/Kdydhmo8y9kC79hiSkPn0YcGtNnYWnrgt0vjrSjx9tspoDGWm2CMarffRuLjM4xUz8xg==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -2309,16 +2309,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.4:
-    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
-  semver@7.8.1:
-    resolution: {integrity: sha512-rkVq3IXh+4FDGch+KwzX3aV9W3kO54GyEgpvBzSyctDA6Xtd7RJQV1xmXbeQp5v7+VzLOfVqiutSE6GICgPFvg==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.8.5:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
@@ -2774,6 +2764,11 @@ packages:
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
+
+  yaml@2.9.0:
+    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
 
   yargs-parser@20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
@@ -3311,7 +3306,7 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.9
-      semver: 7.7.4
+      semver: 7.8.5
       ts-api-utils: 1.4.3(typescript@5.9.3)
     optionalDependencies:
       typescript: 5.9.3
@@ -3343,7 +3338,7 @@ snapshots:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.9.3)
       eslint: 8.57.1
       eslint-scope: 5.1.1
-      semver: 7.7.4
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -3357,7 +3352,7 @@ snapshots:
       '@typescript-eslint/types': 6.21.0
       '@typescript-eslint/typescript-estree': 6.21.0(typescript@5.9.3)
       eslint: 8.57.1
-      semver: 7.7.4
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -3449,7 +3444,7 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.9.2':
     optional: true
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -3464,7 +3459,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
+      vitest: 3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -3476,13 +3471,13 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.6(vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0))':
+  '@vitest/mocker@3.2.6(vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0))':
     dependencies:
       '@vitest/spy': 3.2.6
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
+      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
 
   '@vitest/pretty-format@3.2.6':
     dependencies:
@@ -3615,7 +3610,7 @@ snapshots:
     dependencies:
       balanced-match: 1.0.2
 
-  brace-expansion@5.0.6:
+  brace-expansion@5.0.7:
     dependencies:
       balanced-match: 4.0.4
 
@@ -4050,21 +4045,22 @@ snapshots:
     dependencies:
       eslint: 8.57.1
 
-  eslint-plugin-sonarjs@4.0.3(eslint@8.57.1):
+  eslint-plugin-sonarjs@4.1.0(eslint@8.57.1):
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       builtin-modules: 3.3.0
       bytes: 3.1.2
       eslint: 8.57.1
       functional-red-black-tree: 1.0.1
-      globals: 17.5.0
+      globals: 17.7.0
       jsx-ast-utils-x: 0.1.0
       lodash.merge: 4.6.2
       minimatch: 10.2.5
       scslre: 0.3.0
-      semver: 7.7.4
+      semver: 7.8.5
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
+      yaml: 2.9.0
 
   eslint-plugin-unicorn@56.0.1(eslint@8.57.1):
     dependencies:
@@ -4303,7 +4299,7 @@ snapshots:
 
   globals@15.9.0: {}
 
-  globals@17.5.0: {}
+  globals@17.7.0: {}
 
   globalthis@1.0.4:
     dependencies:
@@ -4406,7 +4402,7 @@ snapshots:
 
   is-bun-module@2.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   is-callable@1.2.7: {}
 
@@ -4639,7 +4635,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   math-intrinsics@1.1.0: {}
 
@@ -4654,7 +4650,7 @@ snapshots:
 
   minimatch@10.2.5:
     dependencies:
-      brace-expansion: 5.0.6
+      brace-expansion: 5.0.7
 
   minimatch@3.1.5:
     dependencies:
@@ -5025,10 +5021,6 @@ snapshots:
 
   semver@7.6.3: {}
 
-  semver@7.7.4: {}
-
-  semver@7.8.1: {}
-
   semver@7.8.5: {}
 
   set-function-length@1.2.2:
@@ -5361,13 +5353,13 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vite-node@3.2.4(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0):
+  vite-node@3.2.4(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
+      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -5382,7 +5374,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0):
+  vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0):
     dependencies:
       esbuild: 0.28.1
       fdir: 6.5.0(picomatch@4.0.4)
@@ -5395,8 +5387,9 @@ snapshots:
       fsevents: 2.3.3
       lightningcss: 1.32.0
       terser: 5.36.0
+      yaml: 2.9.0
 
-  vite@8.1.2(@types/node@24.13.2)(esbuild@0.28.1)(terser@5.36.0):
+  vite@8.1.2(@types/node@24.13.2)(esbuild@0.28.1)(terser@5.36.0)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -5408,12 +5401,13 @@ snapshots:
       esbuild: 0.28.1
       fsevents: 2.3.3
       terser: 5.36.0
+      yaml: 2.9.0
 
-  vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0):
+  vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.6
-      '@vitest/mocker': 3.2.6(vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0))
+      '@vitest/mocker': 3.2.6(vite@7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0))
       '@vitest/pretty-format': 3.2.6
       '@vitest/runner': 3.2.6
       '@vitest/snapshot': 3.2.6
@@ -5431,8 +5425,8 @@ snapshots:
       tinyglobby: 0.2.17
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
-      vite-node: 3.2.4(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)
+      vite: 7.3.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
+      vite-node: 3.2.4(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.13.2
@@ -5524,6 +5518,8 @@ snapshots:
       - supports-color
 
   y18n@5.0.8: {}
+
+  yaml@2.9.0: {}
 
   yargs-parser@20.2.9: {}
 
