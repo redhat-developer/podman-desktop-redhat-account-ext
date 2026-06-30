@@ -89,7 +89,7 @@
     "vite": "^8.1.0",
     "vitest": "^3.2.6",
     "xvfb-maybe": "^0.2.1",
-    "adm-zip": "^0.5.17"
+    "adm-zip": "^0.5.18"
   },
   "pnpm": {
     "overrides": {

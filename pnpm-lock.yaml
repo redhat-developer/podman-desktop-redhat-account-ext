@@ -64,8 +64,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.6(@types/node@24.13.2)(lightningcss@1.32.0)(terser@5.36.0))
       adm-zip:
-        specifier: ^0.5.17
-        version: 0.5.17
+        specifier: ^0.5.18
+        version: 0.5.18
       byline:
         specifier: ^5.0.0
         version: 5.0.0
@@ -979,8 +979,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adm-zip@0.5.17:
-    resolution: {integrity: sha512-+Ut8d9LLqwEvHHJl1+PIHqoyDxFgVN847JTVM3Izi3xHDWPE4UtzzXysMZQs64DMcrJfBeS/uoEP4AD3HQHnQQ==}
+  adm-zip@0.5.18:
+    resolution: {integrity: sha512-ufJnssQGbxzLNS1Ho9bCtX4rQKCCvoVuDLHoJyc3F9dOGDB4BkWs2Ci0kv53lqocAEQ/Cbi+I2XCsNYGqVYqng==}
     engines: {node: '>=12.0'}
 
   ajv@6.15.0:
@@ -3519,7 +3519,7 @@ snapshots:
   acorn@8.17.0:
     optional: true
 
-  adm-zip@0.5.17: {}
+  adm-zip@0.5.18: {}
 
   ajv@6.15.0:
     dependencies:
