@@ -202,9 +202,37 @@ async function buildAndInitializeAuthService(
 }
 
 interface StepTelemetryData {
-  errorIn?: 'sign-in' | 'registry-configuration' | 'subscription-activation';
+  errorIn?: 'sign-in' | 'registry-configuration' | 'subscription-activation' | 'registry-config-handler';
   error?: string;
   successful: boolean;
+}
+
+async function ssoConfigHandler(): Promise<void> {
+  const telemetryData: StepTelemetryData = {
+    successful: true,
+  };
+  await configureRegistryWithProgress().catch((error: unknown) => {
+    telemetryData.errorIn = 'registry-config-handler';
+    telemetryData.error = String(error);
+    telemetryData.successful = false;
+  });
+  TelemetryLogger.logUsage('signin', telemetryData);
+}
+
+async function configureRegistryWithProgress(): Promise<void> {
+  return extensionApi.window.withProgress(
+    {
+      location: extensionApi.ProgressLocation.TASK_WIDGET,
+      title: 'Configuring Red Hat Registry',
+    },
+    async progress => {
+      // Checking if registry account for https://registry.redhat.io is already configured
+      if (!isRedHatRegistryConfigured()) {
+        progress.report({ increment: 30 });
+        await createOrReuseRegistryServiceAccount();
+      }
+    },
+  );
 }
 
 async function configureRegistryAndActivateSubscription(): Promise<void> {
@@ -212,26 +240,11 @@ async function configureRegistryAndActivateSubscription(): Promise<void> {
     successful: true,
   };
 
-  await extensionApi.window
-    .withProgress(
-      {
-        location: extensionApi.ProgressLocation.TASK_WIDGET,
-        title: 'Configuring Red Hat Registry',
-      },
-      async progress => {
-        // Checking if registry account for https://registry.redhat.io is already configured
-        if (!isRedHatRegistryConfigured()) {
-          progress.report({ increment: 30 });
-          await createOrReuseRegistryServiceAccount();
-        }
-      },
-    )
-    .then(() => false)
-    .catch((error: unknown) => {
-      telemetryData.errorIn = 'registry-configuration';
-      telemetryData.error = String(error);
-      telemetryData.successful = false;
-    });
+  await configureRegistryWithProgress().catch((error: unknown) => {
+    telemetryData.errorIn = 'registry-configuration';
+    telemetryData.error = String(error);
+    telemetryData.successful = false;
+  });
 
   if (telemetryData.successful) {
     await extensionApi.window
@@ -298,6 +311,13 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       name: 'Red Hat Container Registry',
       icon,
       url: 'registry.redhat.io',
+      additionalConfigHandlers: [
+        {
+          label: 'Red Hat SSO',
+          isDefault: true,
+          handler: ssoConfigHandler,
+        },
+      ],
     }),
   );
 
