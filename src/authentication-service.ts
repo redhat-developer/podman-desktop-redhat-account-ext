@@ -560,8 +560,8 @@ export class RedHatAuthenticationService {
       return token;
     } catch (error) {
       Logger.error(`Refreshing token failed: ${error}`);
-      await window.showErrorMessage(
-        'You have been signed out because reading stored authentication information failed.',
+      await window.showInformationMessage(
+        'You have been signed out because token refresh failed. Your token might have expired, please sign in again.',
       );
       throw new Error('Refreshing token failed');
     }
