@@ -52,12 +52,12 @@ afterEach(() => {
 suite('extension activation', () => {
   test('register commands declared in package.json', async () => {
     await extension.activate(createExtContext());
-    expect(commands.registerCommand).toBeCalledTimes(4);
-    expect(commands.registerCommand).toBeCalledWith('redhat.authentication.signin', expect.anything());
-    expect(commands.registerCommand).toBeCalledWith('redhat.authentication.navigate.settings', expect.anything());
-    expect(commands.registerCommand).toBeCalledWith('redhat.authentication.signout', expect.anything());
-    expect(commands.registerCommand).toBeCalledWith('redhat.authentication.signup', expect.anything());
-    expect(authentication.onDidChangeSessions).toBeCalled();
+    expect(commands.registerCommand).toHaveBeenCalledTimes(4);
+    expect(commands.registerCommand).calledWith('redhat.authentication.signin', expect.anything());
+    expect(commands.registerCommand).calledWith('redhat.authentication.navigate.settings', expect.anything());
+    expect(commands.registerCommand).calledWith('redhat.authentication.signout', expect.anything());
+    expect(commands.registerCommand).calledWith('redhat.authentication.signup', expect.anything());
+    expect(authentication.onDidChangeSessions).toHaveBeenCalled();
   });
 });
 
@@ -119,8 +119,8 @@ suite('signin command telemetry reports', () => {
     await extension.activate(createExtContext());
     expect(commandFunctionCopy!).toBeDefined();
     await commandFunctionCopy!();
-    expect(authentication.onDidChangeSessions).toBeCalled();
-    expect(logSpy).toBeCalledWith('signin', {
+    expect(authentication.onDidChangeSessions).toHaveBeenCalled();
+    expect(logSpy).calledWith('signin', {
       successful: false,
       error: 'Error: No running podman',
       errorIn: 'subscription-activation',

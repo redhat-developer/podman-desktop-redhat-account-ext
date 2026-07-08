@@ -89,7 +89,7 @@ test('runRpmInstallSubscription manager returns 0 when successful', async () => 
   execMock.mockResolvedValue(runResult);
   const result = await runRpmInstallSubscriptionManager(connection);
   expect(result).toBe(runResult);
-  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.rpmInstallSm(connectionName), { connection });
+  expect(execMock).calledWith(PODMAN_COMMANDS.rpmInstallSm(connectionName), { connection });
 });
 
 test('runRpmInstallSubscription manager returns none 0 error code when failed and send telemetry', async () => {
@@ -103,8 +103,8 @@ test('runRpmInstallSubscription manager returns none 0 error code when failed an
     error = err;
   });
   expect(String(error)).toBe(String(runError));
-  expect(logErrorSpy).toBeCalledWith('subscriptionManagerInstallationError', { error: 'error message' });
-  expect(consoleError).toBeCalledWith(
+  expect(logErrorSpy).calledWith('subscriptionManagerInstallationError', { error: 'error message' });
+  expect(consoleError).calledWith(
     'Subscription manager installation failed.',
     runError.toString(),
     `stdout: ${runError.stdout}`,
@@ -133,7 +133,7 @@ test('runSubscriptionManagerRegister returns 0 when successful', async () => {
   execMock.mockResolvedValue(runResult);
   const result = await runSubscriptionManagerRegister(connection, 'activation-key-name', 'orgId');
   expect(result).toBe(runResult);
-  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.smActivateSubs('machine1', 'activation-key-name', 'orgId'), {
+  expect(execMock).calledWith(PODMAN_COMMANDS.smActivateSubs('machine1', 'activation-key-name', 'orgId'), {
     connection,
   });
 });
@@ -149,8 +149,8 @@ test('runSubscriptionManagerRegister manager returns none 0 error code when fail
     error = err;
   });
   expect(String(error)).toBe(String(runError));
-  expect(logErrorSpy).toBeCalledWith('subscriptionManagerRegisterError', { error: 'error message' });
-  expect(consoleError).toBeCalledWith(
+  expect(logErrorSpy).calledWith('subscriptionManagerRegisterError', { error: 'error message' });
+  expect(consoleError).calledWith(
     'Subscription manager registration failed.',
     runError.toString(),
     `stdout: ${runError.stdout}`,
@@ -162,7 +162,7 @@ test('runCreateFactsFile returns 0 when successful', async () => {
   execMock.mockResolvedValue(runResult);
   const result = await runCreateFactsFile(connection, '{"field":"value"}');
   expect(result).toBe(runResult);
-  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.createFactFile(connectionName, '{"field":"value"}'), { connection });
+  expect(execMock).calledWith(PODMAN_COMMANDS.createFactFile(connectionName, '{"field":"value"}'), { connection });
 });
 
 test('runCreateFactsFile manager returns none 0 error code when failed and send telemetry', async () => {
@@ -176,8 +176,8 @@ test('runCreateFactsFile manager returns none 0 error code when failed and send 
     error = err;
   });
   expect(String(error)).toBe(String(runError));
-  expect(logErrorSpy).toBeCalledWith('subscriptionManagerCreateFactsFileError', { error: 'error message' });
-  expect(consoleError).toBeCalledWith(
+  expect(logErrorSpy).calledWith('subscriptionManagerCreateFactsFileError', { error: 'error message' });
+  expect(consoleError).calledWith(
     'Writing /etc/rhsm/facts/podman-desktop-redhat-account-ext.facts failed.',
     runError.toString(),
     `stdout: ${runError.stdout}`,
@@ -189,7 +189,7 @@ test('runStopPodmanMachine returns 0 when successful', async () => {
   execMock.mockResolvedValue(runResult);
   const result = await runStopPodmanMachine(connection);
   expect(result).toBe(runResult);
-  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.machineStop(connectionName), { connection });
+  expect(execMock).calledWith(PODMAN_COMMANDS.machineStop(connectionName), { connection });
 });
 
 test('runStopPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
@@ -202,8 +202,8 @@ test('runStopPodmanMachine manager returns none 0 error code when failed and sen
     error = err;
   });
   expect(String(error)).toBe(String(runError));
-  expect(logErrorSpy).toBeCalledWith('stopPodmanMachineError', { error: 'error message' });
-  expect(consoleError).toBeCalledWith(
+  expect(logErrorSpy).calledWith('stopPodmanMachineError', { error: 'error message' });
+  expect(consoleError).calledWith(
     'Podman machine stop failed.',
     runError.toString(),
     `stdout: ${runError.stdout}`,
@@ -215,7 +215,7 @@ test('runStartPodmanMachine returns 0 when successful', async () => {
   execMock.mockResolvedValue(runResult);
   const result = await runStartPodmanMachine(connection);
   expect(result).toBe(runResult);
-  expect(execMock).toBeCalledWith(PODMAN_COMMANDS.machineStart(connectionName), { connection });
+  expect(execMock).calledWith(PODMAN_COMMANDS.machineStart(connectionName), { connection });
 });
 
 test('runStartPodmanMachine manager returns none 0 error code when failed and send telemetry', async () => {
@@ -229,8 +229,8 @@ test('runStartPodmanMachine manager returns none 0 error code when failed and se
     error = err;
   });
   expect(String(error)).toBe(String(runError));
-  expect(logErrorSpy).toBeCalledWith('startPodmanMachineError', { error: 'error message' });
-  expect(consoleError).toBeCalledWith(
+  expect(logErrorSpy).calledWith('startPodmanMachineError', { error: 'error message' });
+  expect(consoleError).calledWith(
     'Podman machine start failed.',
     runError.toString(),
     `stdout: ${runError.stdout}`,
