@@ -21,7 +21,7 @@
  * This file is referenced from vitest.config.js file.
  */
 const plugin = {
-  EventEmitter: vi.fn().mockImplementation(() => {
+  EventEmitter: vi.fn().mockImplementation(function() {
     return {
       fire: vi.fn(),
     };
@@ -40,15 +40,16 @@ const plugin = {
     executeCommand: vi.fn(),
   },
   window: {
-    createStatusBarItem: () => ({
+    createStatusBarItem: vi.fn(() => {
+    return {
       show: vi.fn(),
       iconClass: '',
-    }),
-    withProgress: (_options, callback) => {
+    }}),
+    withProgress: vi.fn((_options, callback) => {
       return callback({
         report: () => {},
       });
-    },
+    }),
     showInformationMessage: vi.fn(),
     showWarningMessage: vi.fn(),
   },
