@@ -97,7 +97,7 @@ test('Authentication service loads tokens form secret storage during initializat
   const service = await RedHatAuthenticationService.build(extensionContext, getAuthConfig());
   await service.initialize();
   expect(extensionContext.secrets.get).toHaveBeenCalledOnce();
-  expect((await service.getSessions(['scope1', 'scope3', 'scope4'])).length).toBe(0);
+  expect(await service.getSessions(['scope1', 'scope3', 'scope4'])).toHaveLength(0);
 });
 
 test('Authentication service handles decryption errors gracefully', async () => {
@@ -132,7 +132,7 @@ test('Authentication service handles decryption errors gracefully', async () => 
   expect(onDidChangeCallback).toHaveBeenCalledOnce();
 
   // Verify no sessions exist after error
-  expect((await service.getSessions()).length).toBe(0);
+  expect(await service.getSessions()).toHaveLength(0);
 });
 
 test('Authentication service registers onDidChange listener even when no stored data exists', async () => {
@@ -157,7 +157,7 @@ test('Authentication service registers onDidChange listener even when no stored 
   expect(onDidChangeCallback).toHaveBeenCalledOnce();
 
   // Verify no sessions exist
-  expect((await service.getSessions()).length).toBe(0);
+  expect(await service.getSessions()).toHaveLength(0);
 });
 
 test('Authentication service handles delete error during decryption error recovery', async () => {
