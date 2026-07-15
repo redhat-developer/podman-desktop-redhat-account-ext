@@ -31,6 +31,13 @@
       "rules": {
         "@typescript-eslint/explicit-function-return-type": "error"
       }
+    },
+    {
+      "files": ["tests/**/*.spec.ts"],
+      "rules": {
+        "sonarjs/no-skipped-tests": "off",
+        "sonarjs/assertions-in-tests": "off"
+      }
     }
   ],
   "settings": {
