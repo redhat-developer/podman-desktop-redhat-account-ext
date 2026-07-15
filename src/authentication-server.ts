@@ -29,8 +29,7 @@ interface Deferred<T> {
 }
 
 export type RedirectResult =
-  | { req: http.IncomingMessage; res: http.ServerResponse }
-  | { err: unknown; res: http.ServerResponse };
+  { req: http.IncomingMessage; res: http.ServerResponse } | { err: unknown; res: http.ServerResponse };
 
 export function createServer(
   config: AuthConfig,
