@@ -1,23 +1,18 @@
 name: build
 
 on:
-  workflow_call:
-    inputs:
-      runs-on:
-        required: true
-        type: string
-      ext-version:
-        required: false
-        type: string
-        default: latest
-      registry:
-        required: false
-        type: string
+  push:
+    branches:
+      - 'add-onboarding-flow'
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build:
     name: Build
-    runs-on: ${{ inputs.runs-on }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
   
     steps:
@@ -41,26 +36,17 @@ jobs:
         timeout-minutes: 20
         run: pnpm build
 
-      - name: Login to quay.io
-        if: ${{ inputs.registry == 'quay' }}
-        run: podman login --username ${{ secrets.QUAY_ROBOT_NAME }} --password ${{ secrets.QUAY_ROBOT_TOKEN }} quay.io
+      - name: Log in to ghcr.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to ghcr.io
-        if: ${{ inputs.registry == 'ghcr' }}
-        run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
-
-      - name: Build and Push Image (quay.io)
-        if: ${{ inputs.registry == 'quay' }}
-        id: build-image-quay
-        run: |
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
-          podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} . -f ./build/Containerfile
-          podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
       - name: Build and Push Image (ghcr.io)
-        if: ${{ inputs.registry == 'ghcr' }}
         id: build-image-ghcr
         run: |
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:next . -f ./build/Containerfile
-          podman push ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:next
+          podman build -t ghcr.io/soniasandler/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
+          podman build -t ghcr.io/soniasandler/podman-desktop-redhat-account-ext:next . -f ./build/Containerfile
+          podman push ghcr.io/soniasandler/podman-desktop-redhat-account-ext:next
