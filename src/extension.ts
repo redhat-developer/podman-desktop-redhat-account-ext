@@ -307,6 +307,13 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
 
   context.subscriptions.push(
+    extensionApi.commands.registerCommand(
+      'redhat.authentication.configureRegistry',
+      ssoConfigHandler,
+    ),
+  );
+
+  context.subscriptions.push(
     extensionApi.registry.suggestRegistry({
       name: 'Red Hat Container Registry',
       icon,
@@ -314,8 +321,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
       additionalConfigHandlers: [
         {
           label: 'Red Hat SSO',
-          isDefault: true,
-          handler: ssoConfigHandler,
+          commandId: 'redhat.authentication.configureRegistry',
         },
       ],
     }),
