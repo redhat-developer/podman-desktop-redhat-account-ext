@@ -33,6 +33,62 @@
           "fontCharacter": "\\e900"
         }
       }
+    },
+    "onboarding": {
+      "title": "Red Hat SSO Setup",
+      "priority": 60,
+      "enablement": "!onboardingContext:signedInToSSO",
+      "steps": [
+        {
+          "id": "checkSignedInToSSOCommand",
+          "label": "Check Red Hat SSO",
+          "title": "Checking if signed in to Red Hat SSO",
+          "command": "redhat.authentication.isSignedIn",
+          "completionEvents": [
+            "onCommand:redhat.authentication.isSignedIn"
+          ]
+        },
+        {
+          "id": "signInWithSSOView",
+          "title": "Sign in with Red Hat to unlock more",
+          "when": "!onboardingContext:signedInToSSO",
+          "content": [
+            [
+              {
+                "value": "- ***Developer Subscription***  \nActivate a free Red Hat Developer Subscription with RHEL-based Podman machine support\n - ***Image Registries***  \nConnect to Red Hat Container Registry and quay.io without a separate login\n - ***Developer Sandbox***  \nSpin up a free Kubernetes cluster instantly via Red Hat Developer Sandbox"
+              }
+            ]
+          ]
+        },
+        {
+          "id": "signInWithSSOCommand",
+          "title": "Sign in with Red Hat",
+          "description": "Opening your browser to complete sign in\nComplete sign-in in your browser, then return here. This window updates automatically.",
+          "when": "!onboardingContext:signedInToSSO",
+          "command": "redhat.authentication.signin",
+          "completionEvents": [
+            "onCommand:redhat.authentication.signin"
+          ]
+        },
+        {
+          "id": "signInWithSSOFailure",
+          "title": "Sign in was not completed",
+          "description": "This can happen if you close the browser or the request timed out. No data was lost",
+          "when": "!onboardingContext:signedInToSSO",
+          "state": "failed"
+        },
+        {
+          "id": "ssoSignedInSuccess",
+          "title": "You're signed in",
+          "description": "Your Red Hat Developer Subscription is now active.",
+          "media": {
+            "path": "icons/green-check-mark.png",
+            "altText": "green check mark icon"
+          },
+          "when": "onboardingContext:signedInToSSO",
+          "state": "completed"
+        }
+      ]
     }
   },
   "scripts": {
