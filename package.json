@@ -38,6 +38,9 @@
       "title": "Red Hat SSO Setup",
       "priority": 60,
       "enablement": "!onboardingContext:signedInToSSO",
+      "media": {
+        "path": "icons/redhat-logo.svg"
+      },
       "steps": [
         {
           "id": "checkSignedInToSSOCommand",
@@ -55,7 +58,7 @@
           "content": [
             [
               {
-                "value": "- ***Developer Subscription***  \nActivate a free Red Hat Developer Subscription with RHEL-based Podman machine support\n - ***Image Registries***  \nConnect to Red Hat Container Registry and quay.io without a separate login\n - ***Developer Sandbox***  \nSpin up a free Kubernetes cluster instantly via Red Hat Developer Sandbox"
+                "value": "- **Developer Subscription**  \nActivate a free Red Hat Developer Subscription with RHEL-based Podman machine support.\n - **Image Registries**  \nConnect to Red Hat Container Registry and quay.io without a separate login.\n - **Developer Sandbox**  \nSpin up a free Kubernetes cluster instantly via Red Hat Developer Sandbox."
               }
             ]
           ]
@@ -73,7 +76,7 @@
         {
           "id": "signInWithSSOFailure",
           "title": "Sign in was not completed",
-          "description": "This can happen if you close the browser or the request timed out. No data was lost",
+          "description": "This can happen if you close the browser or the request timed out. No data was lost.",
           "when": "!onboardingContext:signedInToSSO",
           "state": "failed"
         },
@@ -82,7 +85,7 @@
           "title": "You're signed in",
           "description": "Your Red Hat Developer Subscription is now active.",
           "media": {
-            "path": "icons/green-check-mark.png",
+            "path": "icons/green-check-mark.svg",
             "altText": "green check mark icon"
           },
           "when": "onboardingContext:signedInToSSO",
