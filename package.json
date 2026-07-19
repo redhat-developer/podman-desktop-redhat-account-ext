@@ -39,7 +39,8 @@
       "priority": 60,
       "enablement": "!onboardingContext:signedInToSSO",
       "media": {
-        "path": "icons/redhat-logo.svg"
+        "path": "icons/redhat-logo.svg",
+        "altText": "Red Hat logo"
       },
       "steps": [
         {
