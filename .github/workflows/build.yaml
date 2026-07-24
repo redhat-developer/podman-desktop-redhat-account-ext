@@ -19,7 +19,7 @@ jobs:
     name: Build
     runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 60
-
+  
     steps:
       - uses: actions/checkout@v7
 
