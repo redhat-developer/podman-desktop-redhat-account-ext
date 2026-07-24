@@ -359,7 +359,6 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     try {
       const session = await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
       extensionApi.context.setValue('signedInToSSO', session !== undefined, 'onboarding');
-        
     } catch (err) {
       telemetryData.errorIn = 'sign-in';
       telemetryData.error = String(err);
