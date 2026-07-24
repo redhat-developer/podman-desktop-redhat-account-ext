@@ -326,10 +326,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     },
   );
 
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
   const isSignedInCommand = extensionApi.commands.registerCommand('redhat.authentication.isSignedIn', async () => {
-    await delay(3000)
     const service = await getAuthenticationService();
     const sessions = await service.getSessions();
     extensionApi.context.setValue('signedInToSSO', sessions.length > 0, 'onboarding');
