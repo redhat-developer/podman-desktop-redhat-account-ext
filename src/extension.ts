@@ -307,10 +307,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
   authenticationServicePromise = buildAndInitializeAuthService(context, statusBarItem);
 
   context.subscriptions.push(
-    extensionApi.commands.registerCommand(
-      'redhat.authentication.configureRegistry',
-      ssoConfigHandler,
-    ),
+    extensionApi.commands.registerCommand('redhat.authentication.configureRegistry', ssoConfigHandler),
   );
 
   context.subscriptions.push(
