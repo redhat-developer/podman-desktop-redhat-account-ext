@@ -52,11 +52,12 @@ afterEach(() => {
 suite('extension activation', () => {
   test('register commands declared in package.json', async () => {
     await extension.activate(createExtContext());
-    expect(commands.registerCommand).toHaveBeenCalledTimes(4);
-    expect(commands.registerCommand).calledWith('redhat.authentication.signin', expect.anything());
-    expect(commands.registerCommand).calledWith('redhat.authentication.navigate.settings', expect.anything());
-    expect(commands.registerCommand).calledWith('redhat.authentication.signout', expect.anything());
-    expect(commands.registerCommand).calledWith('redhat.authentication.signup', expect.anything());
+    expect(commands.registerCommand).toHaveBeenCalledTimes(5);
+    expect(commands.registerCommand).toHaveBeenCalledWith('redhat.authentication.signin', expect.anything());
+    expect(commands.registerCommand).toHaveBeenCalledWith('redhat.authentication.navigate.settings', expect.anything());
+    expect(commands.registerCommand).toHaveBeenCalledWith('redhat.authentication.signout', expect.anything());
+    expect(commands.registerCommand).toHaveBeenCalledWith('redhat.authentication.signup', expect.anything());
+    expect(commands.registerCommand).toHaveBeenCalledWith('redhat.authentication.isSignedIn', expect.anything());
     expect(authentication.onDidChangeSessions).toHaveBeenCalled();
   });
 });

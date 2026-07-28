@@ -326,6 +326,12 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     },
   );
 
+  const isSignedInCommand = extensionApi.commands.registerCommand('redhat.authentication.isSignedIn', async () => {
+    const service = await getAuthenticationService();
+    const sessions = await service.getSessions();
+    extensionApi.context.setValue('signedInToSSO', sessions.length > 0, 'onboarding');
+  });
+
   const onDidChangeSessionDisposable = extensionApi.authentication.onDidChangeSessions(async e => {
     if (e.provider.id === 'redhat.authentication-provider') {
       const newSession = await signIntoRedHatDeveloperAccount(false);
@@ -351,7 +357,8 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     };
 
     try {
-      await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
+      const session = await signIntoRedHatDeveloperAccount(true); //for the use case when user logged out, vm activated and registry configured
+      extensionApi.context.setValue('signedInToSSO', session !== undefined, 'onboarding');
     } catch (err) {
       telemetryData.errorIn = 'sign-in';
       telemetryData.error = String(err);
@@ -384,6 +391,7 @@ export async function activate(context: extensionApi.ExtensionContext): Promise<
     SignInCommand,
     SignOutCommand,
     SignUpCommand,
+    isSignedInCommand,
     onDidChangeSessionDisposable,
     GotoAuthCommand,
   );
