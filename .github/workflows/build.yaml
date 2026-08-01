@@ -13,6 +13,11 @@ on:
       registry:
         required: false
         type: string
+      ref:
+        description: 'Git branch or tag to build from'
+        required: false
+        type: string
+        default: main
 
 jobs:
   build:
@@ -22,6 +27,8 @@ jobs:
   
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: pnpm/action-setup@v6
         name: Install pnpm

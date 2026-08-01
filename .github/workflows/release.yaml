@@ -117,6 +117,7 @@ jobs:
       runs-on: ubuntu-latest
       registry: quay
       ext-version: ${{ needs.tag.outputs.extVersion }}
+      ref: ${{ needs.tag.outputs.githubTag }}
 
   release:
     needs: [tag, build]
