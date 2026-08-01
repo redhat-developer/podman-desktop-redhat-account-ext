@@ -31,6 +31,7 @@ jobs:
     uses: ./.github/workflows/build.yaml
     with:
       runs-on: ${{ matrix.target }}
+      ref: ${{ github.sha }}
  
   test:
     name: Test
