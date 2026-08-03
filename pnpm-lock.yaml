@@ -47,8 +47,8 @@ importers:
         specifier: ^1.62.0
         version: 1.62.0
       '@podman-desktop/tests-playwright':
-        specifier: ^1.28.3
-        version: 1.28.3
+        specifier: ^1.29.1
+        version: 1.29.1
       '@types/js-yaml':
         specifier: ^4.0.5
         version: 4.0.9
@@ -446,8 +446,8 @@ packages:
   '@podman-desktop/podman-extension-api@1.28.3':
     resolution: {integrity: sha512-j9OwVI3uN9nxLDtSwKwak8Xgw7TWRV0nlxm/Kop1OFv+EJF7Nb+0wXL8A6z011hA86XKWg7wFAF3HXS5hflZqw==}
 
-  '@podman-desktop/tests-playwright@1.28.3':
-    resolution: {integrity: sha512-xYjvseaP348xz6G3Uh9AepKB4eo6/vKpee73xumqp+zGTHCJo4PQqgbB1sQ4q4pSWq+wQkn6V1eQsQv/1TAkJA==}
+  '@podman-desktop/tests-playwright@1.29.1':
+    resolution: {integrity: sha512-MS2rXf3hnCTxykyAJ6BfU2OC38+vElcwPHWAT4dIEhWslZ77LEIytO1ym+6AsefsCql9rTUBEj26oSN6r3Dg0Q==}
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -855,8 +855,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.17.0:
-    resolution: {integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==}
+  acorn@8.18.0:
+    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -2836,7 +2836,7 @@ snapshots:
     dependencies:
       '@podman-desktop/api': 1.28.3
 
-  '@podman-desktop/tests-playwright@1.28.3': {}
+  '@podman-desktop/tests-playwright@1.29.1': {}
 
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true
@@ -3236,7 +3236,7 @@ snapshots:
 
   acorn@8.12.1: {}
 
-  acorn@8.17.0:
+  acorn@8.18.0:
     optional: true
 
   adm-zip@0.6.0: {}
@@ -4841,7 +4841,7 @@ snapshots:
   terser@5.36.0:
     dependencies:
       '@jridgewell/source-map': 0.3.11
-      acorn: 8.17.0
+      acorn: 8.18.0
       commander: 2.20.3
       source-map-support: 0.5.21
     optional: true
