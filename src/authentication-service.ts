@@ -407,7 +407,7 @@ export class RedHatAuthenticationService {
       const code_challenge = await calculatePKCECodeChallenge(code_verifier);
 
       // email and id.username scopes required to render user name on Authentication Settings page
-      const defaultScopes = 'openid id.username email';
+      const defaultScopes = 'openid id.username email api.rhsm';
       const scope = scopes;
 
       const authUrl = buildAuthorizationUrl(oidcConfig, {
