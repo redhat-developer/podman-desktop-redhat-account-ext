@@ -1,0 +1,20 @@
+overrides:
+  test-exclude>glob: ^13.0.0
+  cross-env>cross-spawn: ^7.0.6
+  eslint>cross-spawn: ^7.0.6
+  rollup: ^4.59.0
+  flatted: ^3.4.2
+  picomatch: ^4.0.4
+  ajv: ^6.14.0
+  minimatch@^3: ^3.1.5
+  minimatch@^9: ^9.0.7
+  esbuild: ^0.28.1
+  brace-expansion@^1: ^1.1.16
+nodeLinker: hoisted
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - '@podman-desktop/tests-playwright'
