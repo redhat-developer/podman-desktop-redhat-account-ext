@@ -9,7 +9,9 @@ overrides:
   minimatch@^3: ^3.1.5
   minimatch@^9: ^9.0.7
   esbuild: ^0.28.1
-  brace-expansion@^1: ^1.1.16
+  brace-expansion@^1: ^1.1.17
+  brace-expansion@^2: ^2.1.4
+  brace-expansion@^5: ^5.0.9
 nodeLinker: hoisted
 allowBuilds:
   esbuild: true
