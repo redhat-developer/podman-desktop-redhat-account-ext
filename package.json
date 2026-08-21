@@ -117,7 +117,7 @@
     "js-yaml": "^5.3.0",
     "object-hash": "3.0.0",
     "openapi-fetch": "^0.17.0",
-    "openid-client": "^6.8.5"
+    "openid-client": "^6.8.6"
   },
   "devDependencies": {
     "7zip-min": "^3.0.1",
