@@ -39,8 +39,8 @@ importers:
         specifier: ^0.17.0
         version: 0.17.0
       openid-client:
-        specifier: ^6.8.6
-        version: 6.8.6
+        specifier: ^6.8.7
+        version: 6.8.7
     devDependencies:
       7zip-min:
         specifier: ^3.0.1
@@ -1671,8 +1671,8 @@ packages:
     resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
     engines: {node: '>=8'}
 
-  jose@6.2.9:
-    resolution: {integrity: sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA==}
+  jose@6.2.10:
+    resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -1941,8 +1941,8 @@ packages:
   openapi-typescript-helpers@0.1.0:
     resolution: {integrity: sha512-OKTGPthhivLw/fHz6c3OPtg72vi86qaMlqbJuVJ23qOvQ+53uw1n7HdmkJFibloF7QEjDrDkzJiOJuockM/ljw==}
 
-  openid-client@6.8.6:
-    resolution: {integrity: sha512-lsfMRH/GCgMiGCRnBRY3e70uogkgOessPaTOhP3rw/dxqNOZHwOazWx+m6jt5EVk3ecRFULl0TwWpk9Qnw3RKQ==}
+  openid-client@6.8.7:
+    resolution: {integrity: sha512-gtKthNu7evSBvTdrrlHb4F3Fi9dcwlb5QaITlCs+9mfpvuOi0Q3qtBf5+iY4sEP8hy1qCoAdxBNPDcmZeVSDzQ==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -4205,7 +4205,7 @@ snapshots:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
 
-  jose@6.2.9: {}
+  jose@6.2.10: {}
 
   js-tokens@10.0.0: {}
 
@@ -4429,9 +4429,9 @@ snapshots:
 
   openapi-typescript-helpers@0.1.0: {}
 
-  openid-client@6.8.6:
+  openid-client@6.8.7:
     dependencies:
-      jose: 6.2.9
+      jose: 6.2.10
       oauth4webapi: 3.8.7
 
   optionator@0.9.4:
