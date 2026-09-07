@@ -1,0 +1,7 @@
+inverseTags:
+  - generate
+  - activationKey
+unusedComponents:
+  - schemas
+  - parameters
+  - examples
