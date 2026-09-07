@@ -28,6 +28,7 @@ const plugin = {
   }),
   registry: {
     suggestRegistry: vi.fn(),
+    registerRegistry: vi.fn(),
     unregisterRegistry: vi.fn(),
   },
   authentication: {
@@ -58,6 +59,16 @@ const plugin = {
       logUsage: vi.fn(),
       logError: vi.fn(),
     })),
+    openExternal: vi.fn(),
+  },
+  Uri: {
+    parse: vi.fn(uri => uri),
+  },
+  context: {
+    setValue: vi.fn(),
+  },
+  navigation: {
+    navigateToAuthentication: vi.fn(),
   },
   StatusBarAlignLeft: 'LEFT',
   ProgressLocation: {

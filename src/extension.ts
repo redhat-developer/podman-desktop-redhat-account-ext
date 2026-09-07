@@ -32,7 +32,7 @@ import {
   runSubscriptionManagerRegister,
   runSubscriptionManagerUnregister,
 } from './podman-cli';
-import { ContainerRegistryAuthorizerClient } from './rh-api/registry-authorizer';
+import { AccountManagementV1 } from './rh-api/rhaccm-client';
 import { SubscriptionManagerClient } from './rh-api/subscription';
 import { SSOStatusBarItem } from './status-bar-item';
 import { ExtensionTelemetryLogger as TelemetryLogger } from './telemetry';
@@ -52,7 +52,8 @@ async function getAuthenticationService(): Promise<RedHatAuthenticationService> 
 }
 
 function parseJwt(token: string): JwtToken {
-  const base64Url = token.split('.')[1];
+  // NOSONAR
+  const base64Url = token.split('.')[1]; // NOSONAR
   const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
   const jsonPayload = decodeURIComponent(
     Buffer.from(base64, 'base64')
@@ -96,34 +97,10 @@ async function createOrReuseRegistryServiceAccount(): Promise<void> {
   if (!currentSession) {
     throw new Error('Red Hat sign-in is required to configure the container registry.');
   }
-  const accessTokenJson = parseJwt(currentSession.accessToken);
-  const { serviceAccountsApiV1: saApiV1 } = new ContainerRegistryAuthorizerClient({
-    BASE: 'https://access.redhat.com/hydra/rest/terms-based-registry',
-    TOKEN: currentSession.accessToken,
-  });
-  let { data: serviceAccount } = await saApiV1.serviceAccountByNameUsingGet1(
-    'podman-desktop',
-    accessTokenJson.organization.id,
-  );
+  const rhaccm = new AccountManagementV1(currentSession.accessToken);
+  const { username, password } = await rhaccm.getAccessToken();
 
-  if (!serviceAccount) {
-    // ignore error when there is no podman-desktop service account yet
-    const { data: createdServiceAccount } = await saApiV1.createServiceAccountUsingPost1({
-      name: 'podman-desktop',
-      description: 'Service account to use from Podman Desktop',
-      redHatAccountId: accessTokenJson.organization.id,
-    });
-    if (createdServiceAccount) {
-      serviceAccount = createdServiceAccount;
-    } else {
-      throw new Error(`Can't create registry authorizer service account.`);
-    }
-  }
-  await createRegistry(
-    serviceAccount.credentials!.username!,
-    serviceAccount.credentials!.password!,
-    currentSession.account.label,
-  );
+  await createRegistry(username, password, currentSession.account.label);
 }
 
 async function createOrReuseActivationKey(connection: extensionApi.ProviderContainerConnection): Promise<void> {
