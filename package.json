@@ -149,7 +149,7 @@
     "vite": "^8.2.2",
     "vitest": "^4.1.10",
     "xvfb-maybe": "^0.2.1",
-    "adm-zip": "^0.6.0"
+    "adm-zip": "^0.6.1"
   },
   "extensionDependencies": [
     "podman-desktop.podman"
