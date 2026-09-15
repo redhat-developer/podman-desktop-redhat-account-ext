@@ -29,7 +29,6 @@ const PACKAGE_NAME = 'extensions/kube-context';
  */
 
 const excludeArray = [
-  '**/builtin/**',
   '**/node_modules/**',
   '**/dist/**',
   '**/.{idea,git,cache,output,temp,cdix}/**',
@@ -42,7 +41,6 @@ export function coverageConfig(packageRoot, packageName) {
       clean: true,
       src: [packageRoot],
       exclude: [
-        '**/builtin/**',
         '**/dist/**',
         '**/node_modules/**',
         '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',

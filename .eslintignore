@@ -1,6 +1,4 @@
 test-resources
-scripts
-builtin/**
 www
 *.config.js
 *.config.ts

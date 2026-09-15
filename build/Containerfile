@@ -17,8 +17,15 @@
 
 FROM ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next as builder
 
+# pnpm runs an implicit dependency check before `run` scripts, which spawns a
+# nested `pnpm install`. That nested call does not inherit a per-command
+# `CI=true`, so inside a container it blocks on an interactive prompt and the
+# build hangs. Setting CI on the environment makes every pnpm invocation
+# non-interactive.
+ENV CI=true
+
 COPY --chown=1001:root . .
-RUN CI=true pnpm install && pnpm build
+RUN pnpm install && pnpm build
 
 FROM scratch
 
@@ -27,4 +34,11 @@ LABEL org.opencontainers.image.title="Red Hat Account" \
   org.opencontainers.image.vendor="Red Hat" \
   io.podman-desktop.api.version=">= 1.9.0"
 
-COPY --from=builder /opt/app-root/extension-source/builtin/redhat-authentication.cdix /extension
+COPY --from=builder /opt/app-root/extension-source/dist/ /extension/dist
+COPY --from=builder /opt/app-root/extension-source/www/ /extension/www
+COPY --from=builder /opt/app-root/extension-source/icons/ /extension/icons
+COPY --from=builder /opt/app-root/extension-source/package.json /extension/
+COPY --from=builder /opt/app-root/extension-source/icon.png /extension/
+COPY --from=builder /opt/app-root/extension-source/redhat-icon.woff2 /extension/
+COPY --from=builder /opt/app-root/extension-source/LICENSE /extension/
+COPY --from=builder /opt/app-root/extension-source/README.md /extension/

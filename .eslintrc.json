@@ -66,8 +66,7 @@
   ],
   "ignorePatterns": [
     "node_modules/**",
-    "dist/**",
-    "builtin/**"
+    "dist/**"
   ],
   "rules": {
     "eqeqeq": "error",
