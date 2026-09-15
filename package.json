@@ -96,9 +96,14 @@
     }
   },
   "scripts": {
-    "generate:registry-authorizer": "npx openapi-typescript src/rh-api/registry-authorizer-schema.json -o src/rh-api/gen/registry-authorizer.d.ts",
+    "generate:rhaccm:overlay-schema": "npx openapi-format src/rh-api/rhaccm-schema.json --overlayFile src/rh-api/overlay.yaml -o src/rh-api/rhaccm-schema.json",
+    "generate:rhaccm:filter-schema": "npx openapi-format src/rh-api/rhaccm-schema.json --filterFile src/rh-api/filter.yaml -o src/rh-api/rhaccm-schema.json",
+    "generate:rhaccm:update-schema": "npm run generate:rhaccm:overlay-schema && npm run generate:rhaccm:filter-schema",
+    "generate:rhaccm": "npx openapi-typescript src/rh-api/rhaccm-schema.json -o src/rh-api/gen/rhaccm.d.ts",
+    "generate:subscription:filter-schema": "npx openapi-format src/rh-api/subscription-schema.json --filterFile src/rh-api/filter.yaml -o src/rh-api/subscription-schema.json",
+    "denerate:subscription:update-schema": "npm run rhaccm:overlay-schema && npm run rhaccm:filter-schema",
     "generate:subscription": "npx openapi-typescript src/rh-api/subscription-schema.json -o src/rh-api/gen/subscription.d.ts",
-    "build": "pnpm generate:subscription && pnpm generate:registry-authorizer && pnpm typecheck && vite build && node ./scripts/build.cjs",
+    "build": "pnpm generate:subscription && pnpm generate:rhaccm && pnpm typecheck && vite build && node ./scripts/build.cjs",
     "watch": "vite build -w",
     "format:check": "prettier --end-of-line auto --cache --check \"{src,types,scripts}/**/*.{ts,js}\"",
     "format:fix": "prettier --cache --write \"{src,types,scripts}/**/*.{ts,js}\"",
