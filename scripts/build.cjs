@@ -24,7 +24,6 @@ const { mkdirp } = require('mkdirp');
 const fs = require('fs');
 const byline = require('byline');
 const cp = require('copyfiles');
-const cproc = require('node:child_process');
 
 const destFile = path.resolve(__dirname, `../${package.name}.cdix`);
 const builtinDirectory = path.resolve(__dirname, '../builtin');
@@ -71,42 +70,25 @@ if (fs.existsSync(builtinDirectory)) {
   fs.rmSync(builtinDirectory, { recursive: true, force: true });
 }
 
-// install external modules into dist folder
-cproc.exec('pnpm init', { cwd: './dist' }, (error, stdout, stderr) => {
-  if (error) {
-    console.log(stdout);
-    console.log(stderr);
-    throw error;
-  }
-
-  cproc.exec('pnpm install object-hash@2.2.0', { cwd: './dist' }, (error, stdout, stderr) => {
-    if (error) {
-      console.log(stdout);
-      console.log(stderr);
-      throw error;
-    }
-
-    byline(fileStream)
-      .on('data', line => {
-        line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
-      })
-      .on('error', () => {
-        throw new Error('Error reading .extfiles');
-      })
-      .on('end', () => {
-        includedFiles.push(zipDirectory); // add destination dir
-        mkdirp.sync(zipDirectory);
-        console.log(`Copying files to ${zipDirectory}`);
-        cp(includedFiles, { exclude: excludedFiles }, error => {
-          if (error) {
-            throw new Error('Error copying files', error);
-          }
-          applyUrlProtocolToSuccessHtml();
-          console.log(`Zipping files to ${destFile}`);
-          const zip = new AdmZip();
-          zip.addLocalFolder(zipDirectory);
-          zip.writeZip(destFile);
-        });
-      });
+byline(fileStream)
+  .on('data', line => {
+    line.startsWith('!') ? excludedFiles.push(line.substring(1)) : includedFiles.push(line);
+  })
+  .on('error', () => {
+    throw new Error('Error reading .extfiles');
+  })
+  .on('end', () => {
+    includedFiles.push(zipDirectory); // add destination dir
+    mkdirp.sync(zipDirectory);
+    console.log(`Copying files to ${zipDirectory}`);
+    cp(includedFiles, { exclude: excludedFiles }, error => {
+      if (error) {
+        throw new Error('Error copying files', error);
+      }
+      applyUrlProtocolToSuccessHtml();
+      console.log(`Zipping files to ${destFile}`);
+      const zip = new AdmZip();
+      zip.addLocalFolder(zipDirectory);
+      zip.writeZip(destFile);
+    });
   });
-});

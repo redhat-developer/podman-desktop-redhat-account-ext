@@ -33,9 +33,6 @@ importers:
       js-yaml:
         specifier: ^5.4.1
         version: 5.4.1
-      object-hash:
-        specifier: 3.0.0
-        version: 3.0.0
       openapi-fetch:
         specifier: ^0.17.0
         version: 0.17.0
@@ -1912,10 +1909,6 @@ packages:
 
   oauth4webapi@3.8.8:
     resolution: {integrity: sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==}
-
-  object-hash@3.0.0:
-    resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
-    engines: {node: '>= 6'}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -4400,8 +4393,6 @@ snapshots:
       validate-npm-package-license: 3.0.4
 
   oauth4webapi@3.8.8: {}
-
-  object-hash@3.0.0: {}
 
   object-inspect@1.13.4: {}
 

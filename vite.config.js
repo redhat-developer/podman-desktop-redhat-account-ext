@@ -48,7 +48,6 @@ const config = {
     rollupOptions: {
       external: [
         '@podman-desktop/api',
-        'object-hash', // has to be external because of browser entry in package.json
         ...builtinModules.flatMap(p => [p, `node:${p}`]),
       ],
       output: {

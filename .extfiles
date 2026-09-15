@@ -4,7 +4,5 @@ icon.png
 redhat-icon.woff2
 README.md
 icons/**
-!dist/package.json
-!dist/pnpm-lock.yaml
 dist/**/**
 www/**
