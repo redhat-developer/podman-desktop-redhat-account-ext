@@ -1,9 +1,7 @@
 .electron-vendors.cache.json
 .eslintcache
-builtin
 dist
 node_modules
-redhat-authentication.cdix
 tests/**/output
 test-resources
 test-results
