@@ -129,7 +129,7 @@
     "@podman-desktop/tests-playwright": "^1.29.1",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^24",
-    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.1",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^4.1.10",
     "cross-env": "^10.1.0",
