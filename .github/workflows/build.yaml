@@ -60,7 +60,6 @@ jobs:
         if: ${{ inputs.registry == 'quay' }}
         id: build-image-quay
         run: |
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
           podman build -t quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }} . -f ./build/Containerfile
           podman push quay.io/redhat-developer/podman-desktop-redhat-account-ext:${{ inputs.ext-version }}
 
@@ -68,6 +67,5 @@ jobs:
         if: ${{ inputs.registry == 'ghcr' }}
         id: build-image-ghcr
         run: |
-          podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next . -f ./build/Containerfile.builder
           podman build -t ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:next . -f ./build/Containerfile
           podman push ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:next
