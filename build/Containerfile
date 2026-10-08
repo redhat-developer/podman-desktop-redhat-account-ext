@@ -15,7 +15,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:latest as builder
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:10.2-1791463156 as builder
 
 ENV EXTENSION_SRC=/opt/app-root/src
 RUN mkdir -p $EXTENSION_SRC
