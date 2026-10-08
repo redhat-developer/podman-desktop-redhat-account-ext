@@ -15,7 +15,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next as builder
+FROM registry.access.redhat.com/ubi10/nodejs-24-minimal:latest as builder
+
+ENV EXTENSION_SRC=/opt/app-root/src
+RUN mkdir -p $EXTENSION_SRC
+WORKDIR $EXTENSION_SRC
 
 # pnpm runs an implicit dependency check before `run` scripts, which spawns a
 # nested `pnpm install`. That nested call does not inherit a per-command
@@ -24,8 +28,13 @@ FROM ghcr.io/redhat-developer/podman-desktop-redhat-account-ext-builder:next as 
 # non-interactive.
 ENV CI=true
 
-COPY --chown=1001:root . .
-RUN pnpm install && pnpm build
+COPY --chown=1001:1001 . .
+
+RUN npm i -g corepack@0.36.0 && corepack enable
+RUN pnpm install
+RUN pnpm build
+RUN mkdir -p /tmp/extension && \
+    cp -r dist www icons package.json icon.png redhat-icon.woff2 LICENSE README.md /tmp/extension/
 
 FROM scratch
 
@@ -34,11 +43,4 @@ LABEL org.opencontainers.image.title="Red Hat Account" \
   org.opencontainers.image.vendor="Red Hat" \
   io.podman-desktop.api.version=">= 1.9.0"
 
-COPY --from=builder /opt/app-root/extension-source/dist/ /extension/dist
-COPY --from=builder /opt/app-root/extension-source/www/ /extension/www
-COPY --from=builder /opt/app-root/extension-source/icons/ /extension/icons
-COPY --from=builder /opt/app-root/extension-source/package.json /extension/
-COPY --from=builder /opt/app-root/extension-source/icon.png /extension/
-COPY --from=builder /opt/app-root/extension-source/redhat-icon.woff2 /extension/
-COPY --from=builder /opt/app-root/extension-source/LICENSE /extension/
-COPY --from=builder /opt/app-root/extension-source/README.md /extension/
+COPY --from=builder /tmp/extension /extension
