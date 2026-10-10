@@ -30,8 +30,8 @@ ENV CI=true
 
 COPY --chown=1001:1001 . .
 
-RUN npm i -g corepack@0.36.0 && corepack enable
-RUN pnpm install
+RUN npm i -g pnpm@12.10.1
+RUN pnpm install --frozen-lockfile
 RUN pnpm build
 RUN mkdir -p /tmp/extension && \
     cp -r dist www icons package.json icon.png redhat-icon.woff2 LICENSE README.md /tmp/extension/
