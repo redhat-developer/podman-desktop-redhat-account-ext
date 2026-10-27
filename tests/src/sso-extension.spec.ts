@@ -427,7 +427,6 @@ export async function terminateExternalBrowser(): Promise<void> {
     command = 'TaskKill /im msedge.exe /f /t';
   }
   try {
-    // eslint-disable-next-line
     exec(command);
   } catch (error: unknown) {
     console.log(`Error while terminating the browser using '${command}': ${error}`);

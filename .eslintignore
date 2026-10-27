@@ -1,7 +1,0 @@
-test-resources
-www
-*.config.js
-*.config.ts
-types/**/*.ts
-__mocks__
-src/rh-api/gen

@@ -19,7 +19,6 @@
  *  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *--------------------------------------------------------------------------------------------*/
-/* eslint-disable header/header */
 
 import type { ServerResponse } from 'node:http';
 
@@ -363,7 +362,7 @@ export class RedHatAuthenticationService {
         throw new Error();
       }
     } catch (e) {
-      throw new Error('Unavailable due to network problems');
+      throw new Error('Unavailable due to network problems', { cause: e });
     }
   }
 
@@ -540,7 +539,6 @@ export class RedHatAuthenticationService {
       account: {
         id: claims?.sub ?? '',
         // not sure if claim can't be an empty string in some specific use cases
-        // eslint-disable-next-line
         label:
           (claims?.preferred_username as string | undefined) ||
           (claims?.email as string | undefined) ||
@@ -563,7 +561,7 @@ export class RedHatAuthenticationService {
       await window.showInformationMessage(
         'You have been signed out because token refresh failed. Your token might have expired, please sign in again.',
       );
-      throw new Error('Refreshing token failed');
+      throw new Error('Refreshing token failed', { cause: error });
     }
   }
 

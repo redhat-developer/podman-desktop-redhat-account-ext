@@ -15,7 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import type { Client } from 'openapi-fetch';
 import createClient from 'openapi-fetch';
