@@ -15,8 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 import type { Extension, ProviderContainerConnection } from '@podman-desktop/api';
 import { extensions } from '@podman-desktop/api';

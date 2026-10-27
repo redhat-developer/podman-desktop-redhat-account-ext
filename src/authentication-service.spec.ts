@@ -15,7 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-/* eslint-disable sonarjs/no-nested-functions */
 
 import type { ExtensionContext } from '@podman-desktop/api';
 import { authentication, window } from '@podman-desktop/api';
