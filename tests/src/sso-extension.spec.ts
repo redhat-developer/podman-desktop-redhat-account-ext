@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024-2025 Red Hat, Inc.
+ * Copyright (C) 2024-2026 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ const imageName = 'ghcr.io/redhat-developer/podman-desktop-redhat-account-ext:la
 const extensionLabel = 'redhat.redhat-authentication';
 const extensionLabelName = 'redhat-authentication';
 const authProviderName = 'Red Hat SSO';
-const activeExtensionStatus = 'ACTIVE';
-const disabledExtensionStatus = 'DISABLED';
+const activeExtensionStatus = 'Installed';
+const disabledExtensionStatus = 'Disabled';
 const skipInstallation = process.env.SKIP_INSTALLATION ? process.env.SKIP_INSTALLATION : false;
 const chromePort = '9222';
 const urlRegex = new RegExp(/((http|https):\/\/.*$)/);
