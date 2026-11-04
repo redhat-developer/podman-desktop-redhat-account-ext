@@ -29,6 +29,7 @@ import noNull from 'eslint-plugin-no-null';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
+import podmanDesktop from '@podman-desktop/eslint-config';
 import globals from 'globals';
 import typescriptLint from 'typescript-eslint';
 
@@ -53,6 +54,7 @@ const headerPlugin = fixupPluginRules({
 });
 
 export default defineConfig([
+  ...podmanDesktop,
   globalIgnores([
     // ignorePatterns from .eslintrc.json
     'node_modules/**/*',
