@@ -93,7 +93,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: 'podman-desktop-redhat-account-ext/.nvmrc'
 
       - name: Update podman v. 5.x
         run: |
