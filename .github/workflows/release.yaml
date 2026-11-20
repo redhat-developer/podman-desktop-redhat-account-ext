@@ -47,7 +47,7 @@ jobs:
       releaseId: ${{ steps.create_release.outputs.id}}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.inputs.branch }}
 
@@ -75,7 +75,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -111,7 +111,7 @@ jobs:
 
   build:
     needs: [tag]
-    uses: redhat-developer/podman-desktop-redhat-account-ext/.github/workflows/build.yaml@main
+    uses: ./.github/workflows/build.yaml
     secrets: inherit
     with:
       runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
         run: echo the release id is ${{ needs.tag.outputs.releaseId }}
 
       - name: Publish release
-        uses: StuYarrow/publish-release@v1.1.2
+        uses: StuYarrow/publish-release@01f2a1365bacd77bad861873a7fdf274ab49eefd # v1.1.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
