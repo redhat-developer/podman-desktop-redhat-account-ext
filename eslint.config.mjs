@@ -99,9 +99,7 @@ export default defineConfig([
 
       parserOptions: {
         warnOnUnsupportedTypeScriptVersion: false,
-        projectService: {
-          allowDefaultProject: ['types/*.d.ts'],
-        },
+        projectService: true,
         tsconfigRootDir: __dirname,
       },
     },
